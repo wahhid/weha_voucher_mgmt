@@ -21,7 +21,8 @@
     "depends": [
         'base',
         'mail',
-        'operating_unit'
+        'operating_unit',
+        'restful'
     ],
     "installable": True,
 }
