@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <record id="voucher_operating_unit_kanban_view" model="ir.ui.view">
+     <field name="name">voucher.operating.unit.kanban</field>
+     <field name="model">operating.unit</field>
+     <field name="arch" type="xml">
+       <kanban class="oe_background_grey o_kanban_dashboard" create="0">
+         <field name="name"/>
+         <field name="color"/>
+         <templates>
+           <t t-name="kanban-box">
+             <div t-attf-class="#{kanban_color(record.color.raw_value)}">
+                <div t-attf-class="o_kanban_card_header">
+                    <div class="o_kanban_card_header_title">
+                      <a name="%(action_voucher_order_line_from_voucher_order)d" type="action">
+                         <field name="name"/>
+                     </a>
+                    </div>
+                    <div class="o_kanban_manage_button_section">
+                      <a class="o_kanban_manage_toggle_button" href="#"><i class="fa fa-ellipsis-v" /></a>
+                    </div>
+                    <div class="container o_kanban_card_content">
+                        <div class="col-6 o_kanban_primary_left" style="padding-top:20px;">
+                          
+                        </div>
+                        <div class="col-6 o_kanban_primary_right">
+                        </div>
+                    </div>
+                    <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu">
+                      <div class="row">
+                          <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
+                              <div class="o_kanban_card_manage_title">
+                                  <span>View</span>
+                              </div>
+                              <div>
+                                  <a name="%(action_voucher_order_line_from_voucher_order)d" type="action">
+                                      All
+                                  </a>
+                              </div>
+
+                          </div>
+                      </div>
+                      <div t-if="widget.editable" class="o_kanban_card_manage_settings row">
+                          <div class="col-8">
+                              <ul class="oe_kanban_colorpicker" data-field="color"/>
+                          </div>
+                      </div>
+                    </div>
+                </div>
+             </div>
+           </t>
+         </templates>
+       </kanban>
+   </field>
+ </record>
+</odoo>

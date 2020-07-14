@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+           
+        <record id="action_voucher_order_line_from_voucher_order" model="ir.actions.act_window">
+            <field name="name">Vouchers</field>
+            <field name="res_model">weha.voucher.order.line</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{
+                'default_voucher_order_id': active_id,
+            }</field>
+            <field name="domain">[('voucher_order_id', '=', active_id)]</field>
+        </record>
+
+        <!-- Tree view for voucher order -->
+        <record id="view_weha_voucher_order_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.tree</field>
+            <field name="model">weha.voucher.order</field>
+            <field name="type">tree</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <tree string="model_tree" create="true" delete="true" edit="true">
+                    <field name="number" />
+                    <field name="user_id" />
+                    <field name="stage_id" />
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Form view for voucher order -->
+        <record id="view_weha_voucher_order_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.form</field>
+            <field name="model">weha.voucher.order</field>
+            <field name="type">form</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <form string="model_form" create="true" delete="true" edit="true">
+                    <header>
+                        <field name="stage_id" widget="statusbar" clickable="True" />
+                    </header>
+                    <sheet>
+                        <div name="button_box" class="oe_button_box">
+                            <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_order_line_from_voucher_order)d" 
+                                groups="weha_voucher_mgmt.group_voucher_user"
+                                icon="fa-usd">
+                                <field string="Vouchers" name="voucher_count" widget="statinfo"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label for="number" class="oe_edit_only" />
+                            <h1>
+                                <field name="number" class="oe_inline"
+                                    placeholder="Number" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="request_date"/>
+                                <field name="user_id"/>
+                                <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
+                                <field name="voucher_code_id"/>
+                            </group>
+                            <group>
+                                <field name="ref"/>
+                                <field name="voucher_count"/>
+                                <field name="priority" widget="priority"/>
+
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        
+        <record id="view_weha_voucher_order_kanban" model="ir.ui.view">
+            <field name="name">weha.voucher.order.kanban</field>
+            <field name="model">weha.voucher.order</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile" archivable="false"  default_group_by="stage_id" >
+                    <field name="number"/>
+                    <field name="user_id"/>
+                    <field name="color"/>
+                    <field name="stage_id"/>
+                    <progressbar field="activity_state" colors="{&quot;planned&quot;: &quot;success&quot;, &quot;today&quot;: &quot;warning&quot;, &quot;overdue&quot;: &quot;danger&quot;}"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_content oe_kanban_global_click">
+                                <div class="o_dropdown_kanban dropdown" groups="base.group_user">
+                                    <a class="dropdown-toggle btn" role="button" data-toggle="dropdown" href="#">
+                                        <span class="fa fa-ellipsis-v" aria-hidden="true"/>
+                                    </a>
+                                    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                                        <li t-if="widget.editable"><a type="edit">Edit</a></li>
+                                        <li t-if="widget.deletable"><a type="delete">Delete</a></li>
+                                        <li class="divider"/>
+                                        <li>
+                                            <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title" style="font-weight: bold"><field name="number"/></strong>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <field name="priority" widget="priority"/>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left"/>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="activity_ids" widget="kanban_activity" related="activity_state"/>
+                                        <field name="kanban_state" widget="state_selection"/>
+                                        <field name="activity_state" invisible="1"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+        
+        <!-- Search view for voucher order -->
+        <record id="view_weha_voucher_order_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.search</field>
+            <field name="model">weha.voucher.order</field>
+            <field name="type">search</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <search string="model_search">
+                    <field name="number" />
+                </search>
+            </field>
+        </record>
+        
+        <!-- Main window action for voucher order -->
+        <record id="action_weha_voucher_order_act_window" model="ir.actions.act_window">
+            <field name="type">ir.actions.act_window</field>
+            <field name="name">Voucher Order</field>
+            <field name="res_model">weha.voucher.order</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">\{}</field>
+            <field name="search_view_id" ref="view_weha_voucher_order_search" />
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add for request new voucher order
+                </p><p>
+                    Voucher Order
+                </p>
+            </field>
+        </record>
+        
+        <!-- Main menu for voucher order -->
+        <record id="menu_model" model="ir.ui.menu" >
+            <field name="name">Order</field>
+            <field name="sequence" eval="10" />
+            <field name="action" ref="action_weha_voucher_order_act_window" />
+            <field name="parent_id" ref="weha_voucher_main_menu" />
+        </record>
+        
+
+        
+    </data>
+</odoo>
