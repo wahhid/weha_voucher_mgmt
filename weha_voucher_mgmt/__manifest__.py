@@ -16,6 +16,7 @@
         'views/weha_voucher_code_view.xml',
         'views/weha_voucher_order_view.xml',
         'views/weha_voucher_dashboard_view.xml',
+        'views/res_config_settings_view.xml',
         
     ],
     "depends": [
