@@ -117,10 +117,10 @@
                                 <div class="o_kanban_record_body">
                                     <div class="row">
                                         <field name="operating_unit_id"/>
-                                    <div>
+                                    </div>
                                     <div class="row">
                                         <field name="priority" widget="priority"/>
-                                    <div>
+                                    </div>
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left"/>
