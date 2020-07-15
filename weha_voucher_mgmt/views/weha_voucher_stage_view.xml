@@ -2,7 +2,7 @@
 <odoo>
     <data>
         
-        <!-- Tree view for Voucher Stage -->
+        <!-- Tree view for Voucher Order Stage -->
         <record id="view_weha_voucher_order_tage_tree" model="ir.ui.view">
             <field name="name">view.weha.voucher.order.stage.tree</field>
             <field name="model">weha.voucher.order.stage</field>
@@ -18,7 +18,7 @@
             </field>
         </record>
         
-        <!-- Form view for Voucher Stage -->
+        <!-- Form view for Voucher Order Stage -->
         <record id="view_weha_voucher_order_stage_form" model="ir.ui.view">
             <field name="name">view.weha.voucher.order.stage.form</field>
             <field name="model">weha.voucher.order.stage</field>
@@ -59,7 +59,7 @@
             </field>
         </record>
         
-        <!-- Search view for "model" -->
+        <!-- Search view for Voucher Order Stage -->
         <record id="view_weha_voucher_order_stage_search" model="ir.ui.view">
             <field name="name">view.weha.voucher.order.stage.search</field>
             <field name="model">weha.voucher.order.stage</field>
@@ -75,7 +75,7 @@
             </field>
         </record>
         
-        <!-- Main window action for "model" -->
+        <!-- Main window action Voucher Order Stage -->
         <record id="action_weha_voucher_order_stage_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
             <field name="name">Voucher Stage</field>
@@ -96,5 +96,99 @@
         <menuitem id="weha_voucher_order_stage_menu" name="Order Stages" parent="weha_voucher_config_main_menu"
             action="action_weha_voucher_order_stage_act_window" sequence="25"/>
  
+
+               <!-- Tree view for Voucher Request Stage -->
+        <record id="view_weha_voucher_request_stage_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.request.stage.tree</field>
+            <field name="model">weha.voucher.request.stage</field>
+            <field name="type">tree</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <tree string="model_tree" create="true" delete="true" edit="true">
+                    <field name="name" />
+                    <field name="sequence"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Form view for Voucher Request Stage -->
+        <record id="view_weha_voucher_request_stage_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.request.stage.form</field>
+            <field name="model">weha.voucher.request.stage</field>
+            <field name="type">form</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <form string="model_form" create="true" delete="true" edit="true">
+                    <header>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" />
+                            <h1>
+                                <field name="name" class="oe_inline"
+                                    placeholder="name" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="company_id"/>
+                                <field name="next_stage_id"/>
+                                <field name="mail_template_id"/>
+                            </group>
+                            <group>
+                                <field name="unattended"/>
+                                <field name="l1"/>
+                                <field name="l2"/>
+                                <field name="opened"/>
+                                <field name="closed"/>
+                                <field name="fold"/>
+                            </group>
+        
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Search view for Voucher Request Stage -->
+        <record id="view_weha_voucher_request_stage_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.request.stage.search</field>
+            <field name="model">weha.voucher.request.stage</field>
+            <field name="type">search</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <search string="model_search">
+                    <field name="name" />
+                    
+                </search>
+            </field>
+        </record>
+        
+        <!-- Main window action for Voucher Request Stage -->
+        <record id="action_weha_voucher_request_stage_act_window" model="ir.actions.act_window">
+            <field name="type">ir.actions.act_window</field>
+            <field name="name">Voucher Request</field>
+            <field name="res_model">weha.voucher.request.stage</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">\{}</field>
+            <field name="search_view_id" ref="view_weha_voucher_request_stage_search" />
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add new Human readable name
+                </p><p>
+                    Something about 
+                </p>
+            </field>
+        </record>
+        
+        <menuitem id="weha_voucher_request_stage_menu" name="Order Stages" parent="weha_voucher_config_main_menu"
+            action="action_weha_voucher_request_stage_act_window" sequence="26"/>
     </data>
 </odoo>
