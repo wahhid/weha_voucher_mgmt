@@ -9,4 +9,4 @@ access_weha_voucher_code_manager,weha.voucher.code.manager,model_weha_voucher_co
 access_weha_voucher_code_user,weha.voucher.code.user,model_weha_voucher_code,group_voucher_user,1,0,0,0
 
 access_weha_voucher_order_manager,weha.voucher.order.manager,model_weha_voucher_order,group_voucher_manager,1,1,1,1
-access_weha_voucher_order_user,weha.voucher.order.user,model_weha_voucher_order,group_voucher_user,1,0,0,0
+access_weha_voucher_order_user,weha.voucher.order.user,model_weha_voucher_order,group_voucher_user,1,1,1,0
