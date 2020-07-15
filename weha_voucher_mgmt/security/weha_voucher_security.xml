@@ -21,14 +21,6 @@
         <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>
 
-     <!-- Voucher Order Operating Unit Rules -->
-    <record id="voucher_order_operating_unit_rule" model="ir.rule">
-        <field name="name">Voucher Order Operating Unit Rule</field>
-        <field name="model_id" ref="model_weha_voucher_order"/>
-        <field name="global" eval="True"/>
-        <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
-    </record>
-
 </data>
 
 <!--
