@@ -115,8 +115,12 @@
                                     </div>
                                 </div>
                                 <div class="o_kanban_record_body">
-                                    <field name="operating_unit_id"/>
-                                    <field name="priority" widget="priority"/>
+                                    <div class="row">
+                                        <field name="operating_unit_id"/>
+                                    <div>
+                                    <div class="row">
+                                        <field name="priority" widget="priority"/>
+                                    <div>
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left"/>
