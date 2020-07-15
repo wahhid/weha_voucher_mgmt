@@ -97,7 +97,7 @@
             action="action_weha_voucher_order_stage_act_window" sequence="25"/>
  
 
-               <!-- Tree view for Voucher Request Stage -->
+        <!-- Tree view for Voucher Request Stage -->
         <record id="view_weha_voucher_request_stage_tree" model="ir.ui.view">
             <field name="name">view.weha.voucher.request.stage.tree</field>
             <field name="model">weha.voucher.request.stage</field>
@@ -188,7 +188,7 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_request_stage_menu" name="Order Stages" parent="weha_voucher_config_main_menu"
+        <menuitem id="weha_voucher_request_stage_menu" name="Request Stages" parent="weha_voucher_config_main_menu"
             action="action_weha_voucher_request_stage_act_window" sequence="26"/>
     </data>
 </odoo>

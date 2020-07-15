@@ -30,6 +30,7 @@ class VoucherOrder(models.Model):
     ref = fields.Char(string='Source Document', required=True)
     request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester',)    
+    operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
