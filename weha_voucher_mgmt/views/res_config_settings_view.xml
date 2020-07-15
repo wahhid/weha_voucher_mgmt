@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('settings')]" position="inside">
                 <div class="app_settings_block" data-string="Voucher Management" string="Voucher Settings" data-key="weha_voucher_mgmt" groups="weha_voucher_mgmt.group_voucher_manager">
-                    <h2>Taxes</h2> d
+                    <h2>Taxes</h2>
                 </div>
             </xpath>
         </field>
