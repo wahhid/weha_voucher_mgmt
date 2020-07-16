@@ -12,11 +12,23 @@ class VoucherOrder(models.Model):
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     
-    @api.depends('line_ids')
-    def _calculate_voucher_count(self):
-        for row in self:
-            self.voucher_count = len(self.line_ids)
-    
+
+    @api.depends('stage_id')
+    def _compute_current_stage(self):
+        if self.stage_id.unattended:
+            self.current_stage = 'unattended'
+        if self.stage_id.progress:
+            self.current_stage = 'progress'
+        if self.stage_id.l1_approval:
+            self.current_stage = 'l1_approval'
+        if self.stage_id.l2_approval:
+            self.current_stage = 'l2_approval'
+        if self.stage_id.closed:
+            self.current_stage = 'closed'
+        if self.stage_id.cancelled:
+            self.current_stage = 'cancelled'
+            
+
     def _get_default_stage_id(self):
         return self.env['weha.voucher.order.stage'].search([], limit=1).id
     
@@ -25,6 +37,14 @@ class VoucherOrder(models.Model):
         stage_ids = self.env['weha.voucher.order.stage'].search([])
         return stage_ids
     
+    @api.depends('line_ids')
+    def _calculate_voucher_count(self):
+        for row in self:
+            self.voucher_count = len(self.line_ids)
+    
+    def send_l1_request_mail(self):
+        self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').send_mail(self.id)
+            
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
@@ -45,6 +65,9 @@ class VoucherOrder(models.Model):
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
+    
+    current_stage = fields.Char('Current Stage', size=50, compute='_compute_current_stage', store=True)
+
     priority = fields.Selection(selection=[
         ('0', _('Low')),
         ('1', _('Medium')),
@@ -80,3 +103,19 @@ class VoucherOrder(models.Model):
         #if vals.get('user_id') and res:
         #    res.send_user_mail()
         return res    
+    
+    def write(self, vals):
+        if 'stage_id' in vals:
+            stage_obj = self.env['weha.voucher.order.stage'].browse([vals['stage_id']])
+            if stage_obj.unattended:
+                pass
+
+            #Change To L1, Get User from Param
+            if stage_obj.l1_approval:
+                if not self.stage_id.request:
+                    raise ValidationError('Cannot process L1 Approval')
+                self.send_l1_request_mail()
+
+           
+        res = super(VoucherOrder, self).write(vals)
+        return res
