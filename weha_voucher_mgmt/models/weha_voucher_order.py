@@ -108,7 +108,7 @@ class VoucherOrder(models.Model):
                 pass
 
             #Change To L1, Get User from Param
-            if stage_obj.l1_approval:
+            if stage_obj.approval:
                 if not self.stage_id.request:
                     raise ValidationError('Cannot process L1 Approval')
                 self.send_l1_request_mail()
