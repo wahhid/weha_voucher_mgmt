@@ -95,7 +95,7 @@ class WehaVoucherReturnStage(models.Model):
     active = fields.Boolean(default=True)
     unattended = fields.Boolean(
         string='Request')
-    approval = fields.Booelan(
+    approval = fields.Boolean(
         string='Approval')
     opened = fields.Boolean(
         string='Open')
