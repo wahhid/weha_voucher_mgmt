@@ -12,11 +12,19 @@ class VoucherOrder(models.Model):
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     
-    @api.depends('line_ids')
-    def _calculate_voucher_count(self):
-        for row in self:
-            self.voucher_count = len(self.line_ids)
-    
+
+    @api.depends('stage_id')
+    def _compute_current_stage(self):
+        for rec in self:
+            if rec.stage_id.unattended:
+                rec.current_stage = 'unattended'
+            if rec.stage_id.approval:
+                rec.current_stage = 'approval'
+            if rec.stage_id.opened:
+                rec.current_stage = 'open'
+            if rec.stage_id.closed:
+                rec.current_stage = 'closed'
+            
     def _get_default_stage_id(self):
         return self.env['weha.voucher.order.stage'].search([], limit=1).id
     
@@ -25,11 +33,22 @@ class VoucherOrder(models.Model):
         stage_ids = self.env['weha.voucher.order.stage'].search([])
         return stage_ids
     
+    @api.depends('line_ids')
+    def _calculate_voucher_count(self):
+        for row in self:
+            self.voucher_count = len(self.line_ids)
+    
+    def send_l1_request_mail(self):
+        for rec in self:
+            template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
+            template.send_mail(rec.id)
+
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
     request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester',)    
+    operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
@@ -44,6 +63,9 @@ class VoucherOrder(models.Model):
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
+    
+    current_stage = fields.Char('Current Stage', size=50, compute='_compute_current_stage', store=True)
+
     priority = fields.Selection(selection=[
         ('0', _('Low')),
         ('1', _('Medium')),
@@ -78,73 +100,20 @@ class VoucherOrder(models.Model):
         # Check if mail to the user has to be sent
         #if vals.get('user_id') and res:
         #    res.send_user_mail()
+        return res    
+    
+    def write(self, vals):
+        if 'stage_id' in vals:
+            stage_obj = self.env['weha.voucher.order.stage'].browse([vals['stage_id']])
+            if stage_obj.unattended:
+                pass
+
+            #Change To L1, Get User from Param
+            if stage_obj.approval:
+                if self.stage_id.id != stage_obj.from_stage_id.id:
+                    raise ValidationError('Cannot Process Approval')
+                #self.send_l1_request_mail()
+
+           
+        res = super(VoucherOrder, self).write(vals)
         return res
-    
-class VoucherOrderLine(models.Model):
-    _name = 'weha.voucher.order.line'
-        
-    def generate_12_random_numbers(self):
-        numbers = []
-        for x in range(12):
-            numbers.append(randrange(10))
-        return numbers
-
-    def calculate_checksum(self, ean):
-        """
-        Calculates the checksum for an EAN13
-        @param list ean: List of 12 numbers for first part of EAN13
-        :returns: The checksum for `ean`.
-        :rtype: Integer
-        
-        numbers = generate_12_random_numbers()
-        numbers.append(calculate_checksum(numbers))
-        print ''.join(map(str, numbers))
-        """
-        assert len(ean) == 12, "EAN must be a list of 12 numbers"
-        sum_ = lambda x, y: int(x) + int(y)
-        evensum = reduce(sum_, ean[::2])
-        oddsum = reduce(sum_, ean[1::2])
-        return (10 - ((evensum + oddsum * 3) % 10)) % 10
-
-
-    voucher_order_id = fields.Many2one(
-        string='Voucher order',
-        comodel_name='weha.voucher.order',
-        ondelete='restrict',
-    )
-    
-    voucher_12_digit = fields.Char('Code 12', size=12)
-    voucher_ean = fields.Char('Code', size=13)
-    name = fields.Char('Name', size=20)
-    operating_unit_id = fields.Many2one(
-        string='Operating Unit',
-        comodel_name='operating.unit',
-        ondelete='restrict',
-    )
-
-    #request_id = fields.Many2one(
-    #    string='Request',
-    #    comodel_name='weha.voucher.request',
-    #    ondelete='restrict',
-    #)
-    
-    state = fields.Selection(
-        string='Status',
-        selection=[('draft', 'New'), ('open', 'Open'),('done','Close'),('scrap','Scrap')]
-    )
-    
-class VoucherOrderLineTrans(models.Model):
-    _name = 'weha.voucher.order.line.trans'
-    
-    trans_date = fields.Datetime('Date and Time')
-    trans_type = fields.Selection(
-        string='Type',
-        selection=[('sell', 'Sell'), ('redeem', 'Redeem'),('vs','VS')]
-    )
-    
-    operating_unit_id = fields.Many2one(
-        string='Operating Unit',
-        comodel_name='operating.unit',
-        ondelete='restrict',
-    )
-    

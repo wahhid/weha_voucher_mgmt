@@ -40,7 +40,6 @@
                               </div>
 
                           </div>
-
                       </div>
                       <div t-if="widget.editable" class="o_kanban_card_manage_settings row">
                           <div class="col-8">
