@@ -15,6 +15,7 @@ class VoucherOrder(models.Model):
 
     @api.depends('stage_id')
     def _compute_current_stage(self):
+        self.record.ensure_one()
         if self.stage_id.unattended:
             self.current_stage = 'unattended'
         if self.stage_id.progress:
