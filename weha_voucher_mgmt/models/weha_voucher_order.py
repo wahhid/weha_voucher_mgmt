@@ -25,7 +25,6 @@ class VoucherOrder(models.Model):
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
             
-
     def _get_default_stage_id(self):
         return self.env['weha.voucher.order.stage'].search([], limit=1).id
     
@@ -40,8 +39,10 @@ class VoucherOrder(models.Model):
             self.voucher_count = len(self.line_ids)
     
     def send_l1_request_mail(self):
-        self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').send_mail(self.id)
-            
+        for rec in self:
+            template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
+            template.send_mail(rec.id)
+
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
@@ -111,7 +112,7 @@ class VoucherOrder(models.Model):
             if stage_obj.approval:
                 if self.stage_id.id != stage_obj.from_stage_id.id:
                     raise ValidationError('Cannot Process Approval')
-                #self.send_l1_request_mail()
+                self.send_l1_request_mail()
 
            
         res = super(VoucherOrder, self).write(vals)
