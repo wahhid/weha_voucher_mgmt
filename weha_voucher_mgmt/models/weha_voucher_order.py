@@ -112,7 +112,7 @@ class VoucherOrder(models.Model):
             if stage_obj.approval:
                 if self.stage_id.id != stage_obj.from_stage_id.id:
                     raise ValidationError('Cannot Process Approval')
-                self.send_l1_request_mail()
+                #self.send_l1_request_mail()
 
            
         res = super(VoucherOrder, self).write(vals)
