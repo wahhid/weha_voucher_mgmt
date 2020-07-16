@@ -15,19 +15,19 @@ class VoucherOrder(models.Model):
 
     @api.depends('stage_id')
     def _compute_current_stage(self):
-        self.ensure_one()
-        if self.stage_id.unattended:
-            self.current_stage = 'unattended'
-        if self.stage_id.progress:
-            self.current_stage = 'progress'
-        if self.stage_id.l1_approval:
-            self.current_stage = 'l1_approval'
-        if self.stage_id.l2_approval:
-            self.current_stage = 'l2_approval'
-        if self.stage_id.closed:
-            self.current_stage = 'closed'
-        if self.stage_id.cancelled:
-            self.current_stage = 'cancelled'
+        for rec in self:
+            if rec.stage_id.unattended:
+                rec.current_stage = 'unattended'
+            if rec.stage_id.progress:
+                rec.current_stage = 'progress'
+            if rec.stage_id.l1_approval:
+                rec.current_stage = 'l1_approval'
+            if rec.stage_id.l2_approval:
+                rec.current_stage = 'l2_approval'
+            if rec.stage_id.closed:
+                rec.current_stage = 'closed'
+            if rec.stage_id.cancelled:
+                rec.current_stage = 'cancelled'
             
 
     def _get_default_stage_id(self):
