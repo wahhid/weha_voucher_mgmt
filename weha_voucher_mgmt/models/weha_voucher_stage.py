@@ -95,10 +95,8 @@ class WehaVoucherReturnStage(models.Model):
     active = fields.Boolean(default=True)
     unattended = fields.Boolean(
         string='Request')
-    l1 = fields.Boolean(
-        string='Level 1')
-    l2 = fields.Boolean(
-        string='Level 2')
+    approval = fields.Booelan(
+        string='Approval')
     opened = fields.Boolean(
         string='Open')
     closed = fields.Boolean(
@@ -108,7 +106,9 @@ class WehaVoucherReturnStage(models.Model):
         help="This stage is folded in the kanban view "
              "when there are no records in that stage "
              "to display.")
+    from_stage_id = fields.Many2one('weha.voucher.order.stage', 'From Stage', required=False)
     next_stage_id = fields.Many2one('weha.voucher.order.stage', 'Next Stage', required=False)
+    approval_user_id = fields.Many2one('res.users', 'Approval User')
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',
