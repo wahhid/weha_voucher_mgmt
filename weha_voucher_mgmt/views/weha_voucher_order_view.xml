@@ -61,6 +61,7 @@
                             <group>
                                 <field name="request_date"/>
                                 <field name="user_id"/>
+                                <field name="operating_unit_id"/>
                                 <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
                                 <field name="voucher_code_id"/>
                             </group>
@@ -88,6 +89,7 @@
                 <kanban class="o_kanban_mobile" archivable="false"  default_group_by="stage_id" >
                     <field name="number"/>
                     <field name="user_id"/>
+                    <field name="operating_unit_id"/>
                     <field name="color"/>
                     <field name="stage_id"/>
                     <progressbar field="activity_state" colors="{&quot;planned&quot;: &quot;success&quot;, &quot;today&quot;: &quot;warning&quot;, &quot;overdue&quot;: &quot;danger&quot;}"/>
@@ -112,7 +114,9 @@
                                     <strong class="o_kanban_record_title" style="font-weight: bold"><field name="number"/></strong>
                                     </div>
                                 </div>
-                                <div class="o_kanban_record_body">
+                                <div class="o_kanban_record_body">    
+                                    <field name="operating_unit_id"/>
+                                    <br/>
                                     <field name="priority" widget="priority"/>
                                 </div>
                                 <div class="o_kanban_record_bottom">
