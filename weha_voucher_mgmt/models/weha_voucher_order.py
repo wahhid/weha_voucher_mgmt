@@ -20,7 +20,7 @@ class VoucherOrder(models.Model):
                 rec.current_stage = 'unattended'
             if rec.stage_id.approval:
                 rec.current_stage = 'approval'
-            if rec.stage_id.open:
+            if rec.stage_id.opened:
                 rec.current_stage = 'open'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
