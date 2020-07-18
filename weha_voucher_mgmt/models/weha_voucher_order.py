@@ -47,7 +47,7 @@ class VoucherOrder(models.Model):
     number = fields.Char(string='Order number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
     request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
-    user_id = fields.Many2one('res.users', string='Requester',)    
+    user_id = fields.Many2one('res.users', string='Requester',)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     voucher_type = fields.Selection(
         string='Voucher Type',
@@ -55,6 +55,7 @@ class VoucherOrder(models.Model):
         default='physical'
     )
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
+    voucher_number_range_id = fields.Many2one('weha.voucher.number.range', 'Voucher Number Range', required=True)
     
     stage_id = fields.Many2one(
         'weha.voucher.order.stage',
