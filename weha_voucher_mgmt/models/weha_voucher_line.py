@@ -65,13 +65,26 @@ class VoucherOrderLineTrans(models.Model):
     _name = 'weha.voucher.order.line.trans'
     
     trans_date = fields.Datetime('Date and Time')
-    trans_type = fields.Selection(
-        string='Type',
-        selection=[('sell', 'Sell'), ('redeem', 'Redeem'),('vs','VS')]
+    trans_type_id = fields.Many2one(
+        string='Transaction Type',
+        comodel_name='weha.voucher.trans.type',
+        ondelete='restrict',
     )
     
+    voucher_type_id = fields.Many2one(
+        string='Voucher Price',
+        comodel_name='weha.voucher.type',
+        ondelete='restrict',
+    )
+
     operating_unit_id = fields.Many2one(
         string='Operating Unit',
         comodel_name='operating.unit',
+        ondelete='restrict',
+    )
+
+    voucher_location_id = fields.Many2one(
+        string='Voucher Location',
+        comodel_name='weha.voucher.location',
         ondelete='restrict',
     )
