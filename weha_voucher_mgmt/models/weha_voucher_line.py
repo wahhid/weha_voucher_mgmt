@@ -73,7 +73,7 @@ class VoucherOrderLineTrans(models.Model):
     _name = 'weha.voucher.order.line.trans'
     
     name = fields.Char(
-        string='Voucher Trans ID', readonly=True
+        string='Trans ID', default="/", readonly=True
     )
     
     trans_date = fields.Datetime('Date and Time')
@@ -110,6 +110,8 @@ class VoucherOrderLineTrans(models.Model):
 
     @api.model
     def create(self, vals):
-        vals['name'] = self.env['ir.sequence'].next_by_code('weha.voucher.order.line.trans')
-        res = super(VoucherOrderLineTrans, self).create(vals) 
-        return res
+        if vals.get('name', '/') == '/':
+            seq = self.env['ir.sequence']
+            vals['name'] = seq.next_by_code(
+                'weha.voucher.order.line.trans.sequence') or '/'
+        res = super().create(vals)
