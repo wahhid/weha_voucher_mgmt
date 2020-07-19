@@ -24,7 +24,7 @@ class VoucherType(models.Model):
     _name = 'weha.voucher.type'
 
     name = fields.Char(
-        string='Voucher Type/Price',
+        string='Voucher Type',
         size=200,
         required=True
     )
@@ -69,21 +69,6 @@ class VoucherNumberRange(models.Model):
 
     numberto = fields.Char(
         string='To Number',
-        size=10,
-        required=True
-    )
-
-class VoucherTransType(models.Model):
-    _name = 'weha.voucher.trans.type'
-
-    name = fields.Char(
-        string='Name',
-        size=200,
-        required=True
-    )
-
-    trans_type = fields.Char(
-        string='Type',
         size=10,
         required=True
     )

@@ -55,6 +55,14 @@ class VoucherOrderLine(models.Model):
     #    comodel_name='weha.voucher.request',
     #    ondelete='restrict',
     #)
+
+    
+    voucher_order_line_trans_ids = fields.One2many(
+        string='Voucher Trans',
+        comodel_name='weha.voucher.order.line.trans',
+        inverse_name='name',
+    )
+    
     
     state = fields.Selection(
         string='Status',
@@ -64,27 +72,44 @@ class VoucherOrderLine(models.Model):
 class VoucherOrderLineTrans(models.Model):
     _name = 'weha.voucher.order.line.trans'
     
-    trans_date = fields.Datetime('Date and Time')
-    trans_type_id = fields.Many2one(
-        string='Transaction Type',
-        comodel_name='weha.voucher.trans.type',
-        ondelete='restrict',
+    name = fields.Char(
+        string='Voucher Trans ID', readonly=True
     )
     
-    voucher_type_id = fields.Many2one(
-        string='Voucher Price',
-        comodel_name='weha.voucher.type',
-        ondelete='restrict',
-    )
-
-    operating_unit_id = fields.Many2one(
-        string='Operating Unit',
-        comodel_name='operating.unit',
-        ondelete='restrict',
-    )
+    trans_date = fields.Datetime('Date and Time')
 
     voucher_location_id = fields.Many2one(
         string='Voucher Location',
         comodel_name='weha.voucher.location',
-        ondelete='restrict',
+        ondelete='restrict', required=True,
     )
+
+    voucher_number_range_id = fields.Many2one(
+        string='Number Range Voucher',
+        comodel_name='weha.voucher.number.range',
+        ondelete='restrict', required=True,
+    )
+    
+    voucher_terms_id = fields.Many2one(
+        string='Voucher Terms',
+        comodel_name='weha.voucher.terms',
+        ondelete='restrict', required=True,
+    )
+
+    voucher_type_id = fields.Many2one(
+        string='Voucher Type',
+        comodel_name='weha.voucher.type',
+        ondelete='restrict', required=True,
+    )
+
+    voucher_order_line_id = fields.Many2one(
+        string='Voucher Order Line',
+        comodel_name='weha.voucher.order.line',
+        ondelete='restrict', required=True,
+    )
+
+    @api.model
+    def create(self, vals):
+        vals['name'] = self.env['ir.sequence'].next_by_code('weha.voucher.order.line.trans')
+        res = super(VoucherOrderLineTrans, self).create(vals) 
+        return res

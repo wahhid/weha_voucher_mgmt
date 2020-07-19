@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Tree view for Voucher order line -->
+        <record id="view_weha_voucher_order_line_trans_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.line.trans.tree</field>
+            <field name="model">weha.voucher.order.line.trans</field>
+            <field name="type">tree</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <tree string="model_tree" create="true" delete="true" edit="true">
+                    <field name="name" />
+                    <field name="voucher_location_id" />
+                    <field name="voucher_number_range_id" />
+                    <field name="voucher_terms_id" />
+                    <field name="voucher_type_id" />
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Form view for Voucher Order Line Trans -->
+        <record id="view_weha_voucher_order_line_trans_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.line.trans.form</field>
+            <field name="model">weha.voucher.order.line.trans</field>
+            <field name="type">form</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <form string="model_form" create="true" delete="true" edit="true">
+                    <header>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" />
+                            <h1>
+                                <field name="name" class="oe_inline"
+                                    placeholder="name" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="trans_date"/>
+                                <field name="voucher_location_id"/>
+                                <field name="voucher_type_id"/>
+                            </group>
+                            <group>
+                                <field name="voucher_number_range_id"/>
+                                <field name="voucher_terms_id"/>
+                                <field name="voucher_order_line_id"/>
+                            </group>
+                        </group>
+                        
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Search view for "model" -->
+        <record id="view_weha_voucher_order_line_trans_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.line.trans.search</field>
+            <field name="model">weha.voucher.order.line.trans</field>
+            <field name="type">search</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <search string="model_search">
+                    <field name="name" />
+                    <field name="voucher_location_id"/>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Main window action for "model" -->
+        <record id="action_weha_voucher_order_line_trans_act_window" model="ir.actions.act_window">
+            <field name="type">ir.actions.act_window</field>
+            <field name="name">Voucher Order Line Trans</field>
+            <field name="res_model">weha.voucher.order.line.trans</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">\{}</field>
+            <field name="search_view_id" ref="view_weha_voucher_order_line_trans_search" />
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add new Human readable name
+                </p><p>
+                    Something about 
+                </p>
+            </field>
+        </record>
+        
+        <menuitem id="weha_voucher_order_line_trans_menu" name="Order Trans" parent="weha_voucher_main_menu"
+            action="action_weha_voucher_order_line_trans_act_window" sequence="27"/>
+
+    </data>
+</odoo>
