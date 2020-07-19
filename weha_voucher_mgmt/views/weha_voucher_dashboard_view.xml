@@ -23,7 +23,7 @@
                     </div>
                     <div class="container o_kanban_card_content">
                         <div class="col-6 o_kanban_primary_left" style="padding-top:20px;">
-                          <button class="btn btn-primary" name="open_voucher_request_ui" type="object">Voucher Request</button>
+                          <button class="btn btn-primary" name="open_voucher_request_ui" type="object">Request</button>
                         </div>
                         <div class="col-6 o_kanban_primary_right">
                         
