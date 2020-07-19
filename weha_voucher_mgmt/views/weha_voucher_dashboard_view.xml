@@ -7,24 +7,26 @@
      <field name="arch" type="xml">
        <kanban class="oe_background_grey o_kanban_dashboard" create="0">
          <field name="name"/>
+         <field name="voucher_count"/>
          <field name="color"/>
          <templates>
            <t t-name="kanban-box">
              <div t-attf-class="#{kanban_color(record.color.raw_value)}">
                 <div t-attf-class="o_kanban_card_header">
-                    <div class="o_kanban_card_header_title">
-                      <a name="%(action_voucher_order_line_from_voucher_order)d" type="action">
-                         <field name="name"/>
-                     </a>
+                    <div class="o_kanban_card_header_title mb16">
+                      <div class="o_primary">
+                        <t t-esc="record.name.value"/>
+                      </div>
                     </div>
                     <div class="o_kanban_manage_button_section">
                       <a class="o_kanban_manage_toggle_button" href="#"><i class="fa fa-ellipsis-v" /></a>
                     </div>
                     <div class="container o_kanban_card_content">
                         <div class="col-6 o_kanban_primary_left" style="padding-top:20px;">
-                          
+                          <button class="btn btn-primary" name="open_voucher_request_ui" type="object">Voucher Request</button>
                         </div>
                         <div class="col-6 o_kanban_primary_right">
+                        
                         </div>
                     </div>
                     <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu">
