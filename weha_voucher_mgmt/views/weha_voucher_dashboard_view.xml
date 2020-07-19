@@ -22,12 +22,21 @@
                       <a class="o_kanban_manage_toggle_button" href="#"><i class="fa fa-ellipsis-v" /></a>
                     </div>
                     <div class="container o_kanban_card_content">
+                      <div class="row">
                         <div class="col-6 o_kanban_primary_left" style="padding-top:20px;">
                           <button class="btn btn-primary" name="open_voucher_request_ui" type="object">Request</button>
                         </div>
                         <div class="col-6 o_kanban_primary_right">
-                        
+                          <div class="row">
+                            <div class="col-6">
+                              <span>Active Request</span>
+                            </div>
+                            <div class="col-6">
+                              <span>10 (1000 Vouchers)</span>
+                            </div>
+                          </div>
                         </div>
+                      </div>
                     </div>
                     <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu">
                       <div class="row">
