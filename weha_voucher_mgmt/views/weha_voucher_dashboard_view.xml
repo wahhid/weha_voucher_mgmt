@@ -5,7 +5,7 @@
      <field name="name">voucher.operating.unit.kanban</field>
      <field name="model">operating.unit</field>
      <field name="arch" type="xml">
-       <kanban class="oe_background_grey o_kanban_dashboard" create="0">
+       <kanban class="o_kanban_dashboard" create="false">
          <field name="name"/>
          <field name="voucher_count"/>
          <field name="color"/>
