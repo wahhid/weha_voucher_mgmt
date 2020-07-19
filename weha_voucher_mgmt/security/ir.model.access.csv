@@ -10,3 +10,15 @@ access_weha_voucher_code_user,weha.voucher.code.user,model_weha_voucher_code,gro
 
 access_weha_voucher_order_manager,weha.voucher.order.manager,model_weha_voucher_order,group_voucher_manager,1,1,1,1
 access_weha_voucher_order_user,weha.voucher.order.user,model_weha_voucher_order,group_voucher_user,1,1,1,0
+
+access_weha_voucher_location_manager,weha.voucher.location.manager,model_weha_voucher_location,group_voucher_manager,1,1,1,1
+access_weha_voucher_location_user,weha.voucher.location.user,model_weha_voucher_location,group_voucher_user,1,0,0,0
+
+access_weha_voucher_type_manager,weha.voucher.type.manager,model_weha_voucher_type,group_voucher_manager,1,1,1,1
+access_weha_voucher_type_user,weha.voucher.type.user,model_weha_voucher_type,group_voucher_user,1,0,0,0
+
+access_weha_voucher_terms_manager,weha.voucher.terms.manager,model_weha_voucher_terms,group_voucher_manager,1,1,1,1
+access_weha_voucher_terms_user,weha.voucher.terms.user,model_weha_voucher_terms,group_voucher_user,1,0,0,0
+
+access_weha_voucher_number_range_manager,weha.voucher.number.range.manager,model_weha_voucher_number_range,group_voucher_manager,1,1,1,1
+access_weha_voucher_number_range_user,weha.voucher.number.range.user,model_weha_voucher_number_range,group_voucher_user,1,0,0,0
