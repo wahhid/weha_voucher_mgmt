@@ -48,6 +48,15 @@ class VoucherTerms(models.Model):
 
 class VoucherNumberRange(models.Model):
     _name = 'weha.voucher.number.range'
+	
+    def name_get(self):
+        result = []
+        for record in self:
+            startnumber = record.numberfrom
+            endnumber = record.numberto
+            name = startnumber + ' - '+ endnumber +'( ' + record.year + ' )'
+            result.append((record.id, name))
+        return result
 
     name = fields.Char(
         string='Range Number',

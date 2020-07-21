@@ -19,7 +19,6 @@
         'views/weha_voucher_config_number_range_view.xml',
         'views/weha_voucher_config_terms_view.xml',
         'views/weha_voucher_config_type_view.xml',
-        'views/weha_voucher_order_line_trans_view.xml',
         'views/weha_voucher_dashboard_view.xml',
         
     ],
