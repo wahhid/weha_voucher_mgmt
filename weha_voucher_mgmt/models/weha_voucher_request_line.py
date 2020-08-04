@@ -6,7 +6,6 @@ _logger = logging.getLogger(__name__)
 
 class VoucherRequestLine(models.Model):
     _name = 'weha.voucher.request.line'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
     amount = fields.Integer(string='Amount')
@@ -16,7 +15,6 @@ class VoucherRequestLine(models.Model):
 
 class VoucherRequestLineRanges(models.Model):
     _name = 'weha.voucher.request.line.ranges'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     start_num = fields.Integer(string='Start Number')
     end_num = fields.Integer(string='End Number')

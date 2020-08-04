@@ -112,11 +112,52 @@ class WehaVoucherReturnStage(models.Model):
         string='Email Template',
         domain=[('model', '=', 'weha.voucher.order')],
         help="If set an email will be sent to the customer when the ticket reaches this step.")
-    company_id = fields.Many2one(
-        'res.company',
-        string="Company",
-        default=lambda self: self.env['res.company']._company_default_get(
-            'weha.voucher.order')
-    )
+    # company_id = fields.Many2one(
+    #     'res.company',
+    #     string="Company",
+    #     default=lambda self: self.env['res.company']._company_default_get(
+    #         'weha.voucher.order')
+    # )
+
+class WehaVoucherStockTransferStage(models.Model):
+    _name = 'weha.voucher.stock.transfer.stage'
+    _description = 'Voucher Stock Transfer Stage'
+    _order = 'sequence, id'
+
+    name = fields.Char(string='Stage Name', required=True, translate=True)
+    description = fields.Text(translate=True)
+    sequence = fields.Integer(default=1)
+    active = fields.Boolean(default=True)
+    unattended = fields.Boolean(
+        string='Request')
+    approval = fields.Boolean(
+        string='Approval')
+    # approval2 = fields.Boolean(
+    #     string='Approval 2')
+    opened = fields.Boolean(
+        string='Open')
+    closed = fields.Boolean(
+        string='Closed')
+    fold = fields.Boolean(
+        string='Folded in Kanban',
+        help="This stage is folded in the kanban view "
+             "when there are no records in that stage "
+             "to display.")
+    from_stage_id = fields.Many2one('weha.voucher.order.stage', 'From Stage', required=False)
+    next_stage_id = fields.Many2one('weha.voucher.order.stage', 'Next Stage', required=False)
+    approval_user_id = fields.Many2one('res.users', 'Approval User')
+    mail_template_id = fields.Many2one(
+        'mail.template',
+        string='Email Template',
+        domain=[('model', '=', 'weha.voucher.order')],
+        help="If set an email will be sent to the customer when the ticket reaches this step.")
+    # company_id = fields.Many2one(
+    #     'res.company',
+    #     string="Company",
+    #     default=lambda self: self.env['res.company']._company_default_get(
+    #         'weha.voucher.order')
+    # )
+
+
 
     

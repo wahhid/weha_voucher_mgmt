@@ -45,7 +45,7 @@ class VoucherOrderLine(models.Model):
         numbers.append(calculate_checksum(numbers))
         print ''.join(map(str, numbers))
         """
-        assert len(ean) == 12, "EAN must be a list of 12 numbers"
+        assert len(ean) == 5, "EAN must be a list of 12 numbers"
         sum_ = lambda x, y: int(x) + int(y)
         evensum = reduce(sum_, ean[::2])
         oddsum = reduce(sum_, ean[1::2])

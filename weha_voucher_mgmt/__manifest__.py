@@ -18,6 +18,8 @@
         'views/weha_voucher_order_view.xml',
         'views/weha_voucher_order_line_view.xml',
         'views/weha_voucher_request_view.xml',
+        'views/weha_voucher_request_line_view.xml',
+        'views/weha_voucher_request_line_range_view.xml',
         'views/weha_voucher_config_location_view.xml',
         'views/weha_voucher_config_number_range_view.xml',
         'views/weha_voucher_config_terms_view.xml',
