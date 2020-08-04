@@ -18,6 +18,8 @@ class WehaVoucherOrderStage(models.Model):
         string='Request')
     approval = fields.Boolean(
         string='Approval')
+    # approval2 = fields.Boolean(
+    #     string='Approval 2')
     opened = fields.Boolean(
         string='Open')
     closed = fields.Boolean(
@@ -27,16 +29,14 @@ class WehaVoucherOrderStage(models.Model):
         help="This stage is folded in the kanban view "
              "when there are no records in that stage "
              "to display.")
-    from_stage_id = fields.Many2one('weha.voucher.order.stage', 'Next Stage', required=False)
+    from_stage_id = fields.Many2one('weha.voucher.order.stage', 'From Stage', required=False)
     next_stage_id = fields.Many2one('weha.voucher.order.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',
         domain=[('model', '=', 'weha.voucher.order')],
-        help="If set an email will be sent to the "
-             "customer when the ticket"
-             "reaches this step.")
+        help="If set an email will be sent to the customer when the ticket reaches this step.")
     company_id = fields.Many2one(
         'res.company',
         string="Company",
@@ -74,9 +74,7 @@ class WehaVoucherRequestStage(models.Model):
         'mail.template',
         string='Email Template',
         domain=[('model', '=', 'weha.voucher.order')],
-        help="If set an email will be sent to the "
-             "customer when the ticket"
-             "reaches this step.")
+        help="If set an email will be sent to the customer when the ticket reaches this step.")
     company_id = fields.Many2one(
         'res.company',
         string="Company",
@@ -113,9 +111,7 @@ class WehaVoucherReturnStage(models.Model):
         'mail.template',
         string='Email Template',
         domain=[('model', '=', 'weha.voucher.order')],
-        help="If set an email will be sent to the "
-             "customer when the ticket"
-             "reaches this step.")
+        help="If set an email will be sent to the customer when the ticket reaches this step.")
     company_id = fields.Many2one(
         'res.company',
         string="Company",

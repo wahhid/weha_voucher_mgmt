@@ -13,11 +13,26 @@ class VoucherOrderLine(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
         
-    def generate_12_random_numbers(self):
-        numbers = []
-        for x in range(12):
-            numbers.append(randrange(10))
-        return numbers
+    def generate_12_random_numbers(self, vals):
+
+        start = vals.get('start_number')
+        end = vals.get('end_number')
+        c_code = vals.get('operating_unit_code')
+        v_code = vals.get('voucher_code')
+        num = vals.get('check_number')
+
+        if vals.get('voucher_type') == 'physical':
+            classifi = 1
+        elif vals.get('voucher_type') == 'electronic':
+            classifi = 2
+        number = str(num).zfill(6)
+        x = datetime.now()
+        year = x.strftime("%y")
+
+        # company_code,type,year,classification,number
+        code12 = [c_code,v_code,year,classifi,number]
+        _logger.info("CODE 12 = " + str(code12))
+        return code12
 
     def calculate_checksum(self, ean):
         """
@@ -36,6 +51,7 @@ class VoucherOrderLine(models.Model):
         oddsum = reduce(sum_, ean[1::2])
         return (10 - ((evensum + oddsum * 3) % 10)) % 10
 
+    @api.model
     def create_order_line_trans(self, vals_):
         
         for row in self:
@@ -44,50 +60,67 @@ class VoucherOrderLine(models.Model):
             vals = {}
             vals.update({'name': row.name})
             vals.update({'trans_date': datetime.now()})
-            vals.update({'voucher_order_line_id': vals_})
-            order_line_trans_obj.sudo().create(vals)
+            vals.update({'voucher_order_line_id': vals_.id})
+            val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+            _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
+            
+            if not val_order_line_trans_obj:
+                        raise ValidationError("Can't create voucher order line trans, contact administrator!")
 
-
-    def trans_close(self):
-        self.state = "done"
+    def trans_open(self):
+        self.state = "open"
 
     voucher_order_id = fields.Many2one(
-        string='Voucher order',
+        string='Voucher Order',
         comodel_name='weha.voucher.order',
         ondelete='restrict',
     )
-    
-    voucher_12_digit = fields.Char('Code 12', size=12, )
-    voucher_ean = fields.Char('Code', size=13, )
-    name = fields.Char('Name', size=20)
+    # voucher_request_id = fields.Many2one(
+    #     string='Voucher Request',
+    #     comodel_name='weha.voucher.request',
+    #     ondelete='restrict',
+    # )
+    voucher_12_digit = fields.Char('Code 12', )
+    voucher_ean = fields.Char('Code', )
+    name = fields.Char('Name', )
     operating_unit_id = fields.Many2one(
         string='Operating Unit',
         comodel_name='operating.unit',
         ondelete='restrict',
     )
+    operating_unit_code = fields.Integer(string='Operating Unit - Code', )
+    voucher_code = fields.Integer(string='V-Code', )
+    voucher_type = fields.Selection(
+        string='Voucher Type',
+        selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
+        default='physical'
+    )
+    start_number = fields.Integer(string='Start Number')
+    end_number = fields.Integer(string='End Number')
+    check_number = fields.Char(string='Check Number')
 
-    #request_id = fields.Many2one(
-    #    string='Request',
-    #    comodel_name='weha.voucher.request',
-    #    ondelete='restrict',
-    #)
+    voucher_request_id = fields.Many2one(
+       string='Request',
+       comodel_name='weha.voucher.request',
+       ondelete='restrict',
+    )
 
     
     voucher_order_line_trans_ids = fields.One2many(
         string='Voucher Trans',
         comodel_name='weha.voucher.order.line.trans',
-        inverse_name='name',
+        inverse_name='voucher_order_line_id',
     )
     
     state = fields.Selection(
         string='Status',
-        selection=[('draft', 'New'), ('open', 'Open'),('done','Close'),('scrap','Scrap')]
+        selection=[('draft', 'New'), ('open', 'Open'), ('activated','Activated'), ('done','Close'),('scrap','Scrap')]
     )
 
     @api.model
     def create(self, vals):
-        
-        val_12_digit = self.generate_12_random_numbers()
+
+        val_12_digit = self.generate_12_random_numbers(vals)
         str_val_12_digit = ''.join(map(str, val_12_digit))
 
         checksum = self.calculate_checksum(val_12_digit)
@@ -100,13 +133,12 @@ class VoucherOrderLine(models.Model):
         
         _logger.info("str_ean ID = " + str_ean)
         vals['voucher_ean'] = str_ean
+
+        vals['name'] = "VC" + str_ean
         res = super(VoucherOrderLine, self).create(vals)
+        res.create_order_line_trans(res)
+        res.trans_open()
 
-        
-
-        # self.create_order_line_trans(res.id)
-        res.trans_close()
-        
         return res
     
 class VoucherOrderLineTrans(models.Model):
@@ -141,7 +173,6 @@ class VoucherOrderLineTrans(models.Model):
     #     comodel_name='weha.voucher.type',
     #     ondelete='restrict', required=True,
     # )
-    
 
     # @api.model
     # def create(self, vals):

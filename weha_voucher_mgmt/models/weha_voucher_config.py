@@ -61,7 +61,7 @@ class VoucherNumberRange(models.Model):
     name = fields.Char(
         string='Range Number',
         size=200,
-        required=True
+        required=False, readonly=True,
     )
 
     year = fields.Char(
