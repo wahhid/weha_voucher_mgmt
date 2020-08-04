@@ -40,10 +40,20 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                            class="btn btn-primary" name="generate_voucher" string="Generate Voucher" confirm="Are you sure you want to Generate Voucher?" groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                            class="btn btn-primary" name="trans_approve" string="Approve" 
+                            confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                            class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
+                    <!-- attrs="{'invisible': [('stage_id.opened', '!=', True)]}" -->
                         <div name="button_box" class="oe_button_box">
+                            
+
                             <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_order_line_from_voucher_order)d" 
                                 groups="weha_voucher_mgmt.group_voucher_user"
                                 icon="fa-usd">
@@ -64,13 +74,16 @@
                                 <field name="operating_unit_id"/>
                                 <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
                                 <field name="voucher_code_id"/>
-                                <field name="voucher_number_range_id"/>
+                                <field name="current_stage"/>
                             </group>
                             <group>
                                 <field name="ref"/>
                                 <field name="voucher_count"/>
                                 <field name="priority" widget="priority"/>
-
+                            </group>
+                            <group string='Voucher Number'>
+                                <field name="start_number"/>
+                                <field name="end_number"/>
                             </group>
                         </group>
                     </sheet>

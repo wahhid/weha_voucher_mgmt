@@ -40,9 +40,22 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
+                        <button name="%(weha_voucher_mgmt.act_open_select_order_line_view)d" type="action" string="Select Voucher Lines"
+                        class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=','approve_1')]}"
+                            class="btn btn-primary" name="trans_approve1" string="Approve" 
+                            confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approve_1')]}"
+                            class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=','approve_2')]}"
+                            class="btn btn-primary" name="trans_approve2" string="Approve" 
+                            confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approve_2')]}"
+                            class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
+                        
                         <div name="button_box" class="oe_button_box">
                             <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_order_line_from_voucher_request)d" 
                                 groups="weha_voucher_mgmt.group_voucher_user"
@@ -63,10 +76,23 @@
                                 <field name="operating_unit_id"/>
                             </group>
                             <group>
+                                <field name="voucher_count"/>
                                 <field name="priority" widget="priority"/>
-
+                            </group>
+                            <group>
+                                <field name="current_stage"/>
                             </group>
                         </group>
+                        <notebook colspan="4">
+                            <page string="Request Lines">
+	                        	<field name="voucher_request_line_ids" widget="one2many_list" nolabel="0" readonly="0">
+	                            	<tree string="Request Lines" create="true" delete="true" edit="true">
+	                            	    <field name="voucher_code_id" />
+                                        <field name="amount" />	                                	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>	   
+                        </notebook>
                     </sheet>
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_select_order_line_form" model="ir.ui.view">
+        <field name="name">weha.select.order.line.wizard.form</field>
+        <field name="model">weha.select.order.line.wizard</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Select Voucher Lines">
+                <group string="Input Start Number - End Number Voucher">
+                    <group>
+                        <field name="start_number"/>
+                    </group>
+                    <group>
+                        <field name="end_number" />
+                    </group>
+                </group>
+                <group string="Voucher Lines">
+                    <field name="line_ids" nolabel="1" />
+                </group>
+                <footer>
+                    <button name="select_order_line" string="Add" type="object" class="oe_highlight" />
+                    <button string="Cancel" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="act_open_select_order_line_view">
+        <field name="name">Select Voucher line</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">weha.select.order.line.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record model="ir.actions.act_window.view" id="act_open_select_order_line_view_form">
+        <field name="act_window_id" ref="act_open_select_order_line_view" />
+        <field name="sequence" eval="10" />
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_select_order_line_form" />
+    </record>
+</odoo>

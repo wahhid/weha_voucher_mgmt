@@ -31,3 +31,9 @@ access_weha_voucher_number_range_user,weha.voucher.number.range.user,model_weha_
 
 access_weha_voucher_request_manager,weha.voucher.request.manager,model_weha_voucher_request,group_voucher_manager,1,1,1,1
 access_weha_voucher_request_user,weha.voucher.request.user,model_weha_voucher_request,group_voucher_user,1,1,1,0
+
+access_weha_voucher_request_line_manager,weha.voucher.request.line.manager,model_weha_voucher_request_line,group_voucher_manager,1,1,1,1
+access_weha_voucher_request_line_user,weha.voucher.request.line.user,model_weha_voucher_request_line,group_voucher_user,1,1,1,0
+
+access_weha_voucher_request_line_ranges_manager,weha.voucher.request.line.ranges.manager,model_weha_voucher_request_line_ranges,group_voucher_manager,1,1,1,1
+access_weha_voucher_request_line_ranges_user,weha.voucher.request.line.ranges.user,model_weha_voucher_request_line_ranges,group_voucher_user,1,1,1,0
