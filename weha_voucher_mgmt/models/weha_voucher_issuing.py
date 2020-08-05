@@ -6,8 +6,8 @@ from random import randrange
 _logger = logging.getLogger(__name__)
 
 
-class VoucherStockTransfer(models.Model):
-    _name = 'weha.voucher.stock.transfer'
+class VoucherIssuing(models.Model):
+    _name = 'weha.voucher.issuing'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -25,11 +25,11 @@ class VoucherStockTransfer(models.Model):
                 rec.current_stage = 'closed'
             
     def _get_default_stage_id(self):
-        return self.env['weha.voucher.stock.transfer.stage'].search([], limit=1).id
+        return self.env['weha.voucher.issuing.stage'].search([], limit=1).id
     
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
-        stage_ids = self.env['weha.voucher.stock.transfer.stage'].search([])
+        stage_ids = self.env['weha.voucher.issuing.stage'].search([])
         return stage_ids
     
     # @api.depends('line_ids')
@@ -108,8 +108,8 @@ class VoucherStockTransfer(models.Model):
             if 'company_id' in vals:
                 seq = seq.with_context(force_company=vals['company_id'])
             vals['number'] = seq.next_by_code(
-                'weha.voucher.stock.transfer.sequence') or '/'
-        res = super(VoucherStockTransfer, self).create(vals)
+                'weha.voucher.issuing.sequence') or '/'
+        res = super(VoucherIssuing, self).create(vals)
 
         # Check if mail to the user has to be sent
         #if vals.get('user_id') and res:
@@ -118,7 +118,7 @@ class VoucherStockTransfer(models.Model):
     
     def write(self, vals):
         if 'stage_id' in vals:
-            stage_obj = self.env['weha.voucher.stock.transfer.stage'].browse([vals['stage_id']])
+            stage_obj = self.env['weha.voucher.issuing.stage'].browse([vals['stage_id']])
             if stage_obj.unattended:
                 pass
 
@@ -141,5 +141,5 @@ class VoucherStockTransfer(models.Model):
         if vals.get('stage_id.closed'):
             self.current_stage = 'closed'
            
-        res = super(VoucherStockTransfer, self).write(vals)
+        res = super(VoucherIssuing, self).write(vals)
         return res

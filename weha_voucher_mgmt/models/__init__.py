@@ -5,5 +5,7 @@ from . import weha_voucher_line
 from . import weha_voucher_config
 from . import weha_voucher_request
 from . import weha_voucher_request_line
+from . import weha_voucher_return
+from . import weha_voucher_stock_transfer
 from . import operating_unit
 from . import res_config_settings

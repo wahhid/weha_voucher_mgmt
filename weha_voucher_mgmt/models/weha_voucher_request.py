@@ -32,10 +32,10 @@ class WeheVoucherRequest(models.Model):
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
     
-    @api.depends('line_ids')
-    def _calculate_voucher_count(self):
-        for row in self:
-            self.voucher_count = len(self.line_ids)
+    # @api.depends('line_ids')
+    # def _calculate_voucher_count(self):
+    #     for row in self:
+    #         self.voucher_count = len(self.line_ids)
 
     @api.depends('stage_id')
     def trans_approve1(self):
