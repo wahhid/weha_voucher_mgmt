@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-           
-        <!-- <record id="action_voucher_stock_transfer_line_from_voucher_stock_transfer" model="ir.actions.act_window">
-            <field name="name">Vouchers</field>
-            <field name="res_model">weha.voucher.stock.transfer.line</field>
-            <field name="view_mode">tree,form</field>
-            <field name="context">{
-                'default_voucher_stock_transfer_id': active_id,
-            }</field>
-            <field name="domain">[('voucher_stock_transfer_id', '=', active_id)]</field>
-        </record> -->
 
         <!-- Tree view for voucher order -->
         <record id="view_weha_voucher_stock_transfer_tree" model="ir.ui.view">
@@ -40,26 +30,12 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-                        <!-- <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-primary" name="generate_voucher" string="Generate Voucher" confirm="Are you sure you want to Generate Voucher?" groups="weha_voucher_mgmt.group_voucher_user"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
-                            class="btn btn-primary" name="trans_approve" string="Approve" 
-                            confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
-                            class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/> -->
+                
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
                     <!-- attrs="{'invisible': [('stage_id.opened', '!=', True)]}" -->
-                        <div name="button_box" class="oe_button_box">
-                            
-
-                            <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_stock_transfer_line_from_voucher_stock_transfer)d" 
-                                groups="weha_voucher_mgmt.group_voucher_user"
-                                icon="fa-usd">
-                                <field string="Vouchers" name="voucher_count" widget="statinfo"/>
-                            </button>
-                        </div>
+                        
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
                             <h1>
@@ -72,6 +48,7 @@
                                 <field name="request_date"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
+                                <field name="source_operating_unit"/>
                                 <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
                                 <field name="voucher_code_id"/>
                                 <field name="current_stage"/>
@@ -82,6 +59,16 @@
                                 <field name="priority" widget="priority"/>
                             </group>
                         </group>
+                        <notebook colspan="4">
+                            <page string="Transfer Lines">
+	                        	<field name="voucher_transfer_line_ids" widget="one2many_list" nolabel="0" readonly="0">
+	                            	<tree string="Transfer Lines" create="true" delete="true" edit="true">
+	                            	    <field name="voucher_code_id" />
+                                        <field name="amount" />	                                	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>	   
+                        </notebook>
                     </sheet>
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>
@@ -185,8 +172,8 @@
             <field name="parent_id" ref="weha_voucher_main_menu" />
         </record> -->
         
-        <menuitem id="weha_voucher_request_menu" name="Stock Transfer" parent="weha_voucher_main_menu"
-            action="action_weha_voucher_stock_transfer_act_window" sequence="22"/>
+        <menuitem id="weha_voucher_stock_transfer_menu" name="Stock Transfer" parent="weha_voucher_main_menu"
+            action="action_weha_voucher_stock_transfer_act_window" sequence="13"/>
 
         
     </data>
