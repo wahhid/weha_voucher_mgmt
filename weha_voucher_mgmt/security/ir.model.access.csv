@@ -1,4 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_api_access_token,access_api_access_token,model_api_access_token,,1,1,1,1
+
 access_weha_voucher_order_stage_manager,weha.voucher.order.stage.manager,model_weha_voucher_order_stage,group_voucher_manager,1,1,1,1
 access_weha_voucher_order_stage_user,weha.voucher.order.stage.user,model_weha_voucher_order_stage,group_voucher_user,1,0,0,0
 

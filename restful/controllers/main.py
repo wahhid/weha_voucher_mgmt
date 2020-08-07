@@ -3,12 +3,10 @@ import re
 import ast
 import functools
 import logging
-import json
 from odoo.exceptions import AccessError
 
-
 from odoo import http
-from odoo.addons.weha_voucher_mgmt.common import (
+from odoo.addons.restful.common import (
     extract_arguments,
     invalid_response,
     valid_response,
@@ -45,9 +43,8 @@ class VMSController(http.Controller):
     
     @validate_token
     @http.route("/api/vms/v1.0/vspurchase", type="http", auth="none", methods=["POST"], csrf=False)
-    def vspurchase(self, **post):
-        _logger.info(post)
-        return json.dumps({'err': False, 'msg': 'VS Purchase Successfully', 'datas':[]})
+    def vspurchase(self, **payload):
+        return {'err': False, 'msg': 'VS Purchase Successfully', 'datas':[]}
     
     @validate_token
     @http.route("/api/vms/v1.0/bankpurchase", type="http", auth="none", methods=["POST"], csrf=False)

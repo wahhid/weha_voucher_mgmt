@@ -40,6 +40,7 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
+                        <button name="trans_close" type="object" attrs="{'invisible':['stage_id.close']}"/>
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>

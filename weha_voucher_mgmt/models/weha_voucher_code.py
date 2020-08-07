@@ -19,3 +19,9 @@ class VoucherCode(models.Model):
         required=True
     )
     
+    voucher_type = fields.Selection(
+        string='Voucher Type',
+        selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
+        default='physical'
+    )
+    

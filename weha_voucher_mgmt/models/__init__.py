@@ -6,3 +6,4 @@ from . import weha_voucher_config
 from . import weha_voucher_request
 from . import operating_unit
 from . import res_config_settings
+from . import access_token

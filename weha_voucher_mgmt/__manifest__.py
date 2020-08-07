@@ -9,8 +9,10 @@
     "license": "AGPL-3",
     'data': [
         'data/weha_voucher_data.xml',
+        'data/ir_config_param.xml',
         'security/weha_voucher_security.xml',
         'security/ir.model.access.csv',
+        'views/res_users.xml',
         'views/weha_voucher_menu.xml',
         'views/weha_voucher_stage_view.xml',
         'views/weha_voucher_code_view.xml',
