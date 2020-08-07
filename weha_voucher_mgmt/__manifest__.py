@@ -12,11 +12,8 @@
         'data/ir_config_param.xml',
         'security/weha_voucher_security.xml',
         'security/ir.model.access.csv',
-<<<<<<< HEAD
         'views/res_users.xml',
-=======
         'wizard/weha_select_order_line_wizard_view.xml',
->>>>>>> origin/yogi
         'views/weha_voucher_menu.xml',
         'views/weha_voucher_stage_view.xml',
         'views/weha_voucher_code_view.xml',
