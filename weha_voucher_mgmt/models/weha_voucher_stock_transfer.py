@@ -69,6 +69,7 @@ class VoucherStockTransfer(models.Model):
     request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
+    source_operating_unit = fields.Many2one('operating.unit','Source Store', )
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
@@ -100,6 +101,11 @@ class VoucherStockTransfer(models.Model):
         ('blocked', 'Blocked')], string='Kanban State')
     
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
+    voucher_transfer_line_ids = fields.One2many(
+        string='Vouchers Transfer Lines',
+        comodel_name='weha.voucher.stock.transfer.line',
+        inverse_name='voucher_transfer_id',
+    )
     
     @api.model
     def create(self, vals):

@@ -17,7 +17,7 @@ class VoucherOrderLine(models.Model):
 
         start = vals.get('start_number')
         end = vals.get('end_number')
-        c_code = vals.get('operating_unit_code')
+        c_code = self.env.user.default_operating_unit_id.company_id.res_company_code
         v_code = vals.get('voucher_code')
         num = vals.get('check_number')
 
@@ -98,7 +98,7 @@ class VoucherOrderLine(models.Model):
     start_number = fields.Integer(string='Start Number')
     end_number = fields.Integer(string='End Number')
     check_number = fields.Char(string='Check Number')
-
+    expired_date = fields.Date(string='Expired Date')
     voucher_request_id = fields.Many2one(
        string='Request',
        comodel_name='weha.voucher.request',
@@ -153,6 +153,9 @@ class VoucherOrderLineTrans(models.Model):
         comodel_name='weha.voucher.order.line',
         ondelete='restrict', required=True,
     )
+    trans_type = fields.Selection(string='Transaction Type', selection=[('RV', 'Received'), 
+        ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'),])
+    
     # voucher_location_id = fields.Many2one(
     #     string='Voucher Location',
     #     comodel_name='weha.voucher.location',

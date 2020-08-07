@@ -69,6 +69,7 @@ class VoucherReturn(models.Model):
     request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
+    source_operating_unit_id = fields.Many2one('operating.unit','Resource Store', related="user_id.default_operating_unit_id.company_id.res_company_return_operating_unit")
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
@@ -82,6 +83,7 @@ class VoucherReturn(models.Model):
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
+    voucher_order_line_ids = fields.Many2many(comodel_name='weha.voucher.order.line', string='Voucher Lines')
     
     current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
 

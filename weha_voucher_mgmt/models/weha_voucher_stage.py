@@ -15,7 +15,7 @@ class WehaVoucherOrderStage(models.Model):
     sequence = fields.Integer(default=1)
     active = fields.Boolean(default=True)
     unattended = fields.Boolean(
-        string='Request')
+        string='Order')
     approval = fields.Boolean(
         string='Approval')
     # approval2 = fields.Boolean(
@@ -92,7 +92,7 @@ class WehaVoucherReturnStage(models.Model):
     sequence = fields.Integer(default=1)
     active = fields.Boolean(default=True)
     unattended = fields.Boolean(
-        string='Request')
+        string='Return')
     approval = fields.Boolean(
         string='Approval')
     opened = fields.Boolean(
@@ -129,7 +129,7 @@ class WehaVoucherStockTransferStage(models.Model):
     sequence = fields.Integer(default=1)
     active = fields.Boolean(default=True)
     unattended = fields.Boolean(
-        string='Request')
+        string='Transfer')
     approval = fields.Boolean(
         string='Approval')
     # approval2 = fields.Boolean(
@@ -169,7 +169,7 @@ class WehaVoucherIssuingStage(models.Model):
     sequence = fields.Integer(default=1)
     active = fields.Boolean(default=True)
     unattended = fields.Boolean(
-        string='Request')
+        string='Issuing')
     approval = fields.Boolean(
         string='Approval')
     # approval2 = fields.Boolean(
@@ -183,8 +183,8 @@ class WehaVoucherIssuingStage(models.Model):
         help="This stage is folded in the kanban view "
              "when there are no records in that stage "
              "to display.")
-    from_stage_id = fields.Many2one('weha.voucher.stock.transfer.stage', 'From Stage', required=False)
-    next_stage_id = fields.Many2one('weha.voucher.stock.transfer.stage', 'Next Stage', required=False)
+    from_stage_id = fields.Many2one('weha.voucher.issuing.stage', 'From Stage', required=False)
+    next_stage_id = fields.Many2one('weha.voucher.issuing.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
     mail_template_id = fields.Many2one(
         'mail.template',
