@@ -40,9 +40,7 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-<<<<<<< HEAD
                         <button name="trans_close" type="object" attrs="{'invisible':['stage_id.close']}"/>
-=======
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-primary" name="generate_voucher" string="Generate Voucher" confirm="Are you sure you want to Generate Voucher?" groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
@@ -50,7 +48,6 @@
                             confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
->>>>>>> origin/yogi
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>

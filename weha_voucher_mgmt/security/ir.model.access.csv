@@ -33,8 +33,6 @@ access_weha_voucher_number_range_user,weha.voucher.number.range.user,model_weha_
 
 access_weha_voucher_request_manager,weha.voucher.request.manager,model_weha_voucher_request,group_voucher_manager,1,1,1,1
 access_weha_voucher_request_user,weha.voucher.request.user,model_weha_voucher_request,group_voucher_user,1,1,1,0
-<<<<<<< HEAD
-=======
 
 access_weha_voucher_request_line_manager,weha.voucher.request.line.manager,model_weha_voucher_request_line,group_voucher_manager,1,1,1,1
 access_weha_voucher_request_line_user,weha.voucher.request.line.user,model_weha_voucher_request_line,group_voucher_user,1,1,1,0
@@ -47,4 +45,3 @@ access_weha_voucher_return_stage_user,weha.voucher.return.stage.user,model_weha_
 
 access_weha_voucher_stock_transfer_stage_manager,weha.voucher.stock.transfer.stage.manager,model_weha_voucher_stock_transfer_stage,group_voucher_manager,1,1,1,1
 access_weha_voucher_stock_transfer_stage_user,weha.voucher.stock.transfer.stage.user,model_weha_voucher_stock_transfer_stage,group_voucher_user,1,1,1,0
->>>>>>> origin/yogi
