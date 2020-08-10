@@ -41,7 +41,7 @@
 	                            	<tree string="Range Voucher" create="true" delete="true" edit="true">
 	                            	    <field name="start_num" />
                                         <field name="end_num" />	                                	                                                                                                                                                                                                                                   
-	                            	</tree>                    	                            	
+	                            	</tree>                                        	                            	
 	                        	</field>
 	                        </page>	   
                         </notebook>

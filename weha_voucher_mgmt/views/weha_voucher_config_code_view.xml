@@ -45,6 +45,17 @@
                                 <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
                             </group>
                         </group>
+                        <notebook colspan="4">
+                            <page string="Voucher Minimum Stock">
+	                        	<field name="voucher_minimum_stock_ids" widget="one2many_list">
+	                            	<tree string="Voucher Minimum Stock" create="true" edit="true" delete="true">
+	                            	    <field name="operating_unit_id" />
+                                         <field name="quantity"/>
+
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>	   
+                        </notebook>
                     </sheet>
                 </form>
             </field>

@@ -8,6 +8,9 @@ access_weha_voucher_request_stage_user,weha.voucher.request.stage.user,model_weh
 access_weha_voucher_code_manager,weha.voucher.code.manager,model_weha_voucher_code,group_voucher_manager,1,1,1,1
 access_weha_voucher_code_user,weha.voucher.code.user,model_weha_voucher_code,group_voucher_user,1,0,0,0
 
+access_weha_voucher_code_minimum_stock_manager,weha.voucher.code.minimum.stock.manager,model_weha_voucher_code_minimum_stock,group_voucher_manager,1,1,1,1
+access_weha_voucher_code_minimum_stock_user,weha.voucher.code.minimum.stock.user,model_weha_voucher_code_minimum_stock,group_voucher_user,1,0,0,0
+
 access_weha_voucher_order_manager,weha.voucher.order.manager,model_weha_voucher_order,group_voucher_manager,1,1,1,1
 access_weha_voucher_order_user,weha.voucher.order.user,model_weha_voucher_order,group_voucher_user,1,1,1,0
 
@@ -49,6 +52,9 @@ access_weha_voucher_stock_transfer_stage_user,weha.voucher.stock.transfer.stage.
 
 access_weha_voucher_stock_transfer_manager,weha.voucher.stock.transfer.manager,model_weha_voucher_stock_transfer,group_voucher_manager,1,1,1,1
 access_weha_voucher_stock_transfer_user,weha.voucher.stock.transfer.user,model_weha_voucher_stock_transfer,group_voucher_user,1,1,1,0
+
+access_weha_voucher_stock_transfer_line_manager,weha.voucher.stock.transfer.line.manager,model_weha_voucher_stock_transfer_line,group_voucher_manager,1,1,1,1
+access_weha_voucher_stock_transfer_line_user,weha.voucher.stock.transfer.line.user,model_weha_voucher_stock_transfer_line,group_voucher_user,1,1,1,0
 
 access_weha_voucher_issuing_stage_manager,weha.voucher.issuing.stage.manager,model_weha_voucher_issuing_stage,group_voucher_manager,1,1,1,1
 access_weha_voucher_issuing_stage_user,weha.voucher.issuing.stage.user,model_weha_voucher_issuing_stage,group_voucher_user,1,1,1,0
