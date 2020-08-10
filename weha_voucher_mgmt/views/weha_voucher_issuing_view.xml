@@ -136,7 +136,7 @@
         <!-- Main window action for voucher request -->
         <record id="action_weha_voucher_issuing_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
-            <field name="name">Voucher Issuing</field>
+            <field name="name">Voucher Allocate</field>
             <field name="res_model">weha.voucher.issuing</field>
             <field name="view_mode">kanban,tree,form</field>
             <field name="domain">[]</field>
@@ -159,7 +159,7 @@
             <field name="parent_id" ref="weha_voucher_main_menu" />
         </record> -->
 
-        <menuitem id="weha_voucher_issuing_menu" name="Issuing" parent="weha_voucher_main_menu"
+        <menuitem id="weha_voucher_issuing_menu" name="Allocate" parent="weha_voucher_main_menu"
             action="action_weha_voucher_issuing_act_window" sequence="14"/>
         
 

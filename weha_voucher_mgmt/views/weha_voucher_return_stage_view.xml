@@ -94,7 +94,7 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_return_stage_menu" name="Return Stages" parent="weha_voucher_stages_main_menu"
+        <menuitem id="weha_voucher_return_stage_menu" name="Return" parent="weha_voucher_stages_main_menu"
             action="action_weha_voucher_return_stage_act_window" sequence="47" />
 
     </data>

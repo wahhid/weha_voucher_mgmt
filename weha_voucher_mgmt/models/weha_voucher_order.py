@@ -61,7 +61,6 @@ class VoucherOrder(models.Model):
             vals = {}
             vals.update({'operating_unit_id': self.operating_unit_id.id})
             vals.update({'voucher_order_id': self.id})
-            vals.update({'operating_unit_code': self.operating_unit_id.code})
             vals.update({'voucher_code': self.voucher_code_id.code})
             vals.update({'check_number': number})
             vals.update({'start_number': start_number})
@@ -90,6 +89,24 @@ class VoucherOrder(models.Model):
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        
+        stage = self.stage_id.next_stage_id.id
+        _logger.info("Stage Here = " + str(self.stage_id.id))
+        _logger.info("Next Stage = " + str(stage))
+        self.write({'stage_id': stage})
+
+        return True
+
+    @api.depends('stage_id')
+    def trans_reject(self):
+        self.current_stage = 'unattended'
+        
+    @api.depends('stage_id')
+    def closed_order(self):
+        self.current_stage = 'closed'
+        
+
+
 
     def trans_request_approval(self):    
         vals = { 'stage_id': self.stage_id.next_stage_id.id}

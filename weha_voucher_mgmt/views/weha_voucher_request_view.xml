@@ -88,7 +88,8 @@
 	                        	<field name="voucher_request_line_ids" widget="one2many_list" nolabel="0" readonly="0">
 	                            	<tree string="Request Lines" create="true" delete="true" edit="true">
 	                            	    <field name="voucher_code_id" />
-                                        <field name="amount" />	                                	                                                                                                                                                                                                                                   
+                                        <field name="amount" />
+                                        <field name="request_line_range_ids" widget="many2many_tags"/>	                                	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>	   

@@ -50,8 +50,6 @@
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 <field name="source_operating_unit_id"/>
-                                <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
-                                <field name="voucher_code_id"/>
                                 <field name="current_stage"/>
                             </group>
                             <group>

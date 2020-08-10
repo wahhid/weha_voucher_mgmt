@@ -33,6 +33,7 @@
         'views/weha_voucher_return_stage_view.xml',
         'views/weha_voucher_issuing_stage_view.xml',
         'views/weha_voucher_stock_transfer_stage_view.xml',
+        'views/weha_voucher_code_minimum_stock_view.xml',
         'views/res_company_settings_view.xml',
         'views/weha_voucher_dashboard_view.xml',
          

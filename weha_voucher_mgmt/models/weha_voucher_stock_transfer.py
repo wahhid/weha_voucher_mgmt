@@ -70,12 +70,6 @@ class VoucherStockTransfer(models.Model):
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     source_operating_unit = fields.Many2one('operating.unit','Source Store', )
-    voucher_type = fields.Selection(
-        string='Voucher Type',
-        selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
-        default='physical'
-    )
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
     stage_id = fields.Many2one(
         'weha.voucher.order.stage',
         string='Stage',
