@@ -40,13 +40,14 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-                        <button name="trans_close" type="object" attrs="{'invisible':['stage_id.close']}"/>
+                        <button name="trans_request_approval" string='Request Approval' type="object" attrs="{'invisible':['current_stage', '!=', 'unattended']}" class="oe_highlight"/>
+                        <button name="trans_close" type="object" attrs="{'invisible':['current_stage','=', 'close']}"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-primary" name="generate_voucher" string="Generate Voucher" confirm="Are you sure you want to Generate Voucher?" groups="weha_voucher_mgmt.group_voucher_user"/>
+                            class="btn btn-primary" name="generate_voucher" string="Generate Voucher" confirm="Are you sure you want to Ge  nerate Voucher?" groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
                             confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                             class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>

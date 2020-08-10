@@ -2,8 +2,6 @@
 <odoo>
     <data noupdate="0">
 
-
-
         <record id="weha_voucher_dashboard_action" model="ir.actions.act_window">
             <field name="name">Dashboard</field>
             <field name="type">ir.actions.act_window</field>

@@ -65,7 +65,7 @@ class VoucherOrderLine(models.Model):
             _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
             
             if not val_order_line_trans_obj:
-                        raise ValidationError("Can't create voucher order line trans, contact administrator!")
+                raise ValidationError("Can't create voucher order line trans, contact administrator!")
 
     def trans_open(self):
         self.state = "open"

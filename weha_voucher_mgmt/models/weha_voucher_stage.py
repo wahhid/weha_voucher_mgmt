@@ -18,8 +18,6 @@ class WehaVoucherOrderStage(models.Model):
         string='Order')
     approval = fields.Boolean(
         string='Approval')
-    # approval2 = fields.Boolean(
-    #     string='Approval 2')
     opened = fields.Boolean(
         string='Open')
     closed = fields.Boolean(
