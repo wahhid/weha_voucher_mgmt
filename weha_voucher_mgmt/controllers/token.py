@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 expires_in = "weha_voucher_mgmt.access_token_expires_in"
 
 
-class AccessToken(http.Controller):
+class AccessToken(http.Controller)
     """."""
 
     def __init__(self):
