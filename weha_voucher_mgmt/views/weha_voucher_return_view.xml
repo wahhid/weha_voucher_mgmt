@@ -49,8 +49,7 @@
                                 <field name="request_date"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
-                                <field name="voucher_code_id"/>
+                                <field name="source_operating_unit_id"/>
                                 <field name="current_stage"/>
                             </group>
                             <group>
@@ -59,6 +58,11 @@
                                 <field name="priority" widget="priority"/>
                             </group>
                         </group>
+                        <notebook colspan="4">
+                            <page string="Voucher Lines">
+	                        	<field name="voucher_order_line_ids"/>
+	                        </page>	   
+                        </notebook>
                     </sheet>
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>

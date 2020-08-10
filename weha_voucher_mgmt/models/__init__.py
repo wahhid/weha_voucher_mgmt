@@ -7,6 +7,9 @@ from . import weha_voucher_request
 from . import weha_voucher_request_line
 from . import weha_voucher_return
 from . import weha_voucher_stock_transfer
+from . import weha_voucher_stock_transfer_line
+from . import weha_voucher_issuing
+from . import weha_voucher_code_minimum_stock
 from . import operating_unit
 from . import res_config_settings
 from . import access_token

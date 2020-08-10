@@ -94,7 +94,7 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_issuing_stage_menu" name="Issuing Stages" parent="weha_voucher_config_main_menu"
+        <menuitem id="weha_voucher_issuing_stage_menu" name="Allocate" parent="weha_voucher_stages_main_menu"
             action="action_weha_voucher_issuing_stage_act_window" sequence="46" />
 
     </data>
