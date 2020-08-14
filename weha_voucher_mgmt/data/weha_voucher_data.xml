@@ -24,6 +24,20 @@
             <field name="padding">5</field>
         </record>
 
+        <record id="weha_voucher_return_sequence" model="ir.sequence">
+            <field name="name">Voucher Return Sequence</field>
+            <field name="code">weha.voucher.return.sequence</field>
+            <field name="prefix">R</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="weha_voucher_stock_transfer_sequence" model="ir.sequence">
+            <field name="name">Voucher Stock Transfer Sequence</field>
+            <field name="code">weha.voucher.stock.transfer.sequence</field>
+            <field name="prefix">STR</field>
+            <field name="padding">5</field>
+        </record>
+
         <!--Voucher Order L1 Approval Notification Email template -->
         <record id="voucher_order_l1_approval_notification_template" model="mail.template">
             <field name="name">Voucher Order L1 Approval Notification</field>

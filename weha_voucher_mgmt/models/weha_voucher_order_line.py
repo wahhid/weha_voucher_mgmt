@@ -91,7 +91,8 @@ class VoucherOrderLine(models.Model):
     )
     voucher_code = fields.Char(string='Voucher Code')
     voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
-
+    voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
+    
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
@@ -160,31 +161,4 @@ class VoucherOrderLineTrans(models.Model):
         ondelete='restrict', required=True,
     )
     trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), 
-        ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'),])
-    
-    # voucher_location_id = fields.Many2one(
-    #     string='Voucher Location',
-    #     comodel_name='weha.voucher.location',
-    #     ondelete='restrict', required=True,
-    # )
-    # voucher_number_range_id = fields.Many2one(
-    #     string='Number Range Voucher',
-    #     comodel_name='weha.voucher.number.range',
-    #     ondelete='restrict', required=True,
-    # )
-    # voucher_terms_id = fields.Many2one(
-    #     string='Voucher Terms',
-    #     comodel_name='weha.voucher.terms',
-    #     ondelete='restrict', required=True,
-    # )
-    # voucher_type_id = fields.Many2one(
-    #     string='Voucher Type',
-    #     comodel_name='weha.voucher.type',
-    #     ondelete='restrict', required=True,
-    # )
-
-    # @api.model
-    # def create(self, vals):
-    #     vals['name'] = self.env['ir.sequence'].next_by_code('weha.voucher.order.line.trans')
-    #     res = super(VoucherOrderLineTrans, self).create(vals) 
-    #     return res
+        ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'), ('AC','Activated')])

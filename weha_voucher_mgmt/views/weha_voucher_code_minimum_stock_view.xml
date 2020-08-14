@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Tree view for Voucher Stage -->
+        <record id="view_weha_voucher_code_minimum_stock_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.code.minimum.stock.tree</field>
+            <field name="model">weha.voucher.code.minimum.stock</field>
+            <field name="type">tree</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <tree string="model_tree" create="true" delete="true" edit="true">
+                    <field name="operating_unit_id" />
+                    <field name="quantity"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Form view for Voucher Stage -->
+        <record id="view_weha_voucher_code_minimum_stock_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.code.minimum.stock.form</field>
+            <field name="model">weha.voucher.code.minimum.stock</field>
+            <field name="type">form</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <form string="model_form" create="true" delete="true" edit="true">
+                    <header>
+                    </header>
+                    <sheet>
+                        <field name="operating_unit_id" />
+                        <field name="quantity"/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

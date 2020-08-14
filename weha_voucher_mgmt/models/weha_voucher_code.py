@@ -18,10 +18,14 @@ class VoucherCode(models.Model):
         size=2,
         required=True
     )
+    
 
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
+
+    voucher_minimum_stock_ids = fields.One2many(comodel_name='weha.voucher.code.minimum.stock', inverse_name='voucher_code_id', string='Voucher Code ID')
+    
     

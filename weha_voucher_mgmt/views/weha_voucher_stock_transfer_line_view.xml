@@ -3,9 +3,9 @@
     <data>
 
         <!-- Tree view for Voucher type -->
-        <record id="view_weha_voucher_request_line_tree" model="ir.ui.view">
-            <field name="name">view.weha.voucher.request.line.tree</field>
-            <field name="model">weha.voucher.request.line</field>
+        <record id="view_weha_voucher_stock_transfer_line_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.stock.transfer.line.tree</field>
+            <field name="model">weha.voucher.stock.transfer.line</field>
             <field name="type">tree</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -16,12 +16,12 @@
                     <field name="amount" />
                 </tree>
             </field>
-        </record>
+        </record>stock_transfer
         
         <!-- Form view for Voucher Stage -->
-        <record id="view_weha_voucher_request_line_form" model="ir.ui.view">
-            <field name="name">view.weha.voucher.request.line.form</field>
-            <field name="model">weha.voucher.request.line</field>
+        <record id="view_weha_voucher_stock_transfer_line_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.stock.transfer.line.form</field>
+            <field name="model">weha.voucher.stock.transfer.line</field>
             <field name="type">form</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -36,14 +36,14 @@
                             <field name="amount" />
                         </group>
                         <notebook colspan="4">
-                            <page string="Range Voucher">
+                            <page string="Voucher Range">
 	                        	<field name="number_ranges_ids" widget="one2many_list" nolabel="0" readonly="0">
 	                            	<tree string="Range Voucher" create="true" delete="true" edit="true">
 	                            	    <field name="start_num" />
                                         <field name="end_num" />	                                	                                                                                                                                                                                                                                   
 	                            	</tree>                                        	                            	
 	                        	</field>
-	                        </page>	   
+	                        </page>   
                         </notebook>
                     </sheet>
                 </form>
@@ -51,9 +51,9 @@
         </record>
         
         <!-- Search view for "model" -->
-        <record id="view_weha_voucher_request_line_search" model="ir.ui.view">
-            <field name="name">view.weha.voucher.request.line.search</field>
-            <field name="model">weha.voucher.request.line</field>
+        <record id="view_weha_voucher_stock_transfer_line_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.stock.transfer.line.search</field>
+            <field name="model">weha.voucher.stock.transfer.line</field>
             <field name="type">search</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -66,14 +66,14 @@
         </record>
         
         <!-- Main window action for "model" -->
-        <record id="action_weha_voucher_request_line_act_window" model="ir.actions.act_window">
+        <record id="action_weha_voucher_stock_transfer_line_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
-            <field name="name">Voucher Request Line</field>
-            <field name="res_model">weha.voucher.request.line</field>
+            <field name="name">Voucher Stock Transfer Line</field>
+            <field name="res_model">weha.voucher.stock.transfer.line</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
-            <field name="search_view_id" ref="view_weha_voucher_request_line_search" />
+            <field name="search_view_id" ref="view_weha_voucher_stock_transfer_line_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                     Click to add new Human readable name

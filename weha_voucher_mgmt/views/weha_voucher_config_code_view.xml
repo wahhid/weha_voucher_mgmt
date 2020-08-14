@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
-        <!-- Tree view for Voucher type -->
-        <record id="view_weha_voucher_order_line_tree" model="ir.ui.view">
-            <field name="name">view.weha.voucher.order.line.tree</field>
-            <field name="model">weha.voucher.order.line</field>
+        
+        <!-- Tree view for Voucher Stage -->
+        <record id="view_weha_voucher_code_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.code.tree</field>
+            <field name="model">weha.voucher.code</field>
             <field name="type">tree</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -13,16 +13,16 @@
             <field name="arch" type="xml">
                 <tree string="model_tree" create="true" delete="true" edit="true">
                     <field name="name" />
-                    <field name="operating_unit_id" />
-                    <field name="state" />
+                    <field name="code"/>
+                    <field name="voucher_type"/>
                 </tree>
             </field>
         </record>
         
         <!-- Form view for Voucher Stage -->
-        <record id="view_weha_voucher_order_line_form" model="ir.ui.view">
-            <field name="name">view.weha.voucher.order.line.form</field>
-            <field name="model">weha.voucher.order.line</field>
+        <record id="view_weha_voucher_code_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.code.form</field>
+            <field name="model">weha.voucher.code</field>
             <field name="type">form</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -35,48 +35,36 @@
                         <div class="oe_title">
                             <label for="name" class="oe_edit_only" />
                             <h1>
-                                <field name="name" class="oe_inline" placeholder="Name" />
+                                <field name="name" class="oe_inline"
+                                    placeholder="name" />
                             </h1>
                         </div>
                         <group>
                             <group>
-                                <field name="operating_unit_id"/>
-                                <field name="voucher_type"/>
-                                <field name="voucher_code_id"/>
-                                <field name="check_number"/>
-                                <field name="state"/>
-                            </group>
-                            <group>
-                                <field name="voucher_terms_id"/>
-                                <field name="expired_date"/>
-                            </group>
-                            <group>
-                                <field name="voucher_12_digit"/>
-                                <field name="voucher_ean"/>
+                                <field name="code"/>
+                                <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
                             </group>
                         </group>
                         <notebook colspan="4">
-                            <page string="Voucher Trans">
-	                        	<field name="voucher_order_line_trans_ids" widget="one2many_list" nolabel="1" readonly="1">
-	                            	<tree string="Voucher Trans">
-	                            	    <field name="name"/>	                            	    	                                	
-	                                	<field name="trans_date"/>
-	                                	<field name="trans_type"/>
+                            <page string="Voucher Minimum Stock">
+	                        	<field name="voucher_minimum_stock_ids" widget="one2many_list">
+	                            	<tree string="Voucher Minimum Stock" create="true" edit="true" delete="true">
+	                            	    <field name="operating_unit_id" />
+                                         <field name="quantity"/>
 
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>	   
                         </notebook>
-                            
                     </sheet>
                 </form>
             </field>
         </record>
         
         <!-- Search view for "model" -->
-        <record id="view_weha_voucher_order_line_search" model="ir.ui.view">
-            <field name="name">view.weha.voucher.order.line.search</field>
-            <field name="model">weha.voucher.order.line</field>
+        <record id="view_weha_voucher_code_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.code.search</field>
+            <field name="model">weha.voucher.code</field>
             <field name="type">search</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -84,19 +72,20 @@
             <field name="arch" type="xml">
                 <search string="model_search">
                     <field name="name" />
+                    <field name="code" />
                 </search>
             </field>
         </record>
         
         <!-- Main window action for "model" -->
-        <record id="action_weha_voucher_order_line_act_window" model="ir.actions.act_window">
+        <record id="action_weha_voucher_code_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
-            <field name="name">Voucher Lines</field>
-            <field name="res_model">weha.voucher.order.line</field>
+            <field name="name">Voucher Code</field>
+            <field name="res_model">weha.voucher.code</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
-            <field name="search_view_id" ref="view_weha_voucher_order_line_search" />
+            <field name="search_view_id" ref="view_weha_voucher_code_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                     Click to add new Human readable name
@@ -106,8 +95,8 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_order_line_menu" name="Master Voucher" parent="weha_voucher_main_menu"
-            action="action_weha_voucher_order_line_act_window" sequence="40"/>
-
+        <menuitem id="weha_voucher_code_menu" name="Voucher Code" parent="weha_voucher_config_main_menu"
+            action="action_weha_voucher_code_act_window" sequence="33"/>
+ 
     </data>
 </odoo>

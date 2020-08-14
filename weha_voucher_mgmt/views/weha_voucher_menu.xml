@@ -2,8 +2,6 @@
 <odoo>
     <data noupdate="0">
 
-
-
         <record id="weha_voucher_dashboard_action" model="ir.actions.act_window">
             <field name="name">Dashboard</field>
             <field name="type">ir.actions.act_window</field>
@@ -31,6 +29,10 @@
 
         <menuitem id="weha_voucher_config_main_menu" name="Configuration"
             parent="weha_voucher_mgmt_main_menu" sequence="35"
+            groups="group_voucher_manager"/>
+
+            <menuitem id="weha_voucher_stages_main_menu" name="Stages"
+            parent="weha_voucher_config_main_menu" sequence="36"
             groups="group_voucher_manager"/>
 
  
