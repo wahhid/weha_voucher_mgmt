@@ -18,6 +18,7 @@ class VoucherCode(models.Model):
         size=2,
         required=True
     )
+    
 
     voucher_type = fields.Selection(
         string='Voucher Type',

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_wizard_received_request" model="ir.ui.view">
+        <field name="name">weha.wizard.received.request</field>
+        <field name="model">weha.wizard.received.request</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Received Voucher Request">
+                <group>
+                    <h1>
+                        <field name="code_ean"/>
+                    </h1>
+                </group>
+                <footer>
+                    <button name="trans_received" string="Received" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                    <button name="trans_received_all" string="Received All" type="object" class="btn-primary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="act_open_received_request_view_form" model="ir.actions.act_window">
+        <field name="name">Received Request</field>
+        <field name="res_model">weha.wizard.received.request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

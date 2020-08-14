@@ -17,12 +17,15 @@ class VoucherOrder(models.Model):
         for rec in self:
             if rec.stage_id.unattended:
                 rec.current_stage = 'unattended'
+            # if rec.stage_id.waiting:
+            #     rec.current_stage = 'waiting'
             if rec.stage_id.approval:
                 rec.current_stage = 'approval'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
+            
             
     def _get_default_stage_id(self):
         return self.env['weha.voucher.order.stage'].search([], limit=1).id
@@ -59,6 +62,7 @@ class VoucherOrder(models.Model):
             vals.update({'operating_unit_id': self.operating_unit_id.id})
             vals.update({'voucher_order_id': self.id})
             vals.update({'voucher_code': self.voucher_code_id.code})
+            vals.update({'voucher_code_id': self.voucher_code_id.id})
             vals.update({'check_number': number})
             vals.update({'start_number': start_number})
             vals.update({'end_number': end_number})
@@ -69,37 +73,32 @@ class VoucherOrder(models.Model):
             _logger.info("Generate Voucher ID = " + str(val_order_line_obj))
             
             if not val_order_line_obj:
-                        raise ValidationError("Can't Generate voucher order line, contact administrator!")
+                raise ValidationError("Can't Generate voucher order line, contact administrator!")
             number = number+1
-
         
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
+        self.voucher_code_id = False
         res = {}
         res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
         return res
 
-    @api.depends('stage_id')
     def trans_approve(self):
-        
-        stage = self.stage_id.next_stage_id.id
-        _logger.info("Stage Here = " + str(self.stage_id.id))
-        _logger.info("Next Stage = " + str(stage))
-        self.write({'stage_id': stage})
-
-        return True
-
-    @api.depends('stage_id')
+        stage_id = self.stage_id.next_stage_id
+        self.write({'stage_id': stage_id.id})
+    
     def trans_reject(self):
-        self.current_stage = 'unattended'
+        stage_id = self.stage_id.from_stage_id
+        self.write({'stage_id': stage_id.id})
+    
+    def trans_close(self):
+        stage_id = self.stage_id.next_stage_id
+        self.write({'stage_id': stage_id.id})
         
-    @api.depends('stage_id')
-    def closed_order(self):
-        self.current_stage = 'closed'
-        
-
-
-
+    def trans_request_approval(self):    
+        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        self.write(vals)
+    
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
@@ -112,6 +111,7 @@ class VoucherOrder(models.Model):
         default='physical'
     )
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
+    
     stage_id = fields.Many2one(
         'weha.voucher.order.stage',
         string='Stage',
@@ -162,28 +162,9 @@ class VoucherOrder(models.Model):
     
     def write(self, vals):
         if 'stage_id' in vals:
-            stage_obj = self.env['weha.voucher.order.stage'].browse([vals['stage_id']])
-            if stage_obj.unattended:
-                pass
+            stage_id = self.env['weha.voucher.order.stage'].browse([vals['stage_id']])
+            if self.stage_id.approval:
+                raise ValidationError("Please using approve or reject button")
 
-            #Change To L1, Get User from Param
-            # trans_approve = False
-            # trans_approve = self.trans_approve()
-            # if stage_obj.approval:
-            #     if self.stage_id.id != stage_obj.from_stage_id.id:
-            #         raise ValidationError('Cannot Process Approval')
-            #     # self.send_l1_request_mail()
-
-        if vals.get('stage_id.unattended'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.unattended')))
-            self.current_stage = 'unattended'
-        if vals.get('stage_id.approval'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.approval')))
-            self.current_stage = 'approval'
-        if vals.get('stage_id.opened'):
-            self.current_stage = 'open'
-        if vals.get('stage_id.closed'):
-            self.current_stage = 'closed'
-           
         res = super(VoucherOrder, self).write(vals)
         return res

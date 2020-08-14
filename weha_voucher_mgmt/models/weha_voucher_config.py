@@ -46,38 +46,38 @@ class VoucherTerms(models.Model):
     )
 
 
-class VoucherNumberRange(models.Model):
-    _name = 'weha.voucher.number.range'
+# class VoucherNumberRange(models.Model):
+#     _name = 'weha.voucher.number.range'
 	
-    def name_get(self):
-        result = []
-        for record in self:
-            startnumber = record.numberfrom
-            endnumber = record.numberto
-            name = startnumber + ' - '+ endnumber +'( ' + record.year + ' )'
-            result.append((record.id, name))
-        return result
+#     def name_get(self):
+#         result = []
+#         for record in self:
+#             startnumber = record.numberfrom
+#             endnumber = record.numberto
+#             name = startnumber + ' - '+ endnumber +'( ' + record.year + ' )'
+#             result.append((record.id, name))
+#         return result
 
-    name = fields.Char(
-        string='Range Number',
-        size=200,
-        required=False, readonly=True,
-    )
+#     name = fields.Char(
+#         string='Range Number',
+#         size=200,
+#         required=False, readonly=True,
+#     )
 
-    year = fields.Char(
-        string='Year',
-        size=10,
-        required=True
-    )
+#     year = fields.Char(
+#         string='Year',
+#         size=10,
+#         required=True
+#     )
 
-    numberfrom = fields.Char(
-        string='From Number',
-        size=10,
-        required=True
-    )
+#     numberfrom = fields.Char(
+#         string='From Number',
+#         size=10,
+#         required=True
+#     )
 
-    numberto = fields.Char(
-        string='To Number',
-        size=10,
-        required=True
-    )
+#     numberto = fields.Char(
+#         string='To Number',
+#         size=10,
+#         required=True
+#     )

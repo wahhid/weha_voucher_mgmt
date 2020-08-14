@@ -40,15 +40,21 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                            class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-primary" name="generate_voucher" string="Generate Voucher" confirm="Are you sure you want to Generate Voucher?" groups="weha_voucher_mgmt.group_voucher_user"/>
+                            class="btn btn-primary" name="generate_voucher" string="Generate Voucher" 
+                            groups="weha_voucher_mgmt.group_voucher_user" confirm="Are you sure you want to Ge  nerate Voucher?"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                        class="btn btn-light" name="closed_order" string="Closed Order" groups="weha_voucher_mgmt.group_voucher_user"/>
+                            class="btn btn-light" name="trans_close" string="Closed Order" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
-                            confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
-                            class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
+                            groups="weha_voucher_mgmt.group_voucher_manager" confirm="Are you sure you want to Approve?"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
+                            class="btn btn-primary" name="trans_reject" string="Reject" 
+                            groups="weha_voucher_mgmt.group_voucher_manager"/>
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
@@ -58,7 +64,7 @@
 
                             <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_order_line_from_voucher_order)d" 
                                 groups="weha_voucher_mgmt.group_voucher_user"
-                                icon="fa-usd">
+                                icon="fa-ticket">
                                 <field string="Vouchers" name="voucher_count" widget="statinfo"/>
                             </button>
                         </div>
