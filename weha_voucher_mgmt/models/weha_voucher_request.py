@@ -1,5 +1,6 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
+from datetime import datetime, timedelta, date
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -32,30 +33,52 @@ class WeheVoucherRequest(models.Model):
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
     
-    # @api.depends('line_ids')
-    # def _calculate_voucher_count(self):
-    #     for row in self:
-    #         self.voucher_count = len(self.line_ids)
+    @api.depends('line_ids')
+    def _calculate_voucher_count(self):
+        for row in self:
+            self.voucher_count = len(self.line_ids)
 
-    @api.depends('stage_id')
+    def trans_voucher_request_activate(self):
+        for i in range(len(self.voucher_request_line_ids)):
+            for rec in range(len(self.voucher_request_line_ids.request_line_range_ids)):
+                startnum = self.voucher_request_line_ids.request_line_range_ids.start_num
+                endnum = self.voucher_request_line_ids.request_line_range_ids.end_num
+                vcode = self.voucher_request_line_ids.voucher_code_id.id
+                sourch_voucher = self.user_id.default_operating_unit_id.company_id.res_company_request_operating_unit.id
+                
+                obj_voucher_order_line = self.env['weha.voucher.order.line']
+                search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', sourch_voucher),('voucher_code_id','=', vcode)])
+                search_se = search_v.search(['&',('check_number','>=',  startnum),('check_number','<=', endnum)])
+
+                for row in search_se:
+                    vals = {}
+                    vals.update({'operating_unit_id': self.operating_unit_id.id})
+                    vals.update({'state': 'activated'})
+                    vals.update({'voucher_request_id': self.id}) 
+                    obj_voucher_order_line_ids = search_se.write(vals)
+
+                    order_line_trans_obj = self.env['weha.voucher.order.line.trans']
+
+                    vals = {}
+                    vals.update({'name': self.number})
+                    vals.update({'trans_date': datetime.now()})
+                    vals.update({'voucher_order_line_id': row.id})
+                    vals.update({'trans_type': 'AC'})
+                    val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+                    _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
+        
+
     def trans_approve1(self):
-        
-        stage = self.stage_id.next_stage_id.id
-        _logger.info("Stage Here = " + str(self.stage_id.id))
-        _logger.info("Next Stage = " + str(stage))
-        self.write({'stage_id': stage})
-
-        return True
+        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        self.write(vals)
     
-    @api.depends('stage_id')
     def trans_approve2(self):
-        
-        stage = self.stage_id.next_stage_id.id
-        _logger.info("Stage Here = " + str(self.stage_id.id))
-        _logger.info("Next Stage = " + str(stage))
-        self.write({'stage_id': stage})
+        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        self.write(vals)
 
-        return True
+    def trans_request_approval(self):    
+        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        self.write(vals)
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Request number', default="/",readonly=True)

@@ -6,8 +6,8 @@ from random import randrange
 _logger = logging.getLogger(__name__)
 
 
-class VoucherReturn(models.Model):
-    _name = 'weha.voucher.return'
+class VoucherAllocate(models.Model):
+    _name = 'weha.voucher.allocate'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -25,11 +25,11 @@ class VoucherReturn(models.Model):
                 rec.current_stage = 'closed'
             
     def _get_default_stage_id(self):
-        return self.env['weha.voucher.return.stage'].search([], limit=1).id
+        return self.env['weha.voucher.allocate.stage'].search([], limit=1).id
     
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
-        stage_ids = self.env['weha.voucher.return.stage'].search([])
+        stage_ids = self.env['weha.voucher.allocate.stage'].search([])
         return stage_ids
     
     # @api.depends('line_ids')
@@ -69,7 +69,12 @@ class VoucherReturn(models.Model):
     request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    source_operating_unit_id = fields.Many2one('operating.unit','Resource Store', related="user_id.default_operating_unit_id.company_id.res_company_return_operating_unit")
+    voucher_type = fields.Selection(
+        string='Voucher Type',
+        selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
+        default='physical'
+    )
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
     stage_id = fields.Many2one(
         'weha.voucher.order.stage',
         string='Stage',
@@ -77,11 +82,7 @@ class VoucherReturn(models.Model):
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
-    voucher_order_line_ids = fields.Many2many(comodel_name='weha.voucher.order.line', string='Voucher Lines')
-    
     current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
-    voucher_return_line_ids = fields.One2many(comodel_name='weha.voucher.return.line', inverse_name='voucher_return_id', string='Return Line')
-    
     priority = fields.Selection(selection=[
         ('0', _('Low')),
         ('1', _('Medium')),
@@ -90,12 +91,13 @@ class VoucherReturn(models.Model):
     ], string='Priority', default='1')
    
     color = fields.Integer(string='Color Index')
-    
     kanban_state = fields.Selection([
         ('normal', 'Default'),
         ('done', 'Ready for next stage'),
         ('blocked', 'Blocked')], string='Kanban State')
-    
+
+    voucher_allocate_line_ids = fields.One2many(comodel_name='weha.voucher.allocate.line', inverse_name='voucher_allocate_id', string='Voucher Allocate Lines')
+
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
     
     @api.model
@@ -105,8 +107,8 @@ class VoucherReturn(models.Model):
             if 'company_id' in vals:
                 seq = seq.with_context(force_company=vals['company_id'])
             vals['number'] = seq.next_by_code(
-                'weha.voucher.return.sequence') or '/'
-        res = super(VoucherReturn, self).create(vals)
+                'weha.voucher.allocate.sequence') or '/'
+        res = super(VoucherAllocate, self).create(vals)
 
         # Check if mail to the user has to be sent
         #if vals.get('user_id') and res:
@@ -115,7 +117,7 @@ class VoucherReturn(models.Model):
     
     def write(self, vals):
         if 'stage_id' in vals:
-            stage_obj = self.env['weha.voucher.return.stage'].browse([vals['stage_id']])
+            stage_obj = self.env['weha.voucher.allocate.stage'].browse([vals['stage_id']])
             if stage_obj.unattended:
                 pass
 
@@ -138,5 +140,5 @@ class VoucherReturn(models.Model):
         if vals.get('stage_id.closed'):
             self.current_stage = 'closed'
            
-        res = super(VoucherReturn, self).write(vals)
+        res = super(VoucherAllocate, self).write(vals)
         return res

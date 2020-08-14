@@ -49,17 +49,21 @@ class VoucherStockTransfer(models.Model):
         res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
         return res
 
-    @api.depends('stage_id')
     def trans_approve(self):
+        stage_id = self.stage_id.next_stage_id
+        self.write({'stage_id': stage_id.id})
+    
+    def trans_reject(self):
+        stage_id = self.stage_id.from_stage_id
+        self.write({'stage_id': stage_id.id})
+    
+    def trans_close(self):
+        stage_id = self.stage_id.next_stage_id
+        self.write({'stage_id': stage_id.id})
         
-        stage = self.stage_id.next_stage_id.id
-        _logger.info("Stage Here = " + str(self.stage_id.id))
-        _logger.info("Next Stage = " + str(stage))
-        self.write({'stage_id': stage})
-
-        return True
-        # def trans_reject(self):
-        #     pass
+    def trans_request_approval(self):    
+        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        self.write(vals)
 
 
 
@@ -86,14 +90,12 @@ class VoucherStockTransfer(models.Model):
         ('2', _('High')),
         ('3', _('Very High')),
     ], string='Priority', default='1')
-   
     color = fields.Integer(string='Color Index')
-    
     kanban_state = fields.Selection([
         ('normal', 'Default'),
         ('done', 'Ready for next stage'),
         ('blocked', 'Blocked')], string='Kanban State')
-    
+        
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
     voucher_transfer_line_ids = fields.One2many(
         string='Vouchers Transfer Lines',
