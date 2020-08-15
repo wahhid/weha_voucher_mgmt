@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<odoo>
+    <template
+        id="assets_backend"
+        name="wahe_voucher_barcode Assets"
+        inherit_id="web.assets_backend"
+    >
+        <xpath expr="." position="inside">
+            <script
+                type="application/javascript"
+                src="/weha_voucher_barcode/static/src/js/stock_barcodes.js"
+            />
+            <script
+                type="application/javascript"
+                src="/weha_voucher_barcode/static/src/js/basic_fields.js"
+            />
+            <link rel="stylesheet" href="/weha_voucher_barcode/static/src/css/stock.css" />
+        </xpath>
+    </template>
+</odoo>
