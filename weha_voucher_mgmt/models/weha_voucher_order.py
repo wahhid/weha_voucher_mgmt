@@ -19,6 +19,8 @@ class VoucherOrder(models.Model):
                 rec.current_stage = 'unattended'
             if rec.state_id.waiting:
                 rec.current_stage = 'waiting'
+            # if rec.stage_id.waiting:
+            #     rec.current_stage = 'waiting'
             if rec.stage_id.approval:
                 rec.current_stage = 'approval'
             if rec.stage_id.opened:
@@ -62,6 +64,7 @@ class VoucherOrder(models.Model):
             vals.update({'operating_unit_id': self.operating_unit_id.id})
             vals.update({'voucher_order_id': self.id})
             vals.update({'voucher_code': self.voucher_code_id.code})
+            vals.update({'voucher_code_id': self.voucher_code_id.id})
             vals.update({'check_number': number})
             vals.update({'start_number': start_number})
             vals.update({'end_number': end_number})
@@ -97,13 +100,16 @@ class VoucherOrder(models.Model):
 
         return True
 
-    @api.depends('stage_id')
+    #@api.depends('stage_id')
+    #     self.write({'stage_id': stage_id.id})
+    
     def trans_reject(self):
-        self.current_stage = 'unattended'
-        
-    @api.depends('stage_id')
-    def closed_order(self):
-        self.current_stage = 'closed'
+        stage_id = self.stage_id.from_stage_id
+        self.write({'stage_id': stage_id.id})
+    
+    def trans_close(self):
+        stage_id = self.stage_id.next_stage_id
+        self.write({'stage_id': stage_id.id})
         
 
 
