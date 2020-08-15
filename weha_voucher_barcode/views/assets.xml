@@ -14,7 +14,9 @@
                 type="application/javascript"
                 src="/weha_voucher_barcode/static/src/js/basic_fields.js"
             />
+            <!--
             <link rel="stylesheet" href="/weha_voucher_barcode/static/src/css/stock.css" />
+            -->
         </xpath>
     </template>
 </odoo>
