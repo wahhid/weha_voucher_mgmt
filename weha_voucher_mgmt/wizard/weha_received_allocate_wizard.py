@@ -8,17 +8,17 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class WehaWizardReceivedRequest(models.TransientModel):
-    _name = 'weha.wizard.received.request'
+class WehaWizardReceivedAllocate(models.TransientModel):
+    _name = 'weha.wizard.received.allocate'
     _description = 'Wizard form for received voucher'
 
     def trans_received(self):
 
         obj_order_line = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.code_ean)])
-        obj_request = self.env['weha.voucher.request'].browse(self.env.context.get('active_id'))
-        _logger.info("obj_request ID = " + str(obj_request))
-        _logger.info("obj_request IDs = " + str(obj_request.id))
-        _logger.info("obj_request IDs = " + str(obj_request.number))
+        obj_allocate = self.env['weha.voucher.allocate'].browse(self.env.context.get('active_id'))
+        _logger.info("obj_allocate ID = " + str(obj_allocate))
+        _logger.info("obj_allocate IDs = " + str(obj_allocate.id))
+        _logger.info("obj_allocate IDs = " + str(obj_allocate.number))
         
         for rec in obj_order_line:
             vals = {}
@@ -28,7 +28,7 @@ class WehaWizardReceivedRequest(models.TransientModel):
             obj_order_line_trans = self.env['weha.voucher.order.line.trans']
 
             vals = {}
-            vals.update({'name': obj_request.number})
+            vals.update({'name': obj_allocate.number})
             vals.update({'voucher_order_line_id': rec.id})
             vals.update({'trans_date': datetime.now()})
             vals.update({'trans_type': 'RV'})
@@ -36,8 +36,8 @@ class WehaWizardReceivedRequest(models.TransientModel):
 
     def trans_received_all(self):
 
-        obj_request = self.env['weha.voucher.request'].browse(self.env.context.get('active_id'))
-        obj_order_line = self.env['weha.voucher.order.line'].search([('voucher_request_id','=', res.id)])
+        obj_allocate = self.env['weha.voucher.allocate'].browse(self.env.context.get('active_id'))
+        obj_order_line = self.env['weha.voucher.order.line'].search([('voucher_allocate_id','=', res.id)])
         
         for rec in obj_order_line:
             vals = {}
@@ -47,7 +47,7 @@ class WehaWizardReceivedRequest(models.TransientModel):
             obj_order_line_trans = self.env['weha.voucher.order.line.trans']
 
             vals = {}
-            vals.update({'name': obj_request.number})
+            vals.update({'name': obj_allocate.number})
             vals.update({'voucher_order_line_id': rec.id})
             vals.update({'trans_date': datetime.now()})
             vals.update({'trans_type': 'RV'})

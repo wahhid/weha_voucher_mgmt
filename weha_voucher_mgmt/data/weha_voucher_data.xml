@@ -38,6 +38,13 @@
             <field name="padding">5</field>
         </record>
 
+        <record id="weha_voucher_allocate_sequence" model="ir.sequence">
+            <field name="name">Voucher Allocate Sequence</field>
+            <field name="code">weha.voucher.allocate.sequence</field>
+            <field name="prefix">AL</field>
+            <field name="padding">5</field>
+        </record>
+
         <!--Voucher Order L1 Approval Notification Email template -->
         <record id="voucher_order_l1_approval_notification_template" model="mail.template">
             <field name="name">Voucher Order L1 Approval Notification</field>

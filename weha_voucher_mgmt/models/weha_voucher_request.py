@@ -1,6 +1,7 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
 from datetime import datetime, timedelta, date
+from dateutil.relativedelta import *
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -33,25 +34,37 @@ class WeheVoucherRequest(models.Model):
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
     
-    @api.depends('line_ids')
-    def _calculate_voucher_count(self):
-        for row in self:
-            self.voucher_count = len(self.line_ids)
+    # @api.depends('line_ids')
+    # def _calculate_voucher_count(self):
+    #     for row in self:
+    #         self.voucher_count = len(self.line_ids)
 
     def trans_voucher_request_activate(self):
         for i in range(len(self.voucher_request_line_ids)):
-            for rec in range(len(self.voucher_request_line_ids.request_line_range_ids)):
-                startnum = self.voucher_request_line_ids.request_line_range_ids.start_num
-                endnum = self.voucher_request_line_ids.request_line_range_ids.end_num
+            for rec in range(len(self.voucher_request_line_ids.number_ranges_ids)):
+                startnum = self.voucher_request_line_ids.number_ranges_ids.start_num
+                endnum = self.voucher_request_line_ids.number_ranges_ids.end_num
                 vcode = self.voucher_request_line_ids.voucher_code_id.id
                 sourch_voucher = self.user_id.default_operating_unit_id.company_id.res_company_request_operating_unit.id
                 
-                obj_voucher_order_line = self.env['weha.voucher.order.line']
-                search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', sourch_voucher),('voucher_code_id','=', vcode)])
-                search_se = search_v.search(['&',('check_number','>=',  startnum),('check_number','<=', endnum)])
+                exp_date = datetime.now() + relativedelta(days=terms)
 
-                for row in search_se:
+                # obj_voucher_order_line = self.env['weha.voucher.order.line']
+                # search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', sourch_voucher),('voucher_code_id','=', vcode)])
+                # search_se = search_v.search(['&',('check_number','>=',  startnum),('check_number','<=', endnum)])
+
+                strSQL = """SELECT """ \
+                     """id,check_number """ \
+                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND check_number BETWEEN '{}' AND '{}'""".format(sourch_voucher, vcode, startnum, endnum)
+
+                self.env.cr.execute(strSQL)
+                voucher_order_line = self.env.cr.fetchall()
+                _logger.info("fetch = " + str(voucher_order_line))
+
+                for row in voucher_order_line:
                     vals = {}
+                    vals.update({'voucher_terms_id': self.voucher_terms_id.id})
+                    vals.update({'expired_date': exp_date})
                     vals.update({'operating_unit_id': self.operating_unit_id.id})
                     vals.update({'state': 'activated'})
                     vals.update({'voucher_request_id': self.id}) 
@@ -62,19 +75,31 @@ class WeheVoucherRequest(models.Model):
                     vals = {}
                     vals.update({'name': self.number})
                     vals.update({'trans_date': datetime.now()})
-                    vals.update({'voucher_order_line_id': row.id})
+                    vals.update({'voucher_order_line_id': row[0]})
                     vals.update({'trans_type': 'AC'})
                     val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
                     _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
         
 
     def trans_approve1(self):
-        vals = { 'stage_id': self.stage_id.next_stage_id.id}
-        self.write(vals)
+        stage_id = self.stage_id.next_stage_id
+        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        return res
+    
+    def trans_reject1(self):
+        stage_id = self.stage_id.from_stage_id
+        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        return res
     
     def trans_approve2(self):
-        vals = { 'stage_id': self.stage_id.next_stage_id.id}
-        self.write(vals)
+        stage_id = self.stage_id.next_stage_id
+        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        return res
+    
+    def trans_reject2(self):
+        stage_id = self.stage_id.from_stage_id
+        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        return res
 
     def trans_request_approval(self):    
         vals = { 'stage_id': self.stage_id.next_stage_id.id}
@@ -82,7 +107,7 @@ class WeheVoucherRequest(models.Model):
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Request number', default="/",readonly=True)
-    date_request = fields.Date('Date Request')
+    date_request = fields.Date('Date Request', default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', 'Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)
     operating_unit_id = fields.Many2one('operating.unit', 'Store', related="user_id.default_operating_unit_id")
     stage_id = fields.Many2one(
@@ -100,7 +125,7 @@ class WeheVoucherRequest(models.Model):
         ('2', _('High')),
         ('3', _('Very High')),
     ], string='Priority', default='1')
-   
+    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=False)
     color = fields.Integer(string='Color Index')
     
     kanban_state = fields.Selection([
@@ -109,12 +134,6 @@ class WeheVoucherRequest(models.Model):
         ('blocked', 'Blocked')], string='Kanban State')
 
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
-
-    line_ids = fields.One2many(
-        string='Vouchers',
-        comodel_name='weha.voucher.order.line',
-        inverse_name='voucher_request_id',
-    )
 
     voucher_request_line_ids = fields.One2many(
         string='Vouchers Lines',
@@ -137,9 +156,13 @@ class WeheVoucherRequest(models.Model):
         
     def write(self, vals):
         if 'stage_id' in vals:
-            stage_obj = self.env['weha.voucher.request.stage'].browse([vals['stage_id']])
-            if stage_obj.unattended:
-                pass
+            # stage_obj = self.env['weha.voucher.request.stage'].browse([vals['stage_id']])
+            if self.stage_id.l1:
+                raise ValidationError("Please using approve or reject button")
+            if self.stage_id.l2:
+                raise ValidationError("Please using approve or reject button")
+            if self.stage_id.opened:
+                raise ValidationError("Please Close Request")
 
             #Change To L1, Get User from Param
             # trans_approve = False
@@ -149,19 +172,5 @@ class WeheVoucherRequest(models.Model):
             #         raise ValidationError('Cannot Process Approval')
             #     # self.send_l1_request_mail()
 
-        if vals.get('stage_id.unattended'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.unattended')))
-            self.current_stage = 'unattended'
-        if vals.get('stage_id.l1'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.l1')))
-            self.current_stage = 'approve_1'
-        if vals.get('stage_id.l2'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.l2')))
-            self.current_stage = 'approve_2'
-        if vals.get('stage_id.opened'):
-            self.current_stage = 'open'
-        if vals.get('stage_id.closed'):
-            self.current_stage = 'closed'
-           
         res = super(WeheVoucherRequest, self).write(vals)
         return res

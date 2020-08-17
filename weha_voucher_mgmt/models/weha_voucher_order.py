@@ -85,19 +85,24 @@ class VoucherOrder(models.Model):
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
-        self.write({'stage_id': stage_id.id})
+        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        return res
     
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
-        self.write({'stage_id': stage_id.id})
+        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        return res
     
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
-        self.write({'stage_id': stage_id.id})
+        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        return res
         
-    def trans_request_approval(self):    
-        vals = { 'stage_id': self.stage_id.next_stage_id.id}
-        self.write(vals)
+    def trans_order_approval(self):    
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        return res
+
     
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
@@ -165,6 +170,9 @@ class VoucherOrder(models.Model):
             stage_id = self.env['weha.voucher.order.stage'].browse([vals['stage_id']])
             if self.stage_id.approval:
                 raise ValidationError("Please using approve or reject button")
-
+            if self.stage_id.opened:
+                raise ValidationError("Please using Generate Voucher or Close Order")
+            if self.stage_id.closed:
+                raise ValidationError("Voucher Close")
         res = super(VoucherOrder, self).write(vals)
         return res
