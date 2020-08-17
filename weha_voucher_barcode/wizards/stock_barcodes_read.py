@@ -2,6 +2,10 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
 
+import logging
+_logger = logging.getLogger(__name__)
+
+
 
 class WizStockBarcodesRead(models.AbstractModel):
     _name = "wiz.stock.barcodes.read"
@@ -17,7 +21,7 @@ class WizStockBarcodesRead(models.AbstractModel):
     # Computed field for display all scanning logs from res_model and res_id
     # when change product_id
     scan_log_ids = fields.Many2many(
-        comodel_name="stock.barcodes.read.log", compute="_compute_scan_log_ids"
+        comodel_name="voucher.barcodes.read.log", compute="_compute_scan_log_ids"
     )
     
     message_type = fields.Selection(
@@ -46,18 +50,19 @@ class WizStockBarcodesRead(models.AbstractModel):
     def process_barcode(self, barcode):
         self._set_messagge_info("success", _("Barcode read correctly"))
         domain = self._barcode_domain(barcode)
-        voucher_line = self.env["voucher.line"].search(domain)
-        if voucher_Line:
+        voucher_line = self.env["weha.voucher.order.line"].search(domain)
+        if voucher_line:
             if len(voucher_line) > 1:
                 self._set_messagge_info("more_match", _("More than one product found"))
                 return
-            self.action_product_scaned_post(product)
+            #self.action_product_scaned_post(product)
             self.action_done()
             return
+        _logger.info('Voucher Line Not found')
         self._set_messagge_info("not_found", _("Barcode not found"))
 
     def _barcode_domain(self, barcode):
-        return [("code", "=", barcode)]
+        return [("voucher_ean", "=", barcode)]
 
     def on_barcode_scanned(self, barcode):
         self.barcode = barcode
@@ -80,66 +85,64 @@ class WizStockBarcodesRead(models.AbstractModel):
     def action_cancel(self):
         return True
 
-    def action_product_scaned_post(self, product):
-        self.packaging_id = False
-        if self.product_id != product:
-            self.lot_id = False
-        self.product_id = product
-        self.product_qty = 0.0 if self.manual_entry else 1.0
+    # def action_product_scaned_post(self, product):
+    #     self.packaging_id = False
+    #     if self.product_id != product:
+    #         self.lot_id = False
+    #     self.product_id = product
+    #     self.product_qty = 0.0 if self.manual_entry else 1.0
 
-    def action_packaging_scaned_post(self, packaging):
-        self.packaging_id = packaging
-        if self.product_id != packaging.product_id:
-            self.lot_id = False
-        self.product_id = packaging.product_id
-        self.packaging_qty = 0.0 if self.manual_entry else 1.0
-        self.product_qty = packaging.qty * self.packaging_qty
+    # def action_packaging_scaned_post(self, packaging):
+    #     self.packaging_id = packaging
+    #     if self.product_id != packaging.product_id:
+    #         self.lot_id = False
+    #     self.product_id = packaging.product_id
+    #     self.packaging_qty = 0.0 if self.manual_entry else 1.0
+    #     self.product_qty = packaging.qty * self.packaging_qty
 
-    def action_lot_scaned_post(self, lot):
-        self.lot_id = lot
-        self.product_qty = 0.0 if self.manual_entry else 1.0
+    # def action_lot_scaned_post(self, lot):
+    #     self.lot_id = lot
+    #     self.product_qty = 0.0 if self.manual_entry else 1.0
 
-    def action_clean_lot(self):
-        self.lot_id = False
+    # def action_clean_lot(self):
+    #     self.lot_id = False
 
     def action_manual_entry(self):
         return True
 
-    def _prepare_scan_log_values(self, log_detail=False):
-        return {
-            "name": self.barcode,
-            "location_id": self.location_id.id,
-            "product_id": self.product_id.id,
-            "packaging_id": self.packaging_id.id,
-            "lot_id": self.lot_id.id,
-            "packaging_qty": self.packaging_qty,
-            "product_qty": self.product_qty,
-            "manual_entry": self.manual_entry,
-            "res_model_id": self.res_model_id.id,
-            "res_id": self.res_id,
-        }
+    # def _prepare_scan_log_values(self, log_detail=False):
+    #     return {
+    #         "name": self.barcode,
+    #         "location_id": self.location_id.id,
+    #         "product_id": self.product_id.id,
+    #         "packaging_id": self.packaging_id.id,
+    #         "lot_id": self.lot_id.id,
+    #         "packaging_qty": self.packaging_qty,
+    #         "product_qty": self.product_qty,
+    #         "manual_entry": self.manual_entry,
+    #         "res_model_id": self.res_model_id.id,
+    #         "res_id": self.res_id,
+    #     }
 
-    def _add_read_log(self, log_detail=False):
-        if self.product_qty:
-            vals = self._prepare_scan_log_values(log_detail)
-            self.env["stock.barcodes.read.log"].create(vals)
+    # def _add_read_log(self, log_detail=False):
+    #     if self.product_qty:
+    #         vals = self._prepare_scan_log_values(log_detail)
+    #         self.env["stock.barcodes.read.log"].create(vals)
 
-    @api.depends("product_id", "lot_id")
+    #@api.depends("voucher_line_id")
     def _compute_scan_log_ids(self):
-        logs = self.env["stock.barcodes.read.log"].search(
+        logs = self.env["voucher.barcodes.read.log"].search(
             [
                 ("res_model_id", "=", self.res_model_id.id),
-                ("res_id", "=", self.res_id),
-                ("location_id", "=", self.location_id.id),
-                ("product_id", "=", self.product_id.id),
+                ("res_id", "=", self.res_id)
             ],
             limit=10,
         )
         self.scan_log_ids = logs
 
-    def reset_qty(self):
-        self.product_qty = 0
-        self.packaging_qty = 0
+    # def reset_qty(self):
+    #     self.product_qty = 0
+    #     self.packaging_qty = 0
 
     def action_undo_last_scan(self):
         return True

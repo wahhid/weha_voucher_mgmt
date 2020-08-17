@@ -24,6 +24,8 @@ class WeheVoucherRequest(models.Model):
         for rec in self:
             if rec.stage_id.unattended:
                 rec.current_stage = 'unattended'
+            if rec.stage_id.approval:
+                rec.current_stage = 'approval'
             if rec.stage_id.l1:
                 rec.current_stage = 'approve_1'
             if rec.stage_id.l2:
@@ -32,11 +34,18 @@ class WeheVoucherRequest(models.Model):
                 rec.current_stage = 'open'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
-    
+            if rec.stage_id.cancelled:
+                rec.current_stage = 'cancelled'
+            if rec.stage_id.rejected:
+                rec.current_stage = 'rejected'
+                
     @api.depends('line_ids')
     def _calculate_voucher_count(self):
+        voucher_count = 0
         for row in self:
-            self.voucher_count = len(self.line_ids)
+            for line_id in self.line_ids:
+                voucher_count += line_id.amount
+        self.voucher_count = voucher_count
 
     def trans_voucher_request_activate(self):
         for i in range(len(self.voucher_request_line_ids)):
@@ -67,7 +76,6 @@ class WeheVoucherRequest(models.Model):
                     val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
                     _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
         
-
     def trans_approve1(self):
         vals = { 'stage_id': self.stage_id.next_stage_id.id}
         self.write(vals)
@@ -111,12 +119,6 @@ class WeheVoucherRequest(models.Model):
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
 
     line_ids = fields.One2many(
-        string='Vouchers',
-        comodel_name='weha.voucher.order.line',
-        inverse_name='voucher_request_id',
-    )
-
-    voucher_request_line_ids = fields.One2many(
         string='Vouchers Lines',
         comodel_name='weha.voucher.request.line',
         inverse_name='voucher_request_id',
@@ -134,7 +136,6 @@ class WeheVoucherRequest(models.Model):
 
         return res
 
-        
     def write(self, vals):
         if 'stage_id' in vals:
             stage_obj = self.env['weha.voucher.request.stage'].browse([vals['stage_id']])

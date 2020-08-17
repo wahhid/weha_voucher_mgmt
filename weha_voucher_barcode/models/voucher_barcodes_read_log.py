@@ -11,15 +11,13 @@ class VoucherBarcodesReadLog(models.Model):
     name = fields.Char(string="Barcode Scanned")
     res_model_id = fields.Many2one(comodel_name="ir.model", index=True)
     res_id = fields.Integer(index=True)
-    voucher_order_id = fields.Many2one('voucher.order', 'Voucher Order #')
-    voucher_allocated_id = fields.Many2one('voucher.allocated', 'Voucher Allocated #')
-    voucher_request_id = fields.Many2one('voucher.request', 'Voucher Request #')
-    voucher_transfer_id = fields.Many2one('voucher.transfer', 'Voucher Transfer #')
-    voucher_return_id = fields.Many2one('voucher.return', 'Voucher Return #')
-    voucher_scrap_id = fields.Many2one('voucher.scrap', 'Voucher Scrap #')
+    voucher_order_id = fields.Many2one('weha.voucher.order', 'Voucher Order #')
     manual_entry = fields.Boolean(string="Manual entry")
+    voucher_line_id = fields.Many2one(
+        comodel_name="weha.voucher.order.line", string="Voucher Line", readonly=True
+    )
     log_line_ids = fields.One2many(
-        comodel_name="stock.barcodes.read.log.line",
+        comodel_name="voucher.barcodes.read.log.line",
         inverse_name="read_log_id",
         string="Scanning log details",
     )
@@ -33,16 +31,16 @@ class VoucherBarcodesReadLogLine(models.Model):
     This help to know what records have been affected by a scanning read.
     """
 
-    _name = "stock.barcodes.read.log.line"
+    _name = "voucher.barcodes.read.log.line"
     _description = "Stock barcodes read log lines"
 
     read_log_id = fields.Many2one(
-        comodel_name="stock.barcodes.read.log",
+        comodel_name="voucher.barcodes.read.log",
         string="Scanning log",
         ondelete="cascade",
         readonly=True,
     )
     
     voucher_line_id = fields.Many2one(
-        comodel_name="voucher_line_id", string="Voucher Line", readonly=True
+        comodel_name="weha.voucher.order.line", string="Voucher Line", readonly=True
     )

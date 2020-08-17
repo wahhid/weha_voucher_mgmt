@@ -27,21 +27,6 @@
                         >
                             <field name="message" />
                         </div>
-                        <div
-                            class="alert alert-danger"
-                            role="status"
-                            attrs="{'invisible': [('message_type', '!=', 'not_found')]}"
-                        >
-                            <field name="message" />
-                            <button
-                                class="oe_link"
-                                name="%(action_stock_barcodes_new_lot)d"
-                                type="action"
-                                context="{'default_lot_name': barcode}"
-                            >
-                                <span>New lot</span>
-                            </button>
-                        </div>
                     </div>
                     <div>
                         <label for="manual_entry">
@@ -72,7 +57,7 @@
                     <group />
                     <group
                         string="Current product scanning log"
-                        attrs="{'invisible': [('scan_log_ids', '=', [])]}"
+                        
                     >
                         <group>
                             <button
@@ -89,8 +74,10 @@
                             mode="tree,kanban"
                         >
                             <tree string="Current product scanning log">
+                                <!--
                                 <field name="create_date" />
                                 <field name="create_uid" />
+                                -->
                                 <field name="name" />
                                 <field name="voucher_line_id" />
                             </tree>

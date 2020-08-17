@@ -22,6 +22,10 @@ class WehaVoucherOrderStage(models.Model):
         string='Open')
     closed = fields.Boolean(
         string='Closed')
+    cancelled = fields.Boolean(
+        string='Cancelled')
+    rejected = fields.Boolean(
+        string='Rejected')
     fold = fields.Boolean(
         string='Folded in Kanban',
         help="This stage is folded in the kanban view "
@@ -54,6 +58,9 @@ class WehaVoucherRequestStage(models.Model):
     active = fields.Boolean(default=True)
     unattended = fields.Boolean(
         string='Request')
+    approval = fields.Boolean(
+        string='Approve'
+    )
     l1 = fields.Boolean(
         string='Level 1')
     l2 = fields.Boolean(
@@ -62,6 +69,11 @@ class WehaVoucherRequestStage(models.Model):
         string='Open')
     closed = fields.Boolean(
         string='Closed')
+    rejected = fields.Boolean(
+        string='Rejected')
+    cancelled = fields.Boolean(
+        string='Cancelled')
+    
     fold = fields.Boolean(
         string='Folded in Kanban',
         help="This stage is folded in the kanban view "

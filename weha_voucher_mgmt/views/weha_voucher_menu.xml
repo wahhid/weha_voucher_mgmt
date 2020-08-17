@@ -12,11 +12,11 @@
 
         <!-- Menus -->
         <menuitem id="weha_voucher_mgmt_main_menu" name="Voucher" sequence="16"
-            web_icon="helpdesk_mgmt,static/description/icon.png" groups="group_voucher_user"/>
+            web_icon="helpdesk_mgmt,static/description/icon.png" groups="group_voucher_user,group_voucher_finance_user"/>
         
         <menuitem id="weha_voucher_main_menu" name="Voucher"
             parent="weha_voucher_mgmt_main_menu" sequence="20"
-            groups="group_voucher_user"/>
+            groups="group_voucher_user,group_voucher_finance_user"/>
         
 
         <menuitem id="weha_voucher_dashboard_menu" name="Dashboard"

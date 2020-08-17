@@ -23,6 +23,8 @@
             <field name="arch" type="xml">
                 <tree string="model_tree" create="true" delete="true" edit="true">
                     <field name="number" />
+                    <field name="start_number"/>
+                    <field name="end_number"/>
                     <field name="user_id" />
                     <field name="stage_id" />
                 </tree>
@@ -45,7 +47,7 @@
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-primary" name="generate_voucher" string="Generate Voucher" 
-                            groups="weha_voucher_mgmt.group_voucher_user" confirm="Are you sure you want to Ge  nerate Voucher?"/>
+                            groups="weha_voucher_mgmt.group_voucher_user" confirm="Are you sure you want to Generate Voucher?"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Order" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
@@ -85,7 +87,7 @@
                                 <field name="operating_unit_id"/>
                                 <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
                                 <field name="voucher_code_id"/>
-                                <field name="current_stage"/>
+                                <field name="current_stage" invisible="1"/>
                             </group>
                             <group>
                                 <field name="ref"/>
@@ -113,6 +115,9 @@
             <field name="arch" type="xml">
                 <kanban class="o_kanban_mobile" archivable="false"  default_group_by="stage_id" >
                     <field name="number"/>
+                    <field name="start_number"/>
+                    <field name="end_number"/>
+                    <field name="voucher_code_id"/>
                     <field name="user_id"/>
                     <field name="operating_unit_id"/>
                     <field name="color"/>
@@ -142,7 +147,11 @@
                                 <div class="o_kanban_record_body">    
                                     <field name="operating_unit_id"/>
                                     <br/>
+                                    <field name="voucher_code_id"/> : <field name="start_number"/> to <field name="end_number"/>
+                                    <br/>
                                     <field name="priority" widget="priority"/>
+                                    <br/>
+                                    
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left"/>
@@ -193,12 +202,20 @@
         </record>
         
         <!-- Main menu for voucher order -->
-        <record id="menu_model" model="ir.ui.menu" >
+        <menuitem
+            action="action_weha_voucher_order_act_window"
+             id="menu_voucher_order"
+             parent="weha_voucher_main_menu"
+             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+
+        <!--
+        <record id="menu_model" model="ir.ui.menu">
             <field name="name">Order</field>
             <field name="sequence" eval="10" />
             <field name="action" ref="action_weha_voucher_order_act_window" />
-            <field name="parent_id" ref="weha_voucher_main_menu" />
+            <field name="parent_id" ref="weha_voucher_main_menu"/>
         </record>
+        -->
         
 
         

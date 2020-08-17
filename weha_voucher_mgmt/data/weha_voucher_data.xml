@@ -51,7 +51,141 @@
                 <p>Click here to review the voucher order request</p>
             </field>
         </record>
+
+
+        <!--Voucher Request Request Approval Notification Email template -->
+        <record id="voucher_request_request_approval_notification_template" model="mail.template">
+            <field name="name">Voucher Request - Request Approval Notification</field>
+            <field name="model_id" ref="model_weha_voucher_request"/>
+            <field name="email_from">${object.user_id.partner_id.email}</field>
+            <field name="subject">${object.operating_unit_id.name} - Voucher Request - Request Approval (Ref ${object.name or 'n/a' })</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="xml">
+                <p>Hi </p>
+                <p>Voucher Management System is sending this request for your approval.</p>
+                <p>Click here to review the voucher request request</p>
+            </field>
+        </record>
+
+        <!--Voucher Request Approved Notification Email template -->
+        <record id="voucher_request_approved_notification_template" model="mail.template">
+            <field name="name">Voucher Request - Approved Notification</field>
+            <field name="model_id" ref="model_weha_voucher_request"/>
+            <field name="email_from">${object.user_id.partner_id.email}</field>
+            <field name="subject">${object.operating_unit_id.name} - Voucher Request - Request Approval (Ref ${object.name or 'n/a' })</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="xml">
+                <p>Hi </p>
+                <p>Your request already approved. Please wait for delivery process</p>
+                <p>Click here to review the voucher request request</p>
+            </field>
+        </record>
+
+        <!--Voucher Request Rejected Notification Email template -->
+        <record id="voucher_request_rejected_notification_template" model="mail.template">
+            <field name="name">Voucher Request - Rejected Notification</field>
+            <field name="model_id" ref="model_weha_voucher_request"/>
+            <field name="email_from">${object.user_id.partner_id.email}</field>
+            <field name="subject">${object.operating_unit_id.name} - Voucher Request - Request Approval (Ref ${object.name or 'n/a' })</field>
+            <field name="auto_delete" eval="False"/>
+            <field name="body_html" type="xml">
+                <p>Hi </p>
+                <p>Your request was rejected</p>
+                <p>Click here to review the voucher request request</p>
+            </field>
+        </record>
+
+        <!-- Voucher Order Stages -->
+
+        <record id="voucher_order_stage_approval" model="weha.voucher.order.stage">
+        <field name="sequence">2</field>
+        <field name="name">Approve</field>
+        <field name="approval">True</field>
+        <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_order_stage_request" model="weha.voucher.order.stage">
+        <field name="sequence">1</field>
+        <field name="name">Request</field>
+        <field name="unattended">True</field>
+        <field name="next_stage_id" ref="voucher_order_stage_approval"/>
+        </record>
+
+        <record id="voucher_request_stage_done" model="weha.voucher.request.stage">
+        <field name="sequence">4</field>
+        <field name="name">Close</field>
+        <field name="closed">True</field>
+        <field name="fold">True</field>
+        </record>
         
+        <record id="voucher_request_stage_open" model="weha.voucher.request.stage">
+        <field name="sequence">3</field>
+        <field name="name">Open</field>
+        <field name="opened">True</field>
+        <field name="next_stage_id" ref="voucher_request_stage_done"/>
+        </record>
+
+
+        <record id="voucher_request_stage_cancelled" model="weha.voucher.request.stage">
+        <field name="sequence">5</field>
+        <field name="name">Cancelled</field>
+        <field name="cancelled">True</field>
+        <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_request_stage_rejected" model="weha.voucher.request.stage">
+        <field name="sequence">6</field>
+        <field name="name">Rejected</field>
+        <field name="rejected">True</field>
+        <field name="fold">True</field>
+        </record>
+
+
+        <!-- Voucher Request Stages -->
+
+        <record id="voucher_request_stage_approval" model="weha.voucher.request.stage">
+        <field name="sequence">2</field>
+        <field name="name">Approve</field>
+        <field name="approval">True</field>
+        <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_request_stage_request" model="weha.voucher.request.stage">
+        <field name="sequence">1</field>
+        <field name="name">Request</field>
+        <field name="unattended">True</field>
+        <field name="next_stage_id" ref="voucher_request_stage_approval"/>
+        </record>
+
+        <record id="voucher_request_stage_done" model="weha.voucher.request.stage">
+        <field name="sequence">4</field>
+        <field name="name">Close</field>
+        <field name="closed">True</field>
+        <field name="fold">True</field>
+        </record>
+        
+        <record id="voucher_request_stage_open" model="weha.voucher.request.stage">
+        <field name="sequence">3</field>
+        <field name="name">Open</field>
+        <field name="opened">True</field>
+        <field name="next_stage_id" ref="voucher_request_stage_done"/>
+        </record>
+
+
+        <record id="voucher_request_stage_cancelled" model="weha.voucher.request.stage">
+        <field name="sequence">5</field>
+        <field name="name">Cancelled</field>
+        <field name="cancelled">True</field>
+        <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_request_stage_rejected" model="weha.voucher.request.stage">
+        <field name="sequence">6</field>
+        <field name="name">Rejected</field>
+        <field name="rejected">True</field>
+        <field name="fold">True</field>
+        </record>
+
     </data>
 
 </odoo>

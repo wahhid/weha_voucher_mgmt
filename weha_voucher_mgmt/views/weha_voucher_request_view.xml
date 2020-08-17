@@ -94,15 +94,19 @@
                         </group>
                         <notebook colspan="4">
                             <page string="Request Lines">
-	                        	<field name="voucher_request_line_ids" widget="one2many_list" nolabel="0" readonly="0">
+	                        	<field name="line_ids" widget="one2many_list" nolabel="0" readonly="0">
 	                            	<tree string="Request Lines" create="true" delete="true" edit="true">
 	                            	    <field name="voucher_code_id" />
                                         <field name="amount" />	                                	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>	   
+                            <page string="Vouchers">
+                                
+                            </page>
                         </notebook>
                     </sheet>
+
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>
                         <field name="activity_ids" widget="mail_activity"/>

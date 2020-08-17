@@ -10,8 +10,9 @@
     "data": [
         "security/ir.model.access.csv",
         "views/assets.xml",
-        "wizard/stock_barcodes_read_views.xml",
-        "wizard/stock_barcodes_read_voucher_order_views.xml",
+        "views/voucher_order_view.xml",
+        "wizards/stock_barcodes_read_views.xml",
+        "wizards/stock_barcodes_read_voucher_order_views.xml",
     ],
     "installable": True,
 }

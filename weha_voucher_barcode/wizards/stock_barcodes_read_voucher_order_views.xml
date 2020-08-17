@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <field name="res_id" position="after">
                 <field
-                    name="vocher_order_id"
+                    name="voucher_order_id"
                     invisible="not context.get('default_voucher_id', False)"
                 />
             </field>
@@ -22,7 +22,7 @@
         <field name="name">Barcodes Read</field>
         <field name="view_mode">form</field>
         <field name="context">{}</field>
-        <field name="view_id" ref="view_stock_barcodes_read_inventory_form" />
+        <field name="view_id" ref="view_stock_barcodes_read_voucher_order_form" />
         <field name="target">current</field>
     </record>
 </odoo>

@@ -168,8 +168,13 @@
             <field name="parent_id" ref="weha_voucher_main_menu" />
         </record> -->
 
-        <menuitem id="weha_voucher_allocate_menu" name="Allocate" parent="weha_voucher_main_menu"
-            action="action_weha_voucher_allocate_act_window" sequence="14"/>
+        <menuitem 
+            id="weha_voucher_allocate_menu" 
+            name="Allocate" 
+            parent="weha_voucher_main_menu"
+            action="action_weha_voucher_allocate_act_window" 
+            sequence="14"
+            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
         
 
         

@@ -11,9 +11,11 @@
             <field name="priority" eval="16" />
             <field name="active" eval="True" />
             <field name="arch" type="xml">
-                <tree string="model_tree" create="true" delete="true" edit="true">
+                <tree string="model_tree" create="false" delete="false" edit="false">
                     <field name="name" />
                     <field name="operating_unit_id" />
+                    <field name="voucher_type"/>
+                    <field name="voucher_code_id"/>
                     <field name="state" />
                 </tree>
             </field>
@@ -28,7 +30,7 @@
             <field name="priority" eval="16" />
             <field name="active" eval="True" />
             <field name="arch" type="xml">
-                <form string="model_form" create="true" delete="true" edit="true">
+                <form string="model_form" create="false" delete="false" edit="false">
                     <header>
                     </header>
                     <sheet>
@@ -62,7 +64,6 @@
 	                            	    <field name="name"/>	                            	    	                                	
 	                                	<field name="trans_date"/>
 	                                	<field name="trans_type"/>
-
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>	   

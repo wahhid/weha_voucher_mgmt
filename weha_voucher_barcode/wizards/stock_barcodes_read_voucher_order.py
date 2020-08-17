@@ -10,15 +10,16 @@ class WizStockBarcodesReadVoucherOrder(models.TransientModel):
     _inherit = "wiz.stock.barcodes.read"
     _description = "Wizard to read barcode on voucher order"
 
+    name = fields.Char()
     voucher_order_id = fields.Many2one(comodel_name="voucher.order", readonly=True)
 
-    def name_get(self):
-        return [
-            (
-                rec.id,
-                "{} - {} - {}".format(
-                    _("Barcode reader"), rec.voucher_order_id.name, self.env.user.name
-                ),
-            )
-            for rec in self
-        ]
+    # def name_get(self):
+    #     return [
+    #         (
+    #             rec.id,
+    #             "{} - {} - {}".format(
+    #                 _("Barcode reader"), rec.voucher_order_id.name, self.env.user.name
+    #             ),
+    #         )
+    #         for rec in self
+    #     ]

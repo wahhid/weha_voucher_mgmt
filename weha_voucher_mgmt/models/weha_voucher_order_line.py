@@ -89,12 +89,12 @@ class VoucherOrderLine(models.Model):
         comodel_name='operating.unit',
         ondelete='restrict',
     )
-    voucher_code = fields.Char(string='Voucher Code')
-    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
+    voucher_code = fields.Char(string='Voucher #')
+    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Code')
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
     
     voucher_type = fields.Selection(
-        string='Voucher Type',
+        string='Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
@@ -117,6 +117,7 @@ class VoucherOrderLine(models.Model):
         string='Voucher Trans',
         comodel_name='weha.voucher.order.line.trans',
         inverse_name='voucher_order_line_id',
+        readonly=True
     )
     
     state = fields.Selection(

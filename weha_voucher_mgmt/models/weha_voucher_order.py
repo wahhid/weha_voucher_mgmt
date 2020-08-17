@@ -17,18 +17,13 @@ class VoucherOrder(models.Model):
         for rec in self:
             if rec.stage_id.unattended:
                 rec.current_stage = 'unattended'
-            if rec.state_id.waiting:
-                rec.current_stage = 'waiting'
-            # if rec.stage_id.waiting:
-            #     rec.current_stage = 'waiting'
             if rec.stage_id.approval:
                 rec.current_stage = 'approval'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
-            
-            
+                   
     def _get_default_stage_id(self):
         return self.env['weha.voucher.order.stage'].search([], limit=1).id
     
@@ -88,35 +83,60 @@ class VoucherOrder(models.Model):
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        #Send Notification
+        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
+        template = self.env['mail.template'].browse(template_id)
+        template.email_to = self.user_id.partner_id.email
+        template.send_mail(self.id, force_send=True)
     
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        #Send Notification
+        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
+        template = self.env['mail.template'].browse(template_id)
+        template.email_to = self.user_id.partner_id.email
+        template.send_mail(self.id, force_send=True)
+        #stage = self.stage_id.next_stage_id.id
+        #_logger.info("Stage Here = " + str(self.stage_id.id))
+        #_logger.info("Next Stage = " + str(stage))
+        #self.write({'stage_id': stage})
+
+    @api.onchange('start_number','end_number')
+    def check_voucher_order_line(self):
+        if self.start_number and self.end_number:
+            if self.start_number == 0 or self.end_number == 0:
+                raise UserError('Start number or end number cannot be zero value')
+            if self.start_number >= self.end_number:
+                raise UserError('End number must be greater than start number')
         
-        stage = self.stage_id.next_stage_id.id
-        _logger.info("Stage Here = " + str(self.stage_id.id))
-        _logger.info("Next Stage = " + str(stage))
-        self.write({'stage_id': stage})
-
-        return True
-
     #@api.depends('stage_id')
     #     self.write({'stage_id': stage_id.id})
     
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
         self.write({'stage_id': stage_id.id})
+        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
+        template = self.env['mail.template'].browse(template_id)
+        #_logger.info(next_stage_id.approval_user_id)
+        #template.email_to = next_stage_id.approval_user_id.partner_id.email
+        #template.send_mail(self.id, force_send=True)
+        
     
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
         self.write({'stage_id': stage_id.id})
         
-
-
-
     def trans_request_approval(self):    
-        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        next_stage_id =  self.stage_id.next_stage_id
+        vals = { 'stage_id': next_stage_id.id}
         self.write(vals)
+        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
+        template = self.env['mail.template'].browse(template_id)
+        _logger.info(next_stage_id.approval_user_id)
+        template.email_to = next_stage_id.approval_user_id.partner_id.email
+        template.send_mail(self.id, force_send=True)
+        
     
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
@@ -149,13 +169,17 @@ class VoucherOrder(models.Model):
     ], string='Priority', default='1')
    
     color = fields.Integer(string='Color Index')
-    start_number = fields.Integer(string='Start Number')
-    end_number = fields.Integer(string='End Number')
     
+    start_number = fields.Integer(string='Start Number', required=True)
+    end_number = fields.Integer(string='End Number', required=True)
+    #estimate_voucher_count = fields.Integer('Estimate Voucher Count', compute="_calculate_voucher_count", store=True)
+
     kanban_state = fields.Selection([
         ('normal', 'Default'),
         ('done', 'Ready for next stage'),
         ('blocked', 'Blocked')], string='Kanban State')
+    
+    is_voucher_generated = fields.Boolean('Is Voucher Generated', default=False)
     
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
     line_ids = fields.One2many(
@@ -173,10 +197,6 @@ class VoucherOrder(models.Model):
             vals['number'] = seq.next_by_code(
                 'weha.voucher.order.sequence') or '/'
         res = super(VoucherOrder, self).create(vals)
-
-        # Check if mail to the user has to be sent
-        #if vals.get('user_id') and res:
-        #    res.send_user_mail()
         return res    
     
     def write(self, vals):
