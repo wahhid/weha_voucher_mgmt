@@ -1,0 +1,21 @@
+{
+    "name": "Voucher Barcode Scanner",
+    "summary": "Ability to scan voucher barcode",
+    "version": "13.0.1.0.1",
+    "author": "WEHA",
+    "website": "https://weha-id",
+    "license": "AGPL-3",
+    "category": "Extra Tools",
+    "depends": ["barcodes", "weha_voucher_mgmt"],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/assets.xml",
+        "views/voucher_order_view.xml",
+        "views/voucher_allocation_view.xml",
+        "views/voucher_request_view.xml",
+        "views/voucher_return_view.xml",
+        "wizards/stock_barcodes_read_views.xml",
+        "wizards/stock_barcodes_read_voucher_order_views.xml",
+    ],
+    "installable": True,
+}
