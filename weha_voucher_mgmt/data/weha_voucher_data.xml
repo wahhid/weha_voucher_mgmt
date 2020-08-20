@@ -38,16 +38,13 @@
             <field name="padding">5</field>
         </record>
 
-<<<<<<< HEAD
 
-=======
         <record id="weha_voucher_allocate_sequence" model="ir.sequence">
             <field name="name">Voucher Allocate Sequence</field>
             <field name="code">weha.voucher.allocate.sequence</field>
             <field name="prefix">AL</field>
             <field name="padding">5</field>
         </record>
->>>>>>> master
 
         <!--Voucher Order L1 Approval Notification Email template -->
         <record id="voucher_order_l1_approval_notification_template" model="mail.template">
@@ -63,7 +60,6 @@
             </field>
         </record>
 
-<<<<<<< HEAD
 
         <!--Voucher Request Request Approval Notification Email template -->
         <record id="voucher_request_request_approval_notification_template" model="mail.template">
@@ -71,19 +67,16 @@
             <field name="model_id" ref="model_weha_voucher_request"/>
             <field name="email_from">${object.user_id.partner_id.email}</field>
             <field name="subject">${object.operating_unit_id.name} - Voucher Request - Request Approval (Ref ${object.name or 'n/a' })</field>
-=======
         <!--Voucher Request L1 Approval Notification Email template -->
         <record id="voucher_request_l1_approval_notification_template" model="mail.template">
             <field name="name">Voucher Request L1 Approval Notification</field>
             <field name="model_id" ref="model_weha_voucher_request"/>
             <field name="email_from">${object.user_id.partner_id.email}</field>
             <field name="subject">${object.operating_unit_id.name} - Voucher Request Approval (Ref ${object.number or 'n/a' })</field>
->>>>>>> master
             <field name="auto_delete" eval="False"/>
             <field name="body_html" type="xml">
                 <p>Hi </p>
                 <p>Voucher Management System is sending this request for your approval.</p>
-<<<<<<< HEAD
                 <p>Click here to review the voucher request request</p>
             </field>
         </record>
@@ -207,7 +200,6 @@
         <field name="fold">True</field>
         </record>
 
-=======
                 <p>Click here to review the voucher request</p>
             </field>
         </record>
@@ -269,7 +261,6 @@
         </record>
 
 
->>>>>>> master
     </data>
 
 </odoo>

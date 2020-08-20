@@ -35,7 +35,6 @@ class WeheVoucherRequest(models.Model):
                 rec.current_stage = 'open'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
-<<<<<<< HEAD
             if rec.stage_id.cancelled:
                 rec.current_stage = 'cancelled'
             if rec.stage_id.rejected:
@@ -48,13 +47,11 @@ class WeheVoucherRequest(models.Model):
             for line_id in self.line_ids:
                 voucher_count += line_id.amount
         self.voucher_count = voucher_count
-=======
     
     # @api.depends('line_ids')
     # def _calculate_voucher_count(self):
     #     for row in self:
     #         self.voucher_count = len(self.line_ids)
->>>>>>> master
 
     def trans_voucher_request_activate(self):
         for i in range(len(self.voucher_request_line_ids)):
@@ -151,11 +148,8 @@ class WeheVoucherRequest(models.Model):
 
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
 
-<<<<<<< HEAD
     line_ids = fields.One2many(
-=======
     voucher_request_line_ids = fields.One2many(
->>>>>>> master
         string='Vouchers Lines',
         comodel_name='weha.voucher.request.line',
         inverse_name='voucher_request_id',
