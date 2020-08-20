@@ -15,6 +15,7 @@
         'views/res_users.xml',
         'wizard/weha_select_order_line_wizard_view.xml',
         'wizard/weha_received_request_wizard_view.xml',
+        'wizard/weha_received_allocate_wizard_view.xml',
         'views/weha_voucher_menu.xml',
         'views/weha_voucher_stage_view.xml',
         'views/weha_voucher_order_view.xml',

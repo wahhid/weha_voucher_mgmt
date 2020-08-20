@@ -42,6 +42,57 @@ class VoucherStockTransfer(models.Model):
     #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
     #         template.send_mail(rec.id)
 
+    def trans_voucher_stock_transfer_activate(self):
+        line = len(self.voucher_transfer_line_ids)
+        _logger.info("Allocate line = " + str(line))
+
+        for i in range(line):
+            number_range = len(self.voucher_transfer_line_ids.number_ranges_ids)
+            _logger.info("Number Range = " + str(number_range))
+
+            for rec in range(number_range):
+
+                startnum = self.voucher_transfer_line_ids.number_ranges_ids.start_num
+                endnum = self.voucher_transfer_line_ids.number_ranges_ids.end_num
+                vcode = self.voucher_transfer_line_ids.voucher_code_id.id
+                store_voucher = self.operating_unit_id.id
+                sourch_voucher = self.source_operating_unit.id
+                terms = self.voucher_terms_id.code
+                
+                # date_now = datetime.now()
+                # str_start_date = str(date_now.year) + "-" + str(date_now.month).zfill(2) + "-" + str(date_now.day).zfill(
+                #     2) + " 23:59:59"
+                # date_now = datetime.strptime(str_start_date, "%Y-%m-%d %H:%M:%S") + relativedelta(days=int(terms))
+                # exp_date = date_now - relativedelta(hours=7)
+
+                strSQL = """SELECT """ \
+                     """id,check_number """ \
+                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
+
+                self.env.cr.execute(strSQL)
+                voucher_order_line = self.env.cr.fetchall()
+                _logger.info("fetch = " + str(voucher_order_line))
+
+
+                for row in voucher_order_line:
+                    vals = {}
+                    # vals.update({'voucher_terms_id': self.voucher_terms_id.id})
+                    # vals.update({'expired_date': exp_date})
+                    vals.update({'operating_unit_id': sourch_voucher})
+                    # vals.update({'state': 'activated'})
+                    vals.update({'voucher_stock_transfer_id': self.id}) 
+                    obj_voucher_order_line_ids = search_se.write(vals)
+
+                    order_line_trans_obj = self.env['weha.voucher.order.line.trans']
+
+                    vals = {}
+                    vals.update({'name': self.number})
+                    vals.update({'trans_date': datetime.now()})
+                    vals.update({'voucher_order_line_id': row[0]})
+                    vals.update({'trans_type': 'ST'})
+                    val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+                    _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
+
         
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
@@ -51,26 +102,33 @@ class VoucherStockTransfer(models.Model):
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
-        self.write({'stage_id': stage_id.id})
+        res = super(VoucherStockTransfer, self).write({'stage_id': stage_id.id})
+        return res
     
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
-        self.write({'stage_id': stage_id.id})
+        res = super(VoucherStockTransfer, self).write({'stage_id': stage_id.id})
+        return res
     
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
-        self.write({'stage_id': stage_id.id})
+        res = super(VoucherStockTransfer, self).write({'stage_id': stage_id.id})
+        return res
         
-    def trans_request_approval(self):    
-        vals = { 'stage_id': self.stage_id.next_stage_id.id}
-        self.write(vals)
+    def trans_stock_transfer_approval(self):    
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherStockTransfer, self).write({'stage_id': stage_id.id})
+        return res
 
+    # def pass_context_operating_unit(self):
+    #     res = self.env['operating.unit'].search([])
+    #     return res
 
 
     company_id = fields.Many2one('res.company', 'Company')
-    number = fields.Char(string='Order number', default="/",readonly=True)
-    ref = fields.Char(string='Source Document', required=True)
-    request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
+    number = fields.Char(string='Transfer Number', default="/",readonly=True)
+    ref = fields.Char(string='Source Document', required=False)
+    transfer_date = fields.Date('Transfer Date', required=False, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     source_operating_unit = fields.Many2one('operating.unit','Source Store', )
@@ -120,9 +178,13 @@ class VoucherStockTransfer(models.Model):
     
     def write(self, vals):
         if 'stage_id' in vals:
-            stage_obj = self.env['weha.voucher.stock.transfer.stage'].browse([vals['stage_id']])
-            if stage_obj.unattended:
-                pass
+            # stage_obj = self.env['weha.voucher.stock.transfer.stage'].browse([vals['stage_id']])
+            if self.stage_id.approval:
+                raise ValidationError("Please using approve or reject button")
+            if self.stage_id.opened:
+                raise ValidationError("Please Stock Transfer or Closed Button")
+            if self.stage_id.closed:
+                raise ValidationError("Can't Move, Because Status Closed")
 
             #Change To L1, Get User from Param
             # trans_approve = False
@@ -132,16 +194,5 @@ class VoucherStockTransfer(models.Model):
             #         raise ValidationError('Cannot Process Approval')
             #     # self.send_l1_request_mail()
 
-        if vals.get('stage_id.unattended'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.unattended')))
-            self.current_stage = 'unattended'
-        if vals.get('stage_id.approval'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.approval')))
-            self.current_stage = 'approval'
-        if vals.get('stage_id.opened'):
-            self.current_stage = 'open'
-        if vals.get('stage_id.closed'):
-            self.current_stage = 'closed'
-           
         res = super(VoucherStockTransfer, self).write(vals)
         return res

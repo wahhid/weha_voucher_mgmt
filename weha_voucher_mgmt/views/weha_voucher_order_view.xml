@@ -41,7 +41,7 @@
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
+                            class="btn btn-primary" name="trans_order_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-primary" name="generate_voucher" string="Generate Voucher" 
