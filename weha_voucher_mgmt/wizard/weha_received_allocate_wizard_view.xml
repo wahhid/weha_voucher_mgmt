@@ -11,6 +11,18 @@
                         <field name="code_ean"/>
                     </h1>
                 </group>
+                <notebook>
+                    <page string="Allocate Move">
+                        <field name="allocate_line_wizard_ids" mode="tree,kanban">
+                            <tree string="Allocate Move" editable="bottom">
+                                <field name="name" />
+                                <field name="date" />
+                                <field name="voucher_order_line_id" />
+                                                   	                                                                                                                                                                                                                                   
+                            </tree>                    	                            	
+                        </field>
+                    </page>	   
+                </notebook>
                 <footer>
                     <button name="trans_received" string="Received" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-default" special="cancel" />
