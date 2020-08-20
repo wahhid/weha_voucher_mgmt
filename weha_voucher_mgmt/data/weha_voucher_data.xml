@@ -13,21 +13,21 @@
         <record id="weha_voucher_order_sequence" model="ir.sequence">
             <field name="name">Voucher Order Sequence</field>
             <field name="code">weha.voucher.order.sequence</field>
-            <field name="prefix">VO</field>
+            <field name="prefix">VO/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
 
         <record id="weha_voucher_request_sequence" model="ir.sequence">
             <field name="name">Voucher Request Sequence</field>
             <field name="code">weha.voucher.request.sequence</field>
-            <field name="prefix">VR</field>
+            <field name="prefix">VR/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
 
         <record id="weha_voucher_return_sequence" model="ir.sequence">
             <field name="name">Voucher Return Sequence</field>
             <field name="code">weha.voucher.return.sequence</field>
-            <field name="prefix">R</field>
+            <field name="prefix">VN/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
 
@@ -37,6 +37,8 @@
             <field name="prefix">STR</field>
             <field name="padding">5</field>
         </record>
+
+
 
         <!--Voucher Order L1 Approval Notification Email template -->
         <record id="voucher_order_l1_approval_notification_template" model="mail.template">

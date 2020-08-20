@@ -23,3 +23,10 @@ class WizStockBarcodesReadVoucherOrder(models.TransientModel):
     #         )
     #         for rec in self
     #     ]
+
+
+    def action_manual_entry(self):
+        result = super().action_manual_entry()
+        if result:
+            self.action_done()
+        return result

@@ -27,6 +27,13 @@
                         >
                             <field name="message" />
                         </div>
+                        <div
+                            class="alert alert-danger"
+                            role="status"
+                            attrs="{'invisible': [('message_type', '!=', 'not_found')]}"
+                        >
+                            <field name="message" />
+                        </div>
                     </div>
                     <div>
                         <label for="manual_entry">
@@ -38,11 +45,7 @@
                     <field name="barcode" invisible="1" force_save="1" />
                     <field name="res_model_id" invisible="1" />
                     <field name="res_id" invisible="1" />
-                    <field
-                        name="_barcode_scanned"
-                        widget="barcode_handler"
-                        invisible="1"
-                    />
+                    <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>
                     <group />
                     <group>
                         <button
@@ -55,10 +58,7 @@
                         />
                     </group>
                     <group />
-                    <group
-                        string="Current product scanning log"
-                        
-                    >
+                    <group string="Current product scanning log">
                         <group>
                             <button
                                 name="action_undo_last_scan"
@@ -74,10 +74,6 @@
                             mode="tree,kanban"
                         >
                             <tree string="Current product scanning log">
-                                <!--
-                                <field name="create_date" />
-                                <field name="create_uid" />
-                                -->
                                 <field name="name" />
                                 <field name="voucher_line_id" />
                             </tree>
