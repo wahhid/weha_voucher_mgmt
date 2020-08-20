@@ -12,6 +12,8 @@ class WizStockBarcodesReadVoucherOrder(models.TransientModel):
 
     name = fields.Char()
     voucher_order_id = fields.Many2one(comodel_name="voucher.order", readonly=True)
+    # voucher_order_id = fields.Many2one(comodel_name="weha.voucher.order", readonly=True)
+    voucher_order_id = fields.Many2one(comodel_name="weha.voucher.order.line", readonly=True)
 
     # def name_get(self):
     #     return [

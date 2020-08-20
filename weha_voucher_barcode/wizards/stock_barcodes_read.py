@@ -55,6 +55,21 @@ class WizStockBarcodesRead(models.AbstractModel):
             if len(voucher_line) > 1:
                 self._set_messagge_info("more_match", _("More than one product found"))
                 return
+            else:
+                # update state received
+                vals = {}
+                vals.update({'state': 'received'})
+                res = voucher_line.write(vals)
+
+                obj_order_line_trans = self.env['weha.voucher.order.line.trans']
+
+                vals = {}
+                vals.update({'name': obj_request.number})
+                vals.update({'voucher_order_line_id': voucher_line.id})
+                vals.update({'trans_date': datetime.now()})
+                vals.update({'trans_type': 'RV'})
+                obj_order_line_trans.create(vals)
+
             #self.action_product_scaned_post(product)
             self.action_done()
             return
@@ -64,6 +79,7 @@ class WizStockBarcodesRead(models.AbstractModel):
     def _barcode_domain(self, barcode):
         return [("voucher_ean", "=", barcode)]
 
+    # Get Started
     def on_barcode_scanned(self, barcode):
         self.barcode = barcode
         self.process_barcode(barcode)

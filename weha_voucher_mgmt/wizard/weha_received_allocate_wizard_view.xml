@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_wizard_received_allocate" model="ir.ui.view">
+        <field name="name">weha.wizard.received.allocate</field>
+        <field name="model">weha.wizard.received.allocate</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Received Voucher Allocate">
+                <group>
+                    <h1>
+                        <field name="code_ean"/>
+                    </h1>
+                </group>
+                <notebook>
+                    <page string="Allocate Move">
+                        <field name="allocate_line_wizard_ids" mode="tree,kanban">
+                            <tree string="Allocate Move" editable="bottom">
+                                <field name="name" />
+                                <field name="date" />
+                                <field name="voucher_order_line_id" />
+                                                   	                                                                                                                                                                                                                                   
+                            </tree>                    	                            	
+                        </field>
+                    </page>	   
+                </notebook>
+                <footer>
+                    <button name="trans_received" string="Received" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                    <button name="trans_received_all" string="Received All" type="object" class="btn-primary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="act_open_received_allocate_view_form" model="ir.actions.act_window">
+        <field name="name">Received Allocate</field>
+        <field name="res_model">weha.wizard.received.allocate</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

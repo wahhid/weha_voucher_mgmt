@@ -46,8 +46,6 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
-                        <button name="%(weha_voucher_mgmt.act_open_select_order_line_view)d" type="action" string="Select Voucher Lines"
-                        class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=','approve_1')]}"
                             class="btn btn-primary" name="trans_approve1" string="Approve" 
                             confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
@@ -59,7 +57,7 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approve_2')]}"
                             class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
                         <button name="%(weha_voucher_mgmt.act_open_received_request_view_form)d" type="action" string="Received Voucher"
-                        class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
+                            class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
 
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
@@ -81,8 +79,10 @@
                         </div>
                         <group>
                             <group>
+                                <field name="date_request"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
+                                <field name="voucher_terms_id"/>
                             </group>
                             <group>
                                 <field name="voucher_count"/>

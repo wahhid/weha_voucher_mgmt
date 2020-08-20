@@ -45,7 +45,15 @@
                     <field name="barcode" invisible="1" force_save="1" />
                     <field name="res_model_id" invisible="1" />
                     <field name="res_id" invisible="1" />
+<<<<<<< HEAD
                     <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>
+=======
+                    <field
+                        name="_barcode_scanned"
+                        widget="barcode_handler"
+                        invisible="1"
+                    />
+>>>>>>> master
                     <group />
                     <group>
                         <button
@@ -74,6 +82,13 @@
                             mode="tree,kanban"
                         >
                             <tree string="Current product scanning log">
+<<<<<<< HEAD
+=======
+                                <!--
+                                <field name="create_date" />
+                                <field name="create_uid" />
+                                -->
+>>>>>>> master
                                 <field name="name" />
                                 <field name="voucher_line_id" />
                             </tree>

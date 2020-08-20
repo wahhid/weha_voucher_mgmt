@@ -31,10 +31,10 @@
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
+                            class="btn btn-primary" name="trans_stock_transfer_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-light" name="trans_close" string="Closed Order" 
+                            class="btn btn-light" name="trans_close" string="Closed Stock Transfer" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
@@ -63,7 +63,7 @@
                         </div>
                         <group>
                             <group>
-                                <field name="request_date"/>
+                                <field name="transfer_date"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 <field name="source_operating_unit"/>

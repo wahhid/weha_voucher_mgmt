@@ -92,7 +92,6 @@ class VoucherOrderLine(models.Model):
     voucher_code = fields.Char(string='Voucher #')
     voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Code')
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
-    
     voucher_type = fields.Selection(
         string='Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
@@ -102,13 +101,29 @@ class VoucherOrderLine(models.Model):
     end_number = fields.Integer(string='End Number')
     check_number = fields.Char(string='Check Number')
     expired_date = fields.Date(string='Expired Date')
+
     voucher_request_id = fields.Many2one(
-       string='Request',
+       string='Request id',
        comodel_name='weha.voucher.request',
        ondelete='restrict',
     )
+    voucher_allocate_id = fields.Many2one(
+       string='Allocate id',
+       comodel_name='weha.voucher.allocate',
+       ondelete='restrict',
+    )
+    voucher_stock_transfer_id = fields.Many2one(
+       string='Stock Transfer id',
+       comodel_name='weha.voucher.stock.transfer',
+       ondelete='restrict',
+    )
+    voucher_return_id = fields.Many2one(
+       string='Stock Transfer id',
+       comodel_name='weha.voucher.return',
+       ondelete='restrict',
+    )
     voucher_order_id = fields.Many2one(
-       string='Request',
+       string='Order id',
        comodel_name='weha.voucher.order',
        ondelete='restrict',
     )
@@ -122,7 +137,7 @@ class VoucherOrderLine(models.Model):
     
     state = fields.Selection(
         string='Status',
-        selection=[('draft', 'New'), ('open', 'Open'), ('activated','Activated'), ('done','Close'),('scrap','Scrap')]
+        selection=[('draft', 'New'), ('open', 'Open'), ('activated','Activated'), ('received','Received'), ('return','Return'), ('done','Close'),('scrap','Scrap')]
     )
 
     @api.model

@@ -82,6 +82,7 @@ class VoucherOrder(models.Model):
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
+<<<<<<< HEAD
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
         #Send Notification
         template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
@@ -122,11 +123,22 @@ class VoucherOrder(models.Model):
         #template.email_to = next_stage_id.approval_user_id.partner_id.email
         #template.send_mail(self.id, force_send=True)
         
+=======
+        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        return res
+    
+    def trans_reject(self):
+        stage_id = self.stage_id.from_stage_id
+        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        return res
+>>>>>>> master
     
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
-        self.write({'stage_id': stage_id.id})
+        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        return res
         
+<<<<<<< HEAD
     def trans_request_approval(self):    
         next_stage_id =  self.stage_id.next_stage_id
         vals = { 'stage_id': next_stage_id.id}
@@ -137,6 +149,13 @@ class VoucherOrder(models.Model):
         template.email_to = next_stage_id.approval_user_id.partner_id.email
         template.send_mail(self.id, force_send=True)
         
+=======
+    def trans_order_approval(self):    
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        return res
+
+>>>>>>> master
     
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
@@ -204,6 +223,9 @@ class VoucherOrder(models.Model):
             stage_id = self.env['weha.voucher.order.stage'].browse([vals['stage_id']])
             if self.stage_id.approval:
                 raise ValidationError("Please using approve or reject button")
-
+            if self.stage_id.opened:
+                raise ValidationError("Please using Generate Voucher or Close Order")
+            if self.stage_id.closed:
+                raise ValidationError("Voucher Close")
         res = super(VoucherOrder, self).write(vals)
         return res
