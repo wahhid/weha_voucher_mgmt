@@ -66,12 +66,14 @@ class VoucherOrder(models.Model):
             vals.update({'voucher_type': self.voucher_type})
             vals.update({'state': 'open'})
             val_order_line_obj = obj_voucher_order_line.sudo().create(vals)
-
+            
             _logger.info("Generate Voucher ID = " + str(val_order_line_obj))
             
             if not val_order_line_obj:
                 raise ValidationError("Can't Generate voucher order line, contact administrator!")
             number = number+1
+        
+        self.is_voucher_generated = True
         
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
@@ -80,6 +82,14 @@ class VoucherOrder(models.Model):
         res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
         return res
 
+    @api.onchange('start_number','end_number')
+    def check_voucher_order_line(self):
+        if self.start_number and self.end_number:
+            if self.start_number == 0 or self.end_number == 0:
+                raise UserError('Start number or end number cannot be zero value')
+            if self.start_number >= self.end_number:
+                raise UserError('End number must be greater than start number')
+        
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
@@ -102,17 +112,6 @@ class VoucherOrder(models.Model):
         #_logger.info("Next Stage = " + str(stage))
         #self.write({'stage_id': stage})
 
-    @api.onchange('start_number','end_number')
-    def check_voucher_order_line(self):
-        if self.start_number and self.end_number:
-            if self.start_number == 0 or self.end_number == 0:
-                raise UserError('Start number or end number cannot be zero value')
-            if self.start_number >= self.end_number:
-                raise UserError('End number must be greater than start number')
-        
-    #@api.depends('stage_id')
-    #     self.write({'stage_id': stage_id.id})
-    
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
         self.write({'stage_id': stage_id.id})
@@ -121,13 +120,17 @@ class VoucherOrder(models.Model):
         #_logger.info(next_stage_id.approval_user_id)
         #template.email_to = next_stage_id.approval_user_id.partner_id.email
         #template.send_mail(self.id, force_send=True)
-        
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
     
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
+        template = self.env['mail.template'].browse(template_id)
+        #_logger.info(next_stage_id.approval_user_id)
+        #template.email_to = next_stage_id.approval_user_id.partner_id.email
+        #template.send_mail(self.id, force_send=True)
         return res
     
     def trans_close(self):
@@ -209,6 +212,7 @@ class VoucherOrder(models.Model):
                 seq = seq.with_context(force_company=vals['company_id'])
             vals['number'] = seq.next_by_code(
                 'weha.voucher.order.sequence') or '/'
+            
         res = super(VoucherOrder, self).create(vals)
         return res    
     

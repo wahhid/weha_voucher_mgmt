@@ -149,12 +149,11 @@ class WeheVoucherRequest(models.Model):
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
 
     line_ids = fields.One2many(
-    voucher_request_line_ids = fields.One2many(
         string='Vouchers Lines',
         comodel_name='weha.voucher.request.line',
         inverse_name='voucher_request_id',
     )
-
+        
     @api.model
     def create(self, vals):
         if vals.get('number', '/') == '/':

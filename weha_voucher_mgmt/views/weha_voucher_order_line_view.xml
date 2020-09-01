@@ -73,6 +73,17 @@
                 </form>
             </field>
         </record>
+
+        <record id="view_weha_voucher_order_line_graph" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.line.graph</field>
+            <field name="model">weha.voucher.order.line</field>
+            <field name="arch" type="xml">
+                <graph string="Voucher Order Statistic">
+                    <field name="operating_unit_id" type="row"/>
+                    <field name="voucher_code_id" type="column"/>
+                </graph>
+            </field>
+        </record>
         
         <!-- Search view for "model" -->
         <record id="view_weha_voucher_order_line_search" model="ir.ui.view">
@@ -94,7 +105,7 @@
             <field name="type">ir.actions.act_window</field>
             <field name="name">Voucher Lines</field>
             <field name="res_model">weha.voucher.order.line</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">tree,form,graph</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
             <field name="search_view_id" ref="view_weha_voucher_order_line_search" />

@@ -168,6 +168,18 @@
             </field>
         </record>
         
+        <record id="view_weha_voucher_order_graph" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.graph</field>
+            <field name="model">weha.voucher.order</field>
+            <field name="arch" type="xml">
+                <graph string="Voucher Order Statistic">
+                    <field name="voucher_code_id" type="row"/>
+                    <field name="voucher_count" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+
         <!-- Search view for voucher order -->
         <record id="view_weha_voucher_order_search" model="ir.ui.view">
             <field name="name">view.weha.voucher.order.search</field>
@@ -188,7 +200,7 @@
             <field name="type">ir.actions.act_window</field>
             <field name="name">Voucher Order</field>
             <field name="res_model">weha.voucher.order</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">kanban,tree,form,graph</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
             <field name="search_view_id" ref="view_weha_voucher_order_search" />

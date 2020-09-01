@@ -12,7 +12,6 @@ class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-        
     def generate_12_random_numbers(self, vals):
 
         start = vals.get('start_number')
@@ -81,26 +80,46 @@ class VoucherOrderLine(models.Model):
     #     comodel_name='weha.voucher.request',
     #     ondelete='restrict',
     # )
+    name = fields.Char('Name', )
+
+    #Customer Code
+    customer_id = fields.Many2one('res.partner', 'Customer')
+
+    #Voucher No
     voucher_12_digit = fields.Char('Code 12', )
     voucher_ean = fields.Char('Code', )
-    name = fields.Char('Name', )
+    check_number = fields.Char(string='Check Number')
+
+    #Transaction Type on Voucer Line Trans
+    
+    #Transaction Date using create_date
+
+    #Voucher TYpe
+    voucher_code = fields.Char(string='Voucher Code')
+    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
+    
+    #Loc Fr
+
+    #Loc To
     operating_unit_id = fields.Many2one(
         string='Operating Unit',
         comodel_name='operating.unit',
         ondelete='restrict',
     )
-    voucher_code = fields.Char(string='Voucher Code')
-    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
 
+    #P-Voucher or E-Voucher
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-    start_number = fields.Integer(string='Start Number')
-    end_number = fields.Integer(string='End Number')
-    check_number = fields.Char(string='Check Number')
+
+    #start_number = fields.Integer(string='Start Number')
+    #end_number = fields.Integer(string='End Number')
+    
+    #expired_date
     expired_date = fields.Date(string='Expired Date')
+
     voucher_request_id = fields.Many2one(
        string='Request',
        comodel_name='weha.voucher.request',
@@ -118,9 +137,23 @@ class VoucherOrderLine(models.Model):
         inverse_name='voucher_order_line_id',
     )
     
+    damage_reason = fields.Char("Damage Reason", size=250)
+
     state = fields.Selection(
         string='Status',
-        selection=[('draft', 'New'), ('open', 'Open'), ('activated','Activated'), ('done','Close'),('scrap','Scrap')]
+        selection=[
+            ('draft', 'New'), 
+            ('open', 'Open'), 
+            ('deactivated','Deactivated'),
+            ('activated','Activated'), 
+            ('damage', 'Damage'),
+            ('transferred','Transferred'),
+            ('reserved', 'Reserved')
+            ('used', 'Used'),
+            ('return', 'Return')
+            ('done','Close'),
+            ('scrap','Scrap')
+        ]
     )
 
     @api.model
@@ -153,14 +186,24 @@ class VoucherOrderLineTrans(models.Model):
     name = fields.Char(
         string='Voucher Trans ID', readonly=True
     )
+
     trans_date = fields.Datetime('Date and Time')
+    
     voucher_order_line_id = fields.Many2one(
         string='Voucher Order Line',
         comodel_name='weha.voucher.order.line',
         ondelete='restrict', required=True,
     )
-    trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), 
-        ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'),])
+
+    trans_type = fields.Selection(
+                    string='Transaction Type', 
+                    selection=[
+                        ('OP', 'Open'), 
+                        ('RV', 'Received'), 
+                        ('ST', 'Stock Transfer'), 
+                        ('IC', 'Issued Customer'), 
+                        ('RT', 'Return'),]
+                )
     
     # voucher_location_id = fields.Many2one(
     #     string='Voucher Location',

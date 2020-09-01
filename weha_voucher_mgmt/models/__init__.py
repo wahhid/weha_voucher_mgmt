@@ -13,3 +13,4 @@ from . import res_config_settings
 from . import access_token
 from . import res_company_settings
 from . import weha_voucher_number_ranges
+from . import weha_voucher_online

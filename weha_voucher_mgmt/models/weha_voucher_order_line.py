@@ -171,10 +171,19 @@ class VoucherOrderLineTrans(models.Model):
         string='Voucher Trans ID', readonly=True
     )
     trans_date = fields.Datetime('Date and Time')
+    
     voucher_order_line_id = fields.Many2one(
         string='Voucher Order Line',
         comodel_name='weha.voucher.order.line',
         ondelete='restrict', required=True,
     )
-    trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), 
-        ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'), ('AC','Activated')])
+    
+    trans_type = fields.Selection(
+        string='Transaction Type', 
+        selection=[
+            ('OP', 'Open'), 
+            ('RV', 'Received'), 
+            ('ST', 'Stock Transfer'), 
+            ('IC', 'Issued Customer'), 
+            ('RT', 'Return'), 
+            ('AC', 'Activated')])
