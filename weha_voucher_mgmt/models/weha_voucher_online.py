@@ -10,8 +10,8 @@ _logger = logging.getLogger(__name__)
 
 TRANSACTION_TYPE_SELECTIONS = [
     ('sales', 'Sales'),
-    ('redee', 'Sales'),
-    ('sales', 'Sales'),
+    ('redeem', 'Redeem'),
+    ('promo', 'Promo'),
     ('sales', 'Sales'),
 ]
 
@@ -20,7 +20,7 @@ class VoucherPurchase(models.Model):
 
     name = fields.Char("Trans #", size=100, required=True)
     voucher_type = fields.Selection("Voucher Type", size=100)
-    transaction_type = fields.
+    #transaction_type = fields.
     trans_date = fields.Datetime("Date", default=datetime.now())
     receipt_number = fields.Char("Receipt #", size=100)
     cashier_id= fields.Char("Cashier", size=100)
