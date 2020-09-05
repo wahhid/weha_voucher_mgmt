@@ -2,7 +2,11 @@
 <odoo>
     <data noupdate="0">
 
+<<<<<<< HEAD
         <!-- <record id="weha_voucher_dashboard_action" model="ir.actions.act_window">
+=======
+        <record id="weha_voucher_dashboard_action" model="ir.actions.act_window">
+>>>>>>> wahyu
             <field name="name">Dashboard</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">operating.unit</field>

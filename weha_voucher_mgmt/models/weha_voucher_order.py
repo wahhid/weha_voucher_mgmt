@@ -17,6 +17,8 @@ class VoucherOrder(models.Model):
         for rec in self:
             if rec.stage_id.unattended:
                 rec.current_stage = 'unattended'
+            # if rec.stage_id.waiting:
+            #     rec.current_stage = 'waiting'
             if rec.stage_id.approval:
                 rec.current_stage = 'approval'
             if rec.stage_id.opened:
@@ -27,6 +29,7 @@ class VoucherOrder(models.Model):
                 rec.current_stage = 'cancelled'
             if rec.stage_id.rejected:
                 rec.current_stage = 'rejected'
+            
             
             
     def _get_default_stage_id(self):
@@ -62,6 +65,7 @@ class VoucherOrder(models.Model):
         _logger.info("Start Number = " + str(start_number))
         _logger.info("End Number = " + str(end_number))
 
+<<<<<<< HEAD
         # initialize tuple 
         strSQL = """SELECT """ \
                      """check_number """ \
@@ -103,6 +107,26 @@ class VoucherOrder(models.Model):
                 number = number+1
         else:
             raise ValidationError("Can't generate voucher because this number "+ str(start_number) +" <--> "+ str(end_number) +" already exists")
+=======
+        for i in range(start_number,end_number): 
+            vals = {}
+            vals.update({'operating_unit_id': self.operating_unit_id.id})
+            vals.update({'voucher_order_id': self.id})
+            vals.update({'voucher_code': self.voucher_code_id.code})
+            vals.update({'voucher_code_id': self.voucher_code_id.id})
+            vals.update({'check_number': number})
+            vals.update({'start_number': start_number})
+            vals.update({'end_number': end_number})
+            vals.update({'voucher_type': self.voucher_type})
+            vals.update({'state': 'open'})
+            val_order_line_obj = obj_voucher_order_line.sudo().create(vals)
+
+            _logger.info("Generate Voucher ID = " + str(val_order_line_obj))
+            
+            if not val_order_line_obj:
+                raise ValidationError("Can't Generate voucher order line, contact administrator!")
+            number = number+1
+>>>>>>> wahyu
         
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
@@ -113,6 +137,7 @@ class VoucherOrder(models.Model):
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
+<<<<<<< HEAD
         # self.send_l1_request_mail()
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
@@ -132,6 +157,21 @@ class VoucherOrder(models.Model):
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
 
+=======
+        self.write({'stage_id': stage_id.id})
+    
+    def trans_reject(self):
+        stage_id = self.stage_id.from_stage_id
+        self.write({'stage_id': stage_id.id})
+    
+    def trans_close(self):
+        stage_id = self.stage_id.next_stage_id
+        self.write({'stage_id': stage_id.id})
+        
+    def trans_request_approval(self):    
+        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        self.write(vals)
+>>>>>>> wahyu
     
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
@@ -201,9 +241,14 @@ class VoucherOrder(models.Model):
             stage_id = self.env['weha.voucher.order.stage'].browse([vals['stage_id']])
             if self.stage_id.approval:
                 raise ValidationError("Please using approve or reject button")
+<<<<<<< HEAD
             if self.stage_id.opened:
                 raise ValidationError("Please using Generate Voucher or Close Order")
             if self.stage_id.closed:
                 raise ValidationError("Voucher Close")
         res = super(VoucherOrder, self).write(vals) 
+=======
+
+        res = super(VoucherOrder, self).write(vals)
+>>>>>>> wahyu
         return res

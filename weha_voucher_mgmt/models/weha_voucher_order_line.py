@@ -15,8 +15,15 @@ class VoucherOrderLine(models.Model):
         
     def generate_12_random_numbers(self, vals):
 
+<<<<<<< HEAD
         company_code = self.env.user.default_operating_unit_id.company_id.res_company_code
         voucher_code = vals.get('voucher_code')
+=======
+        start = vals.get('start_number')
+        end = vals.get('end_number')
+        c_code = self.env.user.default_operating_unit_id.company_id.res_company_code
+        v_code = vals.get('voucher_code')
+>>>>>>> wahyu
         num = vals.get('check_number')
 
         if vals.get('voucher_type') == 'physical':
@@ -28,7 +35,11 @@ class VoucherOrderLine(models.Model):
         year = x.strftime("%y")
 
         # company_code,type,year,classification,number
+<<<<<<< HEAD
         code12 = [company_code,voucher_code,year,classifi,number]
+=======
+        code12 = [c_code,v_code,year,classifi,number]
+>>>>>>> wahyu
         _logger.info("CODE 12 = " + str(code12))
         return code12
 
@@ -67,12 +78,25 @@ class VoucherOrderLine(models.Model):
                 raise ValidationError("Can't create voucher order line trans, contact administrator!")
 
 
+<<<<<<< HEAD
     name = fields.Char('Name', )
     
     #Customer Code
     customer_id = fields.Many2one('res.partner', 'Customer')
 
     #Voucher No
+=======
+    voucher_order_id = fields.Many2one(
+        string='Voucher Order',
+        comodel_name='weha.voucher.order',
+        ondelete='restrict',
+    )
+    # voucher_request_id = fields.Many2one(
+    #     string='Voucher Request',
+    #     comodel_name='weha.voucher.request',
+    #     ondelete='restrict',
+    # )
+>>>>>>> wahyu
     voucher_12_digit = fields.Char('Code 12', )
     voucher_ean = fields.Char('Code', )
     
@@ -82,6 +106,7 @@ class VoucherOrderLine(models.Model):
         comodel_name='operating.unit',
         ondelete='restrict',
     )
+<<<<<<< HEAD
 
     #Voucher Type
     voucher_code = fields.Char(string='Voucher Code')
@@ -96,11 +121,18 @@ class VoucherOrderLine(models.Model):
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
 
     #P-Voucher or E-Voucher
+=======
+    voucher_code = fields.Char(string='Voucher Code')
+    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
+    voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
+    
+>>>>>>> wahyu
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
+<<<<<<< HEAD
 
     # start_number = fields.Integer(string='Start Number')
     # end_number = fields.Integer(string='End Number')
@@ -111,6 +143,22 @@ class VoucherOrderLine(models.Model):
     #Expired Date Voucher & Year
     expired_date = fields.Date(string='Expired Date')
     year = fields.Integer(string='Year Made', size=5)
+=======
+    start_number = fields.Integer(string='Start Number')
+    end_number = fields.Integer(string='End Number')
+    check_number = fields.Char(string='Check Number')
+    expired_date = fields.Date(string='Expired Date')
+    voucher_request_id = fields.Many2one(
+       string='Request',
+       comodel_name='weha.voucher.request',
+       ondelete='restrict',
+    )
+    voucher_order_id = fields.Many2one(
+       string='Request',
+       comodel_name='weha.voucher.order',
+       ondelete='restrict',
+    )
+>>>>>>> wahyu
     
     #Many2one relation
     voucher_order_id = fields.Many2one(
@@ -202,5 +250,9 @@ class VoucherOrderLineTrans(models.Model):
         comodel_name='weha.voucher.order.line',
         ondelete='restrict', required=True,
     )
+<<<<<<< HEAD
     trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), ('DV', 'Delivery'),
+=======
+    trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), 
+>>>>>>> wahyu
         ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'), ('AC','Activated')])

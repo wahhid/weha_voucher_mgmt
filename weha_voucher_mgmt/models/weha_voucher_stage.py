@@ -17,7 +17,11 @@ class WehaVoucherOrderStage(models.Model):
     unattended = fields.Boolean(
         string='Request')
     approval = fields.Boolean(
+<<<<<<< HEAD
         string='Approve')
+=======
+        string='Approval')
+>>>>>>> wahyu
     opened = fields.Boolean(
         string='Open')
     closed = fields.Boolean(
@@ -178,6 +182,7 @@ class WehaVoucherStockTransferStage(models.Model):
 class WehaVoucherAllocateStage(models.Model):
     _name = 'weha.voucher.allocate.stage'
     _description = 'Voucher Allocate Stage'
+<<<<<<< HEAD
     _order = 'sequence, id'
 
     name = fields.Char(string='Stage Name', required=True, translate=True)
@@ -219,6 +224,8 @@ class WehaVoucherAllocateStage(models.Model):
 class WehaVoucherIssuingStage(models.Model):
     _name = 'weha.voucher.issuing.stage'
     _description = 'Voucher Issuing Stage'
+=======
+>>>>>>> wahyu
     _order = 'sequence, id'
 
     name = fields.Char(string='Stage Name', required=True, translate=True)
@@ -226,7 +233,15 @@ class WehaVoucherIssuingStage(models.Model):
     sequence = fields.Integer(default=1)
     active = fields.Boolean(default=True)
     unattended = fields.Boolean(
+<<<<<<< HEAD
         string='Request')
+=======
+        string='Allocate')
+    approval = fields.Boolean(
+        string='Approval')
+    # approval2 = fields.Boolean(
+    #     string='Approval 2')
+>>>>>>> wahyu
     opened = fields.Boolean(
         string='Open')
     closed = fields.Boolean(
@@ -238,8 +253,8 @@ class WehaVoucherIssuingStage(models.Model):
         help="This stage is folded in the kanban view "
              "when there are no records in that stage "
              "to display.")
-    from_stage_id = fields.Many2one('weha.voucher.issuing.stage', 'From Stage', required=False)
-    next_stage_id = fields.Many2one('weha.voucher.issuing.stage', 'Next Stage', required=False)
+    from_stage_id = fields.Many2one('weha.voucher.allocate.stage', 'From Stage', required=False)
+    next_stage_id = fields.Many2one('weha.voucher.allocate.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
     mail_template_id = fields.Many2one(
         'mail.template',
@@ -249,6 +264,7 @@ class WehaVoucherIssuingStage(models.Model):
     company_id = fields.Many2one(
         'res.company',
         string="Company",
+<<<<<<< HEAD
         default=lambda self: self.env['res.company']._company_default_get('weha.voucher.issuing'))
 
 class WehaVoucherScrapStage(models.Model):
@@ -289,4 +305,7 @@ class WehaVoucherScrapStage(models.Model):
         'res.company',
         string="Company",
         default=lambda self: self.env['res.company']._company_default_get('weha.voucher.scrap'))
+=======
+        default=lambda self: self.env['res.company']._company_default_get('weha.voucher.allocate'))
+>>>>>>> wahyu
         
