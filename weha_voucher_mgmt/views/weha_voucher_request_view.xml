@@ -178,13 +178,25 @@
                 </search>
             </field>
         </record>
+
+        <!-- Voucher Request Graph -->
+        <record id="view_weha_voucher_request_graph" model="ir.ui.view">
+            <field name="name">view.weha.voucher.request.graph</field>
+            <field name="model">weha.voucher.request</field>
+            <field name="arch" type="xml">
+                <graph string="Voucher Request Statistic" type="pie">
+                    <field name="operating_unit_id" type="row"/>
+                    <field name="voucher_count" type="measure"/>
+                </graph>
+            </field>
+        </record>
         
         <!-- Main window action for voucher request -->
         <record id="action_weha_voucher_request_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
             <field name="name">Voucher Request</field>
             <field name="res_model">weha.voucher.request</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">kanban,tree,form,graph</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
             <field name="search_view_id" ref="view_weha_voucher_request_search" />

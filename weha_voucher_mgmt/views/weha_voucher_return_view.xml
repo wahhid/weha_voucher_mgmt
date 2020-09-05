@@ -31,11 +31,14 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                            class="btn btn-light" name="trans_voucher_return_activate" string="Process Voucher Return" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_return_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-light" name="trans_close" string="Closed Stock Transfer" 
+                            class="btn btn-light" name="trans_close" string="Closed Return Voucher" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
@@ -160,13 +163,25 @@
                 </search>
             </field>
         </record>
+
+        <!-- Voucher Return Graph -->
+        <record id="view_weha_voucher_return_graph" model="ir.ui.view">
+            <field name="name">view.weha.voucher.return.graph</field>
+            <field name="model">weha.voucher.return</field>
+            <field name="arch" type="xml">
+                <graph string="Voucher Return Statistic" type="pie">
+                    <field name="source_operating_unit_id" type="row"/>
+                    <field name="voucher_count" type="measure"/>
+                </graph>
+            </field>
+        </record>
         
         <!-- Main window action for voucher order -->
         <record id="action_weha_voucher_return_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
             <field name="name">Voucher Return</field>
             <field name="res_model">weha.voucher.return</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">kanban,tree,form,graph</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
             <field name="search_view_id" ref="view_weha_voucher_return_search" />

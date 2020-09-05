@@ -2,12 +2,12 @@
 <odoo>
     <data noupdate="0">
 
-        <record id="weha_voucher_dashboard_action" model="ir.actions.act_window">
+        <!-- <record id="weha_voucher_dashboard_action" model="ir.actions.act_window">
             <field name="name">Dashboard</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">operating.unit</field>
             <field name="view_mode">kanban,tree,form,pivot</field>
-        </record>
+        </record> -->
 
 
         <!-- Menus -->
@@ -20,7 +20,7 @@
         
 
         <menuitem id="weha_voucher_dashboard_menu" name="Dashboard"
-            parent="weha_voucher_mgmt_main_menu" action="weha_voucher_dashboard_action" sequence="1"/>
+            parent="weha_voucher_mgmt_main_menu" action="weha_voucher_mgmt.open_board_my_dash_action" sequence="1"/>
 
          <menuitem id="weha_voucher_reporting_main_menu" name="Reporting"
             parent="weha_voucher_mgmt_main_menu" sequence="30"

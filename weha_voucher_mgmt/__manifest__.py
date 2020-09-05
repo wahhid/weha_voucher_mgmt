@@ -30,12 +30,19 @@
         'views/weha_voucher_stock_transfer_view.xml',
         'views/weha_voucher_stock_transfer_line_view.xml',
         'views/weha_voucher_config_code_view.xml',
+        'views/weha_voucher_config_mapping_pos_view.xml',
+        'views/weha_voucher_config_mapping_sku_view.xml',
         'views/weha_voucher_config_location_view.xml',
         # 'views/weha_voucher_config_number_range_view.xml',
         'views/weha_voucher_config_terms_view.xml',
         'views/weha_voucher_config_type_view.xml',
         'views/weha_voucher_return_stage_view.xml',
         'views/weha_voucher_allocate_stage_view.xml',
+        'views/weha_voucher_scrap_stage_view.xml',
+        'views/weha_voucher_scrap_view.xml',
+        'views/weha_voucher_scrap_line_view.xml',
+        'views/weha_voucher_issuing_stage_view.xml',
+        'views/weha_voucher_issuing_view.xml',
         'views/weha_voucher_stock_transfer_stage_view.xml',
         'views/weha_voucher_code_minimum_stock_view.xml',
         'views/res_company_settings_view.xml',
@@ -45,7 +52,8 @@
     "depends": [
         'base',
         'mail',
-        'operating_unit'
+        'operating_unit',
+        'board'
     ],
     "installable": True,
 }

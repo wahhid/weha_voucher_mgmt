@@ -23,8 +23,14 @@ class VoucherAllocate(models.Model):
                 rec.current_stage = 'approval'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
-            if rec.stage_id.closed:
-                rec.current_stage = 'closed'
+            if rec.stage_id.progress:
+                rec.current_stage = 'progress'
+            if rec.stage_id.receiving:
+                rec.current_stage = 'receiving'
+            if rec.stage_id.cancelled:
+                rec.current_stage = 'cancelled'
+            if rec.stage_id.rejected:
+                rec.current_stage = 'rejected'
             
     def _get_default_stage_id(self):
         return self.env['weha.voucher.allocate.stage'].search([], limit=1).id
@@ -86,7 +92,7 @@ class VoucherAllocate(models.Model):
 
                 strSQL = """SELECT """ \
                      """id,check_number """ \
-                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
+                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='open' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
 
                 self.env.cr.execute(strSQL)
                 voucher_order_line = self.env.cr.fetchall()
@@ -102,9 +108,9 @@ class VoucherAllocate(models.Model):
                     vals.update({'voucher_terms_id': self.voucher_terms_id.id})
                     vals.update({'expired_date': exp_date})
                     vals.update({'operating_unit_id': sourch_voucher})
-                    vals.update({'state': 'activated'})
+                    vals.update({'state': 'delivery'})
                     vals.update({'voucher_allocate_id': self.id}) 
-                    obj_voucher_order_line_ids = search_se.write(vals)
+                    obj_voucher_order_line_ids = voucher_order_line.write(vals)
 
                     order_line_trans_obj = self.env['weha.voucher.order.line.trans']
 
@@ -112,7 +118,7 @@ class VoucherAllocate(models.Model):
                     vals.update({'name': self.number})
                     vals.update({'trans_date': datetime.now()})
                     vals.update({'voucher_order_line_id': row[0]})
-                    vals.update({'trans_type': 'AC'})
+                    vals.update({'trans_type': 'DV'})
                     val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
                     _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
 
@@ -151,7 +157,7 @@ class VoucherAllocate(models.Model):
     )
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
     stage_id = fields.Many2one(
-        'weha.voucher.order.stage',
+        'weha.voucher.allocate.stage',
         string='Stage',
         group_expand='_read_group_stage_ids',
         default=_get_default_stage_id,

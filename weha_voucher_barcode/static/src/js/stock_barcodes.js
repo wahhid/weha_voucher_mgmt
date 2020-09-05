@@ -17,6 +17,7 @@ odoo.define("stock_barcodes.FormController", function(require) {
 
             this._super(barcode, target).then(function() {
                 var manual_entry_mode = self.$("div[name='manual_entry'] input").val();
+				/*
                 if (manual_entry_mode) {
                     var packaging = self.$("div[name='packaging_id'] input").val();
                     if (packaging) {
@@ -25,6 +26,7 @@ odoo.define("stock_barcodes.FormController", function(require) {
                         self.$("input[name='product_qty']").focus();
                     }
                 }
+				*/
             });
         },
         renderButtons: function($node) {

@@ -51,6 +51,8 @@
                                 <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)], 'required':[('approval','=', True)] }"/> 
                                 <field name="opened"/>
                                 <field name="closed"/>
+                                <field name="cancelled"/>
+                                <field name="rejected"/>
                                 <field name="fold"/>
                             </group>
         

@@ -17,12 +17,12 @@ class VoucherIssuing(models.Model):
         for rec in self:
             if rec.stage_id.unattended:
                 rec.current_stage = 'unattended'
-            if rec.stage_id.approval:
-                rec.current_stage = 'approval'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
+            if rec.stage_id.cancelled:
+                rec.current_stage = 'cancelled'
             
     def _get_default_stage_id(self):
         return self.env['weha.voucher.issuing.stage'].search([], limit=1).id
@@ -76,7 +76,7 @@ class VoucherIssuing(models.Model):
     )
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
     stage_id = fields.Many2one(
-        'weha.voucher.order.stage',
+        'weha.voucher.issuing.stage',
         string='Stage',
         group_expand='_read_group_stage_ids',
         default=_get_default_stage_id,
@@ -129,17 +129,6 @@ class VoucherIssuing(models.Model):
             #     if self.stage_id.id != stage_obj.from_stage_id.id:
             #         raise ValidationError('Cannot Process Approval')
             #     # self.send_l1_request_mail()
-
-        if vals.get('stage_id.unattended'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.unattended')))
-            self.current_stage = 'unattended'
-        if vals.get('stage_id.approval'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.approval')))
-            self.current_stage = 'approval'
-        if vals.get('stage_id.opened'):
-            self.current_stage = 'open'
-        if vals.get('stage_id.closed'):
-            self.current_stage = 'closed'
            
         res = super(VoucherIssuing, self).write(vals)
         return res

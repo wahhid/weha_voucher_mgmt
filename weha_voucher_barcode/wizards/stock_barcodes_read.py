@@ -1,7 +1,7 @@
 # Copyright 2019 Sergio Teruel <sergio.teruel@tecnativa.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
-
+from odoo.exceptions import UserError, ValidationError
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -60,19 +60,27 @@ class WizStockBarcodesRead(models.AbstractModel):
                 vals = {}
                 vals.update({'state': 'received'})
                 res = voucher_line.write(vals)
+		        
+                _logger.info('Voucher Line Write : '+ str(res))
+                # if not res:
+				# 	raise ValidationError("Can't write received Voucher!")
+				
+                # obj_order_line_trans = self.env['weha.voucher.order.line.trans']
 
-                obj_order_line_trans = self.env['weha.voucher.order.line.trans']
-
-                vals = {}
-                vals.update({'name': obj_request.number})
-                vals.update({'voucher_order_line_id': voucher_line.id})
-                vals.update({'trans_date': datetime.now()})
-                vals.update({'trans_type': 'RV'})
-                obj_order_line_trans.create(vals)
-
-            #self.action_product_scaned_post(product)
-            self.action_done()
-            return
+                # vals = {}
+                # vals.update({'name': obj_request.number})
+                # vals.update({'voucher_order_line_id': voucher_line.id})
+                # vals.update({'trans_date': datetime.now()})
+                # vals.update({'trans_type': 'RV'})
+                # row = obj_order_line_trans.create(vals)
+				
+				# if not row:
+				# 	raise ValidationError("Can't create Voucher Line Trans!")
+				
+                
+                #self.action_product_scaned_post(product)
+                self.action_done()
+                return
         _logger.info('Voucher Line Not found')
         self._set_messagge_info("not_found", _("Barcode not found"))
 
@@ -85,9 +93,9 @@ class WizStockBarcodesRead(models.AbstractModel):
         self.process_barcode(barcode)
 
     def check_done_conditions(self):
-        if not self.product_qty:
-            self._set_messagge_info("info", _("Waiting quantities"))
-            return False
+        # if not self.product_qty:
+        #     self._set_messagge_info("info", _("Waiting quantities"))
+        #     return False
         if self.manual_entry:
             self._set_messagge_info("success", _("Manual entry OK"))
         return True
