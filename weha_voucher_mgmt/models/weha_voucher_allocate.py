@@ -1,10 +1,7 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
-<<<<<<< HEAD
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import *
-=======
->>>>>>> wahyu
 import logging
 from random import randrange
 
@@ -26,7 +23,6 @@ class VoucherAllocate(models.Model):
                 rec.current_stage = 'approval'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
-<<<<<<< HEAD
             if rec.stage_id.progress:
                 rec.current_stage = 'progress'
             if rec.stage_id.receiving:
@@ -35,10 +31,6 @@ class VoucherAllocate(models.Model):
                 rec.current_stage = 'cancelled'
             if rec.stage_id.rejected:
                 rec.current_stage = 'rejected'
-=======
-            if rec.stage_id.closed:
-                rec.current_stage = 'closed'
->>>>>>> wahyu
             
     def _get_default_stage_id(self):
         return self.env['weha.voucher.allocate.stage'].search([], limit=1).id
@@ -48,21 +40,12 @@ class VoucherAllocate(models.Model):
         stage_ids = self.env['weha.voucher.allocate.stage'].search([])
         return stage_ids
     
-<<<<<<< HEAD
     @api.depends('voucher_count')
     def _calculate_voucher_count(self):
         voucher_master = self.env['weha.voucher.order.line'].sudo().search_count([('voucher_allocate_id','=', self.id)])
         return voucher_master
     
     # def send_l1_allocate_mail(self):
-=======
-    # @api.depends('line_ids')
-    # def _calculate_voucher_count(self):
-    #     for row in self:
-    #         self.voucher_count = len(self.line_ids)
-    
-    # def send_l1_request_mail(self):
->>>>>>> wahyu
     #     for rec in self:
     #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
     #         template.send_mail(rec.id)
@@ -74,7 +57,6 @@ class VoucherAllocate(models.Model):
         res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
         return res
 
-<<<<<<< HEAD
 
     def trans_voucher_allocate_activate(self):
         line = len(self.voucher_allocate_line_ids)
@@ -168,42 +150,14 @@ class VoucherAllocate(models.Model):
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     source_operating_unit = fields.Many2one('operating.unit','Source Store', )
-=======
-    @api.depends('stage_id')
-    def trans_approve(self):
-        
-        stage = self.stage_id.next_stage_id.id
-        _logger.info("Stage Here = " + str(self.stage_id.id))
-        _logger.info("Next Stage = " + str(stage))
-        self.write({'stage_id': stage})
-
-        return True
-        # def trans_reject(self):
-        #     pass
-
-
-
-    company_id = fields.Many2one('res.company', 'Company')
-    number = fields.Char(string='Order number', default="/",readonly=True)
-    ref = fields.Char(string='Source Document', required=True)
-    request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
-    user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
-    operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
->>>>>>> wahyu
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-<<<<<<< HEAD
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
     stage_id = fields.Many2one(
         'weha.voucher.allocate.stage',
-=======
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
-    stage_id = fields.Many2one(
-        'weha.voucher.order.stage',
->>>>>>> wahyu
         string='Stage',
         group_expand='_read_group_stage_ids',
         default=_get_default_stage_id,
@@ -216,11 +170,8 @@ class VoucherAllocate(models.Model):
         ('2', _('High')),
         ('3', _('Very High')),
     ], string='Priority', default='1')
-<<<<<<< HEAD
 
     voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=False)
-=======
->>>>>>> wahyu
    
     color = fields.Integer(string='Color Index')
     kanban_state = fields.Selection([
@@ -249,7 +200,6 @@ class VoucherAllocate(models.Model):
     
     def write(self, vals):
         if 'stage_id' in vals:
-<<<<<<< HEAD
             # stage_obj = self.env['weha.voucher.allocate.stage'].browse([vals['stage_id']])
             if self.stage_id.approval:
                 raise ValidationError("Please using approve or reject button")
@@ -258,11 +208,6 @@ class VoucherAllocate(models.Model):
             if self.stage_id.closed:
                 raise ValidationError("Can't Move, Because Status Closed")
 
-=======
-            stage_obj = self.env['weha.voucher.allocate.stage'].browse([vals['stage_id']])
-            if stage_obj.unattended:
-                pass
->>>>>>> wahyu
 
             #Change To L1, Get User from Param
             # trans_approve = False
@@ -270,22 +215,7 @@ class VoucherAllocate(models.Model):
             # if stage_obj.approval:
             #     if self.stage_id.id != stage_obj.from_stage_id.id:
             #         raise ValidationError('Cannot Process Approval')
-<<<<<<< HEAD
             #     # self.send_l1_allocate_mail()
-=======
-            #     # self.send_l1_request_mail()
-
-        if vals.get('stage_id.unattended'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.unattended')))
-            self.current_stage = 'unattended'
-        if vals.get('stage_id.approval'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.approval')))
-            self.current_stage = 'approval'
-        if vals.get('stage_id.opened'):
-            self.current_stage = 'open'
-        if vals.get('stage_id.closed'):
-            self.current_stage = 'closed'
->>>>>>> wahyu
            
         res = super(VoucherAllocate, self).write(vals)
         return res

@@ -42,7 +42,6 @@ class VoucherOrder(models.Model):
             template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
             template.send_mail(rec.id)
 
-
     # Generate Voucher
     def trans_generate_voucher(self):
         _logger.info("Generate Voucher ID = " + str('OKK'))
@@ -118,7 +117,7 @@ class VoucherOrder(models.Model):
         
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
-<<<<<<< HEAD
+
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
         #Send Notification
         template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
@@ -147,10 +146,8 @@ class VoucherOrder(models.Model):
         #_logger.info(next_stage_id.approval_user_id)
         #template.email_to = next_stage_id.approval_user_id.partner_id.email
         #template.send_mail(self.id, force_send=True)
-=======
-<<<<<<< HEAD
         # self.send_l1_request_mail()
->>>>>>> yogi
+
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
     
@@ -184,25 +181,7 @@ class VoucherOrder(models.Model):
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
 
-<<<<<<< HEAD
-=======
-=======
-        self.write({'stage_id': stage_id.id})
-    
-    def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
-        self.write({'stage_id': stage_id.id})
-    
-    def trans_close(self):
-        stage_id = self.stage_id.next_stage_id
-        self.write({'stage_id': stage_id.id})
-        
-    def trans_request_approval(self):    
-        vals = { 'stage_id': self.stage_id.next_stage_id.id}
-        self.write(vals)
->>>>>>> wahyu
->>>>>>> yogi
-    
+
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
@@ -234,17 +213,12 @@ class VoucherOrder(models.Model):
     ], string='Priority', default='1')
    
     color = fields.Integer(string='Color Index')
-<<<<<<< HEAD
-=======
-    start_number = fields.Integer(string='Start Number')
-    end_number = fields.Integer(string='End Number')
-    year = fields.Integer(string='Year Made')
->>>>>>> yogi
     
     start_number = fields.Integer(string='Start Number', required=True)
     end_number = fields.Integer(string='End Number', required=True)
     #estimate_voucher_count = fields.Integer('Estimate Voucher Count', compute="_calculate_voucher_count", store=True)
-
+    year = fields.Integer(string='Year Made')
+    
     kanban_state = fields.Selection([
         ('normal', 'Default'),
         ('done', 'Ready for next stage'),
@@ -269,14 +243,6 @@ class VoucherOrder(models.Model):
                 'weha.voucher.order.sequence') or '/'
             
         res = super(VoucherOrder, self).create(vals)
-<<<<<<< HEAD
-=======
-        self.current_stage = 'unattended'
-        
-        # Check if mail to the user has to be sent
-        #if vals.get('user_id') and res:
-        #    res.send_user_mail()
->>>>>>> yogi
         return res    
     
     def write(self, vals):
@@ -284,20 +250,9 @@ class VoucherOrder(models.Model):
             stage_id = self.env['weha.voucher.order.stage'].browse([vals['stage_id']])
             if self.stage_id.approval:
                 raise ValidationError("Please using approve or reject button")
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> yogi
             if self.stage_id.opened:
                 raise ValidationError("Please using Generate Voucher or Close Order")
             if self.stage_id.closed:
                 raise ValidationError("Voucher Close")
-<<<<<<< HEAD
-=======
-        res = super(VoucherOrder, self).write(vals) 
-=======
-
->>>>>>> yogi
         res = super(VoucherOrder, self).write(vals)
->>>>>>> wahyu
         return res

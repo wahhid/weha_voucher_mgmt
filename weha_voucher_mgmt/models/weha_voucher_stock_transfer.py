@@ -110,7 +110,6 @@ class VoucherStockTransfer(models.Model):
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
-<<<<<<< HEAD
         res = super(VoucherStockTransfer, self).write({'stage_id': stage_id.id})
         return res
     
@@ -128,21 +127,6 @@ class VoucherStockTransfer(models.Model):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherStockTransfer, self).write({'stage_id': stage_id.id})
         return res
-=======
-        self.write({'stage_id': stage_id.id})
-    
-    def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
-        self.write({'stage_id': stage_id.id})
-    
-    def trans_close(self):
-        stage_id = self.stage_id.next_stage_id
-        self.write({'stage_id': stage_id.id})
-        
-    def trans_request_approval(self):    
-        vals = { 'stage_id': self.stage_id.next_stage_id.id}
-        self.write(vals)
->>>>>>> wahyu
 
     # def pass_context_operating_unit(self):
     #     res = self.env['operating.unit'].search([])

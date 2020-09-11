@@ -48,7 +48,6 @@ class WeheVoucherRequest(models.Model):
                 voucher_count += line_id.amount
         self.voucher_count = voucher_count
     
-<<<<<<< HEAD
     # @api.depends('line_ids')
     # def _calculate_voucher_count(self):
     #     for row in self:
@@ -99,12 +98,8 @@ class WeheVoucherRequest(models.Model):
                     # val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
                     # _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
         
-<<<<<<< HEAD
-    def trans_approve1(self):
-=======
 
-    def trans_approve(self):
->>>>>>> yogi
+    def trans_approve1(self):
         stage_id = self.stage_id.next_stage_id
         # self.send_l1_request_mail()
         res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
@@ -124,7 +119,7 @@ class WeheVoucherRequest(models.Model):
         stage_id = self.stage_id.from_stage_id
         res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
         return res
-=======
+
     @api.depends('line_ids')
     def _calculate_voucher_count(self):
         for row in self:
@@ -167,7 +162,7 @@ class WeheVoucherRequest(models.Model):
     def trans_approve2(self):
         vals = { 'stage_id': self.stage_id.next_stage_id.id}
         self.write(vals)
->>>>>>> wahyu
+
 
     def trans_request_approval(self):    
         vals = { 'stage_id': self.stage_id.next_stage_id.id}

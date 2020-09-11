@@ -94,11 +94,10 @@ class VoucherOrderLine(models.Model):
         comodel_name='operating.unit',
         ondelete='restrict',
     )
-<<<<<<< HEAD
+
     voucher_code = fields.Char(string='Voucher #')
     voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Code')
-=======
-<<<<<<< HEAD
+
 
     #Voucher Type
     voucher_code = fields.Char(string='Voucher Code')
@@ -110,22 +109,18 @@ class VoucherOrderLine(models.Model):
     operating_unit_loc_to_id = fields.Many2one(string='Loc.To', comodel_name='operating.unit', ondelete='restrict',)
 
     #Voucher Terms
->>>>>>> yogi
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
 
     #P-Voucher or E-Voucher
-=======
     voucher_code = fields.Char(string='Voucher Code')
     voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
     
->>>>>>> wahyu
     voucher_type = fields.Selection(
         string='Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-<<<<<<< HEAD
 
     # start_number = fields.Integer(string='Start Number')
     # end_number = fields.Integer(string='End Number')
@@ -136,22 +131,6 @@ class VoucherOrderLine(models.Model):
     #Expired Date Voucher & Year
     expired_date = fields.Date(string='Expired Date')
     year = fields.Integer(string='Year Made', size=5)
-=======
-    start_number = fields.Integer(string='Start Number')
-    end_number = fields.Integer(string='End Number')
-    check_number = fields.Char(string='Check Number')
-    expired_date = fields.Date(string='Expired Date')
-    voucher_request_id = fields.Many2one(
-       string='Request',
-       comodel_name='weha.voucher.request',
-       ondelete='restrict',
-    )
-    voucher_order_id = fields.Many2one(
-       string='Request',
-       comodel_name='weha.voucher.order',
-       ondelete='restrict',
-    )
->>>>>>> wahyu
     
     #Many2one relation
     voucher_order_id = fields.Many2one(
@@ -245,7 +224,7 @@ class VoucherOrderLineTrans(models.Model):
         comodel_name='weha.voucher.order.line',
         ondelete='restrict', required=True,
     )
-<<<<<<< HEAD
+
     
     trans_type = fields.Selection(
         string='Transaction Type', 
@@ -256,11 +235,7 @@ class VoucherOrderLineTrans(models.Model):
             ('IC', 'Issued Customer'), 
             ('RT', 'Return'), 
             ('AC', 'Activated')])
-=======
-<<<<<<< HEAD
+            
     trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), ('DV', 'Delivery'),
-=======
-    trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), 
->>>>>>> wahyu
         ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'), ('AC','Activated')])
->>>>>>> yogi
+

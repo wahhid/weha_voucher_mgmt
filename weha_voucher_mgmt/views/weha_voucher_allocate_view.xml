@@ -2,7 +2,6 @@
 <odoo>
     <data>
 
-<<<<<<< HEAD
         <record id="action_voucher_allocate_line_from_voucher_allocate" model="ir.actions.act_window">
             <field name="name">Vouchers</field>
             <field name="res_model">weha.voucher.order.line</field>
@@ -14,8 +13,6 @@
         </record>
 
 
-=======
->>>>>>> wahyu
         <!-- Tree view for voucher request -->
         <record id="view_weha_voucher_allocate_tree" model="ir.ui.view">
             <field name="name">view.weha.voucher.allocate.tree</field>
@@ -44,7 +41,6 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-<<<<<<< HEAD
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}" 
                             class="btn btn-primary" name="trans_voucher_allocate_activate" string="Activated from Allocate" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
@@ -72,13 +68,6 @@
                                 <field string="Vouchers" name="voucher_count" widget="statinfo"/>
                             </button>
                         </div>
-=======
-                        
-                        <field name="stage_id" widget="statusbar" clickable="True" />
-                    </header>
-                    <sheet>
-                        
->>>>>>> wahyu
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
                             <h1>
@@ -88,7 +77,6 @@
                         </div>
                         <group>
                             <group>
-<<<<<<< HEAD
                                 <field name="allocate_date"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
@@ -97,12 +85,6 @@
                             </group>
                             <group>
                                  <field name="ref"/>
-=======
-                                <field name="user_id"/>
-                                <field name="operating_unit_id"/>
-                            </group>
-                            <group>
->>>>>>> wahyu
                                 <field name="voucher_count"/>
                                 <field name="priority" widget="priority"/>
                             </group>
@@ -196,7 +178,6 @@
                 </search>
             </field>
         </record>
-<<<<<<< HEAD
 
         <!-- Voucher Allocate Graph -->
         <record id="view_weha_voucher_allocate_graph" model="ir.ui.view">
@@ -209,19 +190,13 @@
                 </graph>
             </field>
         </record>
-=======
->>>>>>> wahyu
         
         <!-- Main window action for voucher request -->
         <record id="action_weha_voucher_allocate_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
             <field name="name">Voucher Allocate</field>
             <field name="res_model">weha.voucher.allocate</field>
-<<<<<<< HEAD
             <field name="view_mode">kanban,tree,form,graph</field>
-=======
-            <field name="view_mode">kanban,tree,form</field>
->>>>>>> wahyu
             <field name="domain">[]</field>
             <field name="context">\{}</field>
             <field name="search_view_id" ref="view_weha_voucher_allocate_search" />

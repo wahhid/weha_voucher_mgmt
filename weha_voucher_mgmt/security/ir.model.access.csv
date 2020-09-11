@@ -66,8 +66,6 @@ access_weha_voucher_stock_transfer_line_user,weha.voucher.stock.transfer.line.us
 access_weha_voucher_allocate_stage_manager,weha.voucher.allocate.stage.manager,model_weha_voucher_allocate_stage,group_voucher_manager,1,1,1,1
 access_weha_voucher_allocate_stage_user,weha.voucher.allocate.stage.user,model_weha_voucher_allocate_stage,group_voucher_user,1,1,1,0
 
-<<<<<<< HEAD
-
 access_weha_voucher_allocate_finance_manager,weha.voucher.allocate.finance.manager,model_weha_voucher_allocate,group_voucher_finance_manager,1,1,1,1
 access_weha_voucher_allocate_finance_user,weha.voucher.allocate.finance.user,model_weha_voucher_allocate,group_voucher_finance_user,1,1,1,0
 access_weha_voucher_allocate_user,weha.voucher.allocate.user,model_weha_voucher_allocate,group_voucher_user,1,0,0,0
@@ -80,10 +78,9 @@ access_weha_voucher_allocate_line_user,weha.voucher.allocate.line.user,model_weh
 access_weha_voucher_issuing_manager,weha.voucher.issuing.manager,model_weha_voucher_issuing,group_voucher_manager,1,1,1,1
 access_weha_voucher_issuing_user,weha.voucher.issuing.user,model_weha_voucher_issuing,group_voucher_user,1,1,1,0
 
-=======
+
 access_weha_voucher_allocate_manager,weha.voucher.allocate.manager,model_weha_voucher_allocate,group_voucher_manager,1,1,1,1
 access_weha_voucher_allocate_user,weha.voucher.allocate.user,model_weha_voucher_allocate,group_voucher_user,1,1,1,0
-<<<<<<< HEAD
 
 access_weha_voucher_allocate_line_manager,weha.voucher.allocate.line.manager,model_weha_voucher_allocate_line,group_voucher_manager,1,1,1,1
 access_weha_voucher_allocate_line_user,weha.voucher.allocate.line.user,model_weha_voucher_allocate_line,group_voucher_user,1,1,1,0
@@ -108,11 +105,3 @@ access_weha_voucher_mapping_pos_user,weha.voucher.mapping.pos.user,model_weha_vo
 
 access_weha_voucher_mapping_sku_manager,weha.voucher.mapping.sku.manager,model_weha_voucher_mapping_sku,group_voucher_manager,1,1,1,1
 access_weha_voucher_mapping_sku_user,weha.voucher.mapping.sku.user,model_weha_voucher_mapping_sku,group_voucher_user,1,1,1,0
-
-
-=======
-
-access_weha_voucher_allocate_line_manager,weha.voucher.allocate.line.manager,model_weha_voucher_allocate_line,group_voucher_manager,1,1,1,1
-access_weha_voucher_allocate_line_user,weha.voucher.allocate.line.user,model_weha_voucher_allocate_line,group_voucher_user,1,1,1,0
->>>>>>> wahyu
->>>>>>> yogi

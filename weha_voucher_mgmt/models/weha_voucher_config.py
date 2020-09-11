@@ -48,7 +48,6 @@ class VoucherTerms(models.Model):
 class VoucherMappingPos(models.Model):
     _name = 'weha.voucher.mapping.pos'
 
-<<<<<<< HEAD
     code = fields.Char(
         string='Code',
         size=10,
@@ -83,8 +82,6 @@ class VoucherMappingSku(models.Model):
     )
 
 
-=======
->>>>>>> wahyu
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'
 	
