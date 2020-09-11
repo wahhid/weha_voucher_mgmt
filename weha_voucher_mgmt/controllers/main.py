@@ -49,27 +49,28 @@ class VMSController(http.Controller):
     @http.route("/api/vms/v1.0/vspurchase", type="http", auth="none", methods=["POST"], csrf=False)
     def vspurchase(self, **payload):
 
-        if payload['trans_type'] == 'redeem':
+        #if payload['trans_type'] == 'redeem':
             
         values = {}
+        
         #Save Voucher Purchase Transaction
         voucher_purchase_obj = http.request.env['voucher.purchase']
-        values.update({'name': post['name']} 
-        values.update({'voucher_type': post['voucher_type']} 
-        values.update({'trans_date': post['trans_date']} 
-        values.update({'receipt_number': post['receipt_number']} 
-        values.update({'cashier_id': post['cashier_id']} 
-        values.update({'store_id': post['store_id']} 
-        values.update({'sku': post['sku']} 
-        values.update({'quantity': post['quantity']} 
-        values.update({'amount': post['amount']} 
-        values.update({'member_id': post['member_id']} 
-        values.update({'point': post['point']} 
-        values.update({'return_code': post['return_code']} 
-        values.update({'status_1': post['status_1']} 
-        values.update({'status_1_date': post['status_1_date']} 
-        values.update({'status_2': post['status_2']} 
-        values.update({'status_2_date': post['status_2_date']} 
+        values.update({'name': post['name']})
+        values.update({'voucher_type': post['voucher_type']}) 
+        values.update({'trans_date': post['trans_date']}) 
+        values.update({'receipt_number': post['receipt_number']}) 
+        values.update({'cashier_id': post['cashier_id']}) 
+        values.update({'store_id': post['store_id']}) 
+        values.update({'sku': post['sku']}) 
+        values.update({'quantity': post['quantity']}) 
+        values.update({'amount': post['amount']}) 
+        values.update({'member_id': post['member_id']}) 
+        values.update({'point': post['point']}) 
+        values.update({'return_code': post['return_code']}) 
+        values.update({'status_1': post['status_1']}) 
+        values.update({'status_1_date': post['status_1_date']}) 
+        values.update({'status_2': post['status_2']}) 
+        values.update({'status_2_date': post['status_2_date']}) 
         #Save Data
 
         #validate Data
@@ -103,7 +104,7 @@ class VMSController(http.Controller):
     @validate_token
     @http.route("/api/vms/v1.0/custredeem", type="http", auth="none", methods=["POST"], csrf=False)
     def custredeem(self, **payload):
-          if 'trans_type' not in payload:
+        if 'trans_type' not in payload:
             return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
 
         if payload['trans_type'] != 'redeem':
