@@ -52,8 +52,13 @@
                                 <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)], 'required':[('approval','=', True)] }"/> 
                                 <field name="opened"/>
                                 <field name="closed"/>
+<<<<<<< HEAD
                                 <field name="rejected"/>
                                 <field name="cancelled"/>
+=======
+                                <field name="cancelled"/>
+                                <field name="rejected"/>
+>>>>>>> yogi
                                 <field name="fold"/>
                             </group>
         
@@ -147,7 +152,12 @@
                                 <field name="unattended"/>
                                 <field name="approval"/>
                                 <field name="opened"/>
+<<<<<<< HEAD
                                 <field name="closed"/>
+=======
+                                <field name="progress"/>
+                                <field name="receiving"/>
+>>>>>>> yogi
                                 <field name="cancelled"/>
                                 <field name="rejected"/>
                                 <field name="fold"/>

@@ -48,10 +48,16 @@ class WeheVoucherRequest(models.Model):
                 voucher_count += line_id.amount
         self.voucher_count = voucher_count
     
+<<<<<<< HEAD
     # @api.depends('line_ids')
     # def _calculate_voucher_count(self):
     #     for row in self:
     #         self.voucher_count = len(self.line_ids)
+
+    def send_l1_request_mail(self):
+        for rec in self:
+            template = self.env.ref('weha_voucher_mgmt.voucher_request_l1_approval_notification_template', raise_if_not_found=False)
+            template.send_mail(rec.id)
 
     def trans_voucher_request_activate(self):
         for i in range(len(self.voucher_request_line_ids)):
@@ -69,7 +75,7 @@ class WeheVoucherRequest(models.Model):
 
                 strSQL = """SELECT """ \
                      """id,check_number """ \
-                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND check_number BETWEEN '{}' AND '{}'""".format(sourch_voucher, vcode, startnum, endnum)
+                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='open' AND check_number BETWEEN '{}' AND '{}'""".format(sourch_voucher, vcode, startnum, endnum)
 
                 self.env.cr.execute(strSQL)
                 voucher_order_line = self.env.cr.fetchall()
@@ -79,6 +85,65 @@ class WeheVoucherRequest(models.Model):
                     vals = {}
                     vals.update({'voucher_terms_id': self.voucher_terms_id.id})
                     vals.update({'expired_date': exp_date})
+                    vals.update({'operating_unit_loc_to_id': self.operating_unit_id})
+                    vals.update({'voucher_request_id': self.id}) 
+                    obj_voucher_order_line_ids = voucher_order_line.write(vals)
+
+                    # order_line_trans_obj = self.env['weha.voucher.order.line.trans']
+
+                    # vals = {}
+                    # vals.update({'name': self.number})
+                    # vals.update({'trans_date': datetime.now()})
+                    # vals.update({'voucher_order_line_id': row[0]})
+                    # vals.update({'trans_type': 'DV'})
+                    # val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+                    # _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
+        
+<<<<<<< HEAD
+    def trans_approve1(self):
+=======
+
+    def trans_approve(self):
+>>>>>>> yogi
+        stage_id = self.stage_id.next_stage_id
+        # self.send_l1_request_mail()
+        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        return res
+    
+    def trans_progress(self):
+        stage_id = self.stage_id.from_stage_id
+        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        return res
+    
+    def trans_receiving(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        return res
+    
+    def trans_reject(self):
+        stage_id = self.stage_id.from_stage_id
+        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        return res
+=======
+    @api.depends('line_ids')
+    def _calculate_voucher_count(self):
+        for row in self:
+            self.voucher_count = len(self.line_ids)
+
+    def trans_voucher_request_activate(self):
+        for i in range(len(self.voucher_request_line_ids)):
+            for rec in range(len(self.voucher_request_line_ids.request_line_range_ids)):
+                startnum = self.voucher_request_line_ids.request_line_range_ids.start_num
+                endnum = self.voucher_request_line_ids.request_line_range_ids.end_num
+                vcode = self.voucher_request_line_ids.voucher_code_id.id
+                sourch_voucher = self.user_id.default_operating_unit_id.company_id.res_company_request_operating_unit.id
+                
+                obj_voucher_order_line = self.env['weha.voucher.order.line']
+                search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', sourch_voucher),('voucher_code_id','=', vcode)])
+                search_se = search_v.search(['&',('check_number','>=',  startnum),('check_number','<=', endnum)])
+
+                for row in search_se:
+                    vals = {}
                     vals.update({'operating_unit_id': self.operating_unit_id.id})
                     vals.update({'state': 'activated'})
                     vals.update({'voucher_request_id': self.id}) 
@@ -89,30 +154,20 @@ class WeheVoucherRequest(models.Model):
                     vals = {}
                     vals.update({'name': self.number})
                     vals.update({'trans_date': datetime.now()})
-                    vals.update({'voucher_order_line_id': row[0]})
+                    vals.update({'voucher_order_line_id': row.id})
                     vals.update({'trans_type': 'AC'})
                     val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
                     _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
         
+
     def trans_approve1(self):
-        stage_id = self.stage_id.next_stage_id
-        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
-        return res
-    
-    def trans_reject1(self):
-        stage_id = self.stage_id.from_stage_id
-        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
-        return res
+        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        self.write(vals)
     
     def trans_approve2(self):
-        stage_id = self.stage_id.next_stage_id
-        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
-        return res
-    
-    def trans_reject2(self):
-        stage_id = self.stage_id.from_stage_id
-        res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
-        return res
+        vals = { 'stage_id': self.stage_id.next_stage_id.id}
+        self.write(vals)
+>>>>>>> wahyu
 
     def trans_request_approval(self):    
         vals = { 'stage_id': self.stage_id.next_stage_id.id}
@@ -163,7 +218,6 @@ class WeheVoucherRequest(models.Model):
             vals['number'] = seq.next_by_code(
                 'weha.voucher.request.sequence') or '/'
         res = super(WeheVoucherRequest, self).create(vals)
-
         return res
 
     def write(self, vals):

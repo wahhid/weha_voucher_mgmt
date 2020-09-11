@@ -6,8 +6,8 @@ from random import randrange
 _logger = logging.getLogger(__name__)
 
 
-class VoucherReturn(models.Model):
-    _name = 'weha.voucher.return'
+class VoucherScrap(models.Model):
+    _name = 'weha.voucher.scrap'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -29,11 +29,11 @@ class VoucherReturn(models.Model):
                 rec.current_stage = 'rejected'
             
     def _get_default_stage_id(self):
-        return self.env['weha.voucher.return.stage'].search([], limit=1).id
+        return self.env['weha.voucher.scrap.stage'].search([], limit=1).id
     
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
-        stage_ids = self.env['weha.voucher.return.stage'].search([])
+        stage_ids = self.env['weha.voucher.scrap.stage'].search([])
         return stage_ids
     
     # @api.depends('line_ids')
@@ -41,12 +41,12 @@ class VoucherReturn(models.Model):
     #     for row in self:
     #         self.voucher_count = len(self.line_ids)
     
-    def send_l1_return_mail(self):
-        for rec in self:
-            template = self.env.ref('weha_voucher_mgmt.voucher_return_l1_approval_notification_template', raise_if_not_found=False)
-            template.send_mail(rec.id)
+    # def send_l1_request_mail(self):
+    #     for rec in self:
+    #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
+    #         template.send_mail(rec.id)
 
-    def trans_voucher_return_activate(self):
+    def trans_voucher_scrap(self):
         line = len(self.voucher_return_line_ids)
         _logger.info("Allocate line = " + str(line))
 
@@ -100,35 +100,34 @@ class VoucherReturn(models.Model):
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
-        # self.send_l1_return_mail()
-        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
     
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
-        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
     
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
-        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
         
-    def trans_return_approval(self):    
+    def trans_cancelled(self):    
         stage_id = self.stage_id.next_stage_id
-        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
         
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Return number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=False)
-    return_date = fields.Date('Return Date', required=False, default=lambda self: fields.date.today())
+    scrap_date = fields.Date('Return Date', required=False, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     source_operating_unit_id = fields.Many2one('operating.unit','Resource Store', related="user_id.default_operating_unit_id.company_id.res_company_return_operating_unit")
     stage_id = fields.Many2one(
-        'weha.voucher.return.stage',
+        'weha.voucher.order.stage',
         string='Stage',
         group_expand='_read_group_stage_ids',
         default=_get_default_stage_id,
@@ -137,7 +136,7 @@ class VoucherReturn(models.Model):
     voucher_order_line_ids = fields.Many2many(comodel_name='weha.voucher.order.line', string='Voucher Lines')
     
     current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
-    voucher_return_line_ids = fields.One2many(comodel_name='weha.voucher.return.line', inverse_name='voucher_return_id', string='Return Line')
+    voucher_scrap_line_ids = fields.One2many(comodel_name='weha.voucher.scrap.line', inverse_name='voucher_scrap_id', string='Scrap Line')
     
     priority = fields.Selection(selection=[
         ('0', _('Low')),
@@ -162,8 +161,8 @@ class VoucherReturn(models.Model):
             if 'company_id' in vals:
                 seq = seq.with_context(force_company=vals['company_id'])
             vals['number'] = seq.next_by_code(
-                'weha.voucher.return.sequence') or '/'
-        res = super(VoucherReturn, self).create(vals)
+                'weha.voucher.scrap.sequence') or '/'
+        res = super(VoucherScrap, self).create(vals)
 
         # Check if mail to the user has to be sent
         #if vals.get('user_id') and res:
@@ -172,7 +171,7 @@ class VoucherReturn(models.Model):
     
     def write(self, vals):
         if 'stage_id' in vals:
-            # stage_obj = self.env['weha.voucher.return.stage'].browse([vals['stage_id']])
+            # stage_obj = self.env['weha.voucher.scrap.stage'].browse([vals['stage_id']])
             if self.stage_id.approval:
                 raise ValidationError("Please using approve or reject button")
             if self.stage_id.opened:
@@ -188,5 +187,5 @@ class VoucherReturn(models.Model):
             #         raise ValidationError('Cannot Process Approval')
             #     # self.send_l1_request_mail()
            
-        res = super(VoucherReturn, self).write(vals)
+        res = super(VoucherScrap, self).write(vals)
         return res

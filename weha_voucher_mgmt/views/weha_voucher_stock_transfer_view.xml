@@ -30,11 +30,22 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
+<<<<<<< HEAD
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                            class="btn btn-light" name="trans_voucher_stock_transfer_activate" string="Stock Transfer Activated" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_stock_transfer_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Stock Transfer" 
+=======
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                            class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                            class="btn btn-light" name="trans_close" string="Closed Order" 
+>>>>>>> wahyu
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
@@ -161,13 +172,25 @@
                 </search>
             </field>
         </record>
+
+        <!-- Voucher Stock Transfer Graph -->
+        <record id="view_weha_voucher_stock_transfer_graph" model="ir.ui.view">
+            <field name="name">view.weha.voucher.stock.transfer.graph</field>
+            <field name="model">weha.voucher.stock.transfer</field>
+            <field name="arch" type="xml">
+                <graph string="Voucher Stock Transfer Statistic" type="pie">
+                    <field name="source_operating_unit" type="row"/>
+                    <field name="voucher_count" type="measure"/>
+                </graph>
+            </field>
+        </record>
         
         <!-- Main window action for voucher order -->
         <record id="action_weha_voucher_stock_transfer_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
             <field name="name">Voucher Stock Transfer</field>
             <field name="res_model">weha.voucher.stock.transfer</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">kanban,tree,form,graph</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
             <field name="search_view_id" ref="view_weha_voucher_stock_transfer_search" />

@@ -43,19 +43,33 @@
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+<<<<<<< HEAD
                             class="btn btn-primary" name="trans_order_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                            class="btn btn-primary" name="trans_generate_voucher" string="Generate Voucher" 
+=======
+                            class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-primary" name="generate_voucher" string="Generate Voucher" 
+<<<<<<< HEAD
                             groups="weha_voucher_mgmt.group_voucher_user" confirm="Are you sure you want to Generate Voucher?"/>
+=======
+>>>>>>> wahyu
+                            groups="weha_voucher_mgmt.group_voucher_user" confirm="Are you sure you want to Ge  nerate Voucher?"/>
+>>>>>>> yogi
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Order" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
+<<<<<<< HEAD
                             confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                             class="btn btn-primary" name="trans_reject" string="Reject" 
+=======
+>>>>>>> yogi
                             groups="weha_voucher_mgmt.group_voucher_manager" confirm="Are you sure you want to Approve?"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                             class="btn btn-primary" name="trans_reject" string="Reject" 
@@ -95,6 +109,7 @@
                                 <field name="priority" widget="priority"/>
                             </group>
                             <group string='Voucher Number'>
+                                <field name="year"/>
                                 <field name="start_number"/>
                                 <field name="end_number"/>
                             </group>
@@ -147,7 +162,13 @@
                                 <div class="o_kanban_record_body">    
                                     <field name="operating_unit_id"/>
                                     <br/>
+<<<<<<< HEAD
                                     <field name="voucher_code_id"/> : <field name="start_number"/> to <field name="end_number"/>
+=======
+                                    <field name="voucher_code_id"/>
+                                    <br/>
+                                    Voucher : <field name="start_number"/> to <field name="end_number"/>
+>>>>>>> yogi
                                     <br/>
                                     <field name="priority" widget="priority"/>
                                     <br/>
@@ -192,6 +213,18 @@
                 <search string="model_search">
                     <field name="number" />
                 </search>
+            </field>
+        </record>
+
+        <!-- Voucher Order Graph -->
+        <record id="view_weha_voucher_order_graph" model="ir.ui.view">
+            <field name="name">view.weha.voucher.order.graph</field>
+            <field name="model">weha.voucher.order</field>
+            <field name="arch" type="xml">
+                <graph string="Voucher Order Statistic" type="pie">
+                    <field name="voucher_code_id" type="row"/>
+                    <field name="voucher_count" type="measure"/>
+                </graph>
             </field>
         </record>
         

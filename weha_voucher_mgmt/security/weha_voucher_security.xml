@@ -75,6 +75,7 @@
         <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
     </record>
 
+<<<<<<< HEAD
     <record id="voucher_stock_transfer_rule" model="ir.rule">
         <field name="name">All Vouchers Stock Transfer</field>
         <field ref="model_weha_voucher_stock_transfer" name="model_id"/>
@@ -82,6 +83,8 @@
         <field name="groups" eval="[(4, ref('group_voucher_user'))]"/>
     </record>
 
+=======
+>>>>>>> wahyu
 </data>
 
 <!--

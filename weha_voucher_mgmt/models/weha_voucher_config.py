@@ -45,7 +45,46 @@ class VoucherTerms(models.Model):
         required=True
     )
 
+class VoucherMappingPos(models.Model):
+    _name = 'weha.voucher.mapping.pos'
 
+<<<<<<< HEAD
+    code = fields.Char(
+        string='Code',
+        size=10,
+        required=True
+    )
+    name = fields.Char(
+        string='Description',
+        size=200,
+        required=True
+    )
+    pos_trx_type = fields.Char(
+        string='(POS) Trx Type',
+        size=10,
+    )
+    crm_trx_type = fields.Char(
+        string='CRM Trx Type',
+        size=10,
+    )
+    
+class VoucherMappingSku(models.Model):
+    _name = 'weha.voucher.mapping.sku'
+
+    voucher_mapping_pos_id = fields.Many2one('weha.voucher.mapping.pos', 'Voucher Mapping POS Id', required=False
+    )
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False
+    )
+   
+    code_sku = fields.Char(
+        string='Code SKU',
+        size=8,
+        required=True
+    )
+
+
+=======
+>>>>>>> wahyu
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'
 	

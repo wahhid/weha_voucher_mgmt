@@ -3,9 +3,9 @@
     <data>
         
         <!-- Tree view for Voucher Order Stage -->
-        <record id="view_weha_voucher_issuing_tage_tree" model="ir.ui.view">
-            <field name="name">view.weha.voucher.issuing.stage.tree</field>
-            <field name="model">weha.voucher.issuing.stage</field>
+        <record id="view_weha_voucher_scrap_tage_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.scrap.stage.tree</field>
+            <field name="model">weha.voucher.scrap.stage</field>
             <field name="type">tree</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -19,9 +19,9 @@
         </record>
         
         <!-- Form view for Voucher Order Stage -->
-        <record id="view_weha_voucher_issuing_stage_form" model="ir.ui.view">
-            <field name="name">view.weha.voucher.issuing.stage.form</field>
-            <field name="model">weha.voucher.issuing.stage</field>
+        <record id="view_weha_voucher_scrap_stage_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.scrap.stage.form</field>
+            <field name="model">weha.voucher.scrap.stage</field>
             <field name="type">form</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -47,9 +47,12 @@
                             </group>
                             <group>
                                 <field name="unattended"/>
+                                <field name="approval"/>
+                                <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)], 'required':[('approval','=', True)] }"/> 
                                 <field name="opened"/>
                                 <field name="closed"/>
                                 <field name="cancelled"/>
+                                <field name="rejected"/>
                                 <field name="fold"/>
                             </group>
         
@@ -60,9 +63,9 @@
         </record>
         
         <!-- Search view for Voucher Order Stage -->
-        <record id="view_weha_voucher_issuing_stage_search" model="ir.ui.view">
-            <field name="name">view.weha.voucher.issuing.stage.search</field>
-            <field name="model">weha.voucher.issuing.stage</field>
+        <record id="view_weha_voucher_scrap_stage_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.scrap.stage.search</field>
+            <field name="model">weha.voucher.scrap.stage</field>
             <field name="type">search</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -76,14 +79,14 @@
         </record>
         
         <!-- Main window action Voucher Order Stage -->
-        <record id="action_weha_voucher_issuing_stage_act_window" model="ir.actions.act_window">
+        <record id="action_weha_voucher_scrap_stage_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
-            <field name="name">Voucher Issuing Stage</field>
-            <field name="res_model">weha.voucher.issuing.stage</field>
+            <field name="name">Voucher Scrap Stage</field>
+            <field name="res_model">weha.voucher.scrap.stage</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
-            <field name="search_view_id" ref="view_weha_voucher_issuing_stage_search" />
+            <field name="search_view_id" ref="view_weha_voucher_scrap_stage_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                     Click to add new Human readable name
@@ -93,8 +96,8 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_issuing_stage_menu" name="Issuing" parent="weha_voucher_stages_main_menu"
-            action="action_weha_voucher_issuing_stage_act_window" sequence="49" />
+        <menuitem id="weha_voucher_scrap_stage_menu" name="Scrap" parent="weha_voucher_stages_main_menu"
+            action="action_weha_voucher_scrap_stage_act_window" sequence="49" />
 
     </data>
 </odoo>

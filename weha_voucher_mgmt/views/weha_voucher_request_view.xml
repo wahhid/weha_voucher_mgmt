@@ -46,6 +46,11 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
+<<<<<<< HEAD
+=======
+                        <button name="%(weha_voucher_mgmt.act_open_select_order_line_view)d" type="action" string="Select Voucher Lines"
+                        class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
+>>>>>>> wahyu
                         <button type="object" attrs="{'invisible': [('current_stage', '!=','approve_1')]}"
                             class="btn btn-primary" name="trans_approve1" string="Approve" 
                             confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
@@ -57,7 +62,11 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approve_2')]}"
                             class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
                         <button name="%(weha_voucher_mgmt.act_open_received_request_view_form)d" type="action" string="Received Voucher"
+<<<<<<< HEAD
                             class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
+=======
+                        class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
+>>>>>>> wahyu
 
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
@@ -182,13 +191,25 @@
                 </search>
             </field>
         </record>
+
+        <!-- Voucher Request Graph -->
+        <record id="view_weha_voucher_request_graph" model="ir.ui.view">
+            <field name="name">view.weha.voucher.request.graph</field>
+            <field name="model">weha.voucher.request</field>
+            <field name="arch" type="xml">
+                <graph string="Voucher Request Statistic" type="pie">
+                    <field name="operating_unit_id" type="row"/>
+                    <field name="voucher_count" type="measure"/>
+                </graph>
+            </field>
+        </record>
         
         <!-- Main window action for voucher request -->
         <record id="action_weha_voucher_request_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
             <field name="name">Voucher Request</field>
             <field name="res_model">weha.voucher.request</field>
-            <field name="view_mode">kanban,tree,form</field>
+            <field name="view_mode">kanban,tree,form,graph</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
             <field name="search_view_id" ref="view_weha_voucher_request_search" />

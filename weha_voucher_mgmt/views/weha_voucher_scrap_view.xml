@@ -4,9 +4,9 @@
            
 
         <!-- Tree view for voucher order -->
-        <record id="view_weha_voucher_return_tree" model="ir.ui.view">
-            <field name="name">view.weha.voucher.return.tree</field>
-            <field name="model">weha.voucher.return</field>
+        <record id="view_weha_voucher_scrap_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.scrap.tree</field>
+            <field name="model">weha.voucher.scrap</field>
             <field name="type">tree</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -21,9 +21,9 @@
         </record>
         
         <!-- Form view for voucher order -->
-        <record id="view_weha_voucher_return_form" model="ir.ui.view">
-            <field name="name">view.weha.voucher.return.form</field>
-            <field name="model">weha.voucher.return</field>
+        <record id="view_weha_voucher_scrap_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.scrap.form</field>
+            <field name="model">weha.voucher.scrap</field>
             <field name="type">form</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -32,13 +32,13 @@
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-light" name="trans_voucher_return_activate" string="Process Voucher Return" 
+                            class="btn btn-light" name="trans_voucher_scrap_activate" string="Process Voucher scrap" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" name="trans_return_approval" string="Request Approval" 
+                            class="btn btn-primary" name="trans_scrap_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-light" name="trans_close" string="Closed Return Voucher" 
+                            class="btn btn-light" name="trans_close" string="Closed scrap Voucher" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
@@ -65,7 +65,7 @@
                         </div>
                         <group>
                             <group>
-                                <field name="return_date"/>
+                                <field name="scrap_date"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 <field name="source_operating_unit_id"/>
@@ -78,9 +78,9 @@
                             </group>
                         </group>
                         <notebook colspan="4">
-                            <page string="Return Lines">
-	                        	<field name="voucher_return_line_ids" widget="one2many_list" nolabel="0" readonly="0">
-	                            	<tree string="Return Lines" create="true" delete="true" edit="true">
+                            <page string="scrap Lines">
+	                        	<field name="voucher_scrap_line_ids" widget="one2many_list" nolabel="0" readonly="0">
+	                            	<tree string="scrap Lines" create="true" delete="true" edit="true">
 	                            	    <field name="voucher_code_id" />
                                         <field name="amount" />                               	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
@@ -97,9 +97,9 @@
             </field>
         </record>
         
-        <record id="view_weha_voucher_return_kanban" model="ir.ui.view">
-            <field name="name">weha.voucher.return.kanban</field>
-            <field name="model">weha.voucher.return</field>
+        <record id="view_weha_voucher_scrap_kanban" model="ir.ui.view">
+            <field name="name">weha.voucher.scrap.kanban</field>
+            <field name="model">weha.voucher.scrap</field>
             <field name="arch" type="xml">
                 <kanban class="o_kanban_mobile" archivable="false"  default_group_by="stage_id" >
                     <field name="number"/>
@@ -150,9 +150,9 @@
         </record>
         
         <!-- Search view for voucher order -->
-        <record id="view_weha_voucher_return_search" model="ir.ui.view">
-            <field name="name">view.weha.voucher.return.search</field>
-            <field name="model">weha.voucher.return</field>
+        <record id="view_weha_voucher_scrap_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.scrap.search</field>
+            <field name="model">weha.voucher.scrap</field>
             <field name="type">search</field>
             <field name="mode">primary</field>
             <field name="priority" eval="16" />
@@ -163,28 +163,16 @@
                 </search>
             </field>
         </record>
-
-        <!-- Voucher Return Graph -->
-        <record id="view_weha_voucher_return_graph" model="ir.ui.view">
-            <field name="name">view.weha.voucher.return.graph</field>
-            <field name="model">weha.voucher.return</field>
-            <field name="arch" type="xml">
-                <graph string="Voucher Return Statistic" type="pie">
-                    <field name="source_operating_unit_id" type="row"/>
-                    <field name="voucher_count" type="measure"/>
-                </graph>
-            </field>
-        </record>
         
         <!-- Main window action for voucher order -->
-        <record id="action_weha_voucher_return_act_window" model="ir.actions.act_window">
+        <record id="action_weha_voucher_scrap_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
-            <field name="name">Voucher Return</field>
-            <field name="res_model">weha.voucher.return</field>
-            <field name="view_mode">kanban,tree,form,graph</field>
+            <field name="name">Voucher Scrap</field>
+            <field name="res_model">weha.voucher.scrap</field>
+            <field name="view_mode">kanban,tree,form</field>
             <field name="domain">[]</field>
             <field name="context">\{}</field>
-            <field name="search_view_id" ref="view_weha_voucher_return_search" />
+            <field name="search_view_id" ref="view_weha_voucher_scrap_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                     Click to add for request new voucher order
@@ -195,8 +183,8 @@
         </record>
     
         
-        <menuitem id="weha_voucher_return_menu" name="Return" parent="weha_voucher_main_menu"
-            action="action_weha_voucher_return_act_window" sequence="22"/>
+        <menuitem id="weha_voucher_scrap_menu" name="Scrap" parent="weha_voucher_main_menu"
+            action="action_weha_voucher_scrap_act_window" sequence="24"/>
 
         
     </data>
