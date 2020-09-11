@@ -214,7 +214,7 @@
         <!-- Main window action for voucher order -->
         <record id="action_weha_voucher_order_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
-            <field name="name">Voucher Order</field>
+            <field name="name">Order</field>
             <field name="res_model">weha.voucher.order</field>
             <field name="view_mode">kanban,tree,form,graph</field>
             <field name="domain">[]</field>
