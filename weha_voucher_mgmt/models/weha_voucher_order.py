@@ -115,6 +115,14 @@ class VoucherOrder(models.Model):
             if self.start_number >= self.end_number:
                 raise UserError('End number must be greater than start number')
         
+    @api.constrains('start_number', 'end_number')
+    def _check_length(self):
+        for record in self:
+            if len(str(record.start_number)) > 6:
+                raise ValidationError("Start Number 6 digit maximum")
+            if len(str(record.end_number)) > 6:
+                raise ValidationError("End Number 6 digit maximum")
+
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
 
