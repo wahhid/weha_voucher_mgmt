@@ -86,7 +86,7 @@
                             </group>
                             <group>
                                 <field name="voucher_count"/>
-                                <field name="priority" widget="priority"/>
+
                             </group>
                             <group>
                                 <field name="current_stage"/>
@@ -150,8 +150,6 @@
                                 </div>
                                 <div class="o_kanban_record_body">    
                                     <field name="operating_unit_id"/>
-                                    <br/>
-                                    <field name="priority" widget="priority"/>
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left"/>

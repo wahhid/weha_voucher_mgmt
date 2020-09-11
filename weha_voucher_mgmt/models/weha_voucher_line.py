@@ -173,7 +173,9 @@ class VoucherOrderLine(models.Model):
         _logger.info("str_ean ID = " + str_ean)
         vals['voucher_ean'] = str_ean
 
-        vals['name'] = "VC" + str_ean
+        #vals['name'] = "VC" + str_ean
+        vals['name'] = str_ean
+        
         res = super(VoucherOrderLine, self).create(vals)
         res.create_order_line_trans(res)
         res.trans_open()

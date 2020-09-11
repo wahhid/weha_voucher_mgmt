@@ -74,7 +74,6 @@
                             <group>
                                 <field name="ref"/>
                                 <field name="voucher_count"/>
-                                <field name="priority" widget="priority"/>
                             </group>
                         </group>
                         <notebook colspan="4">

@@ -47,13 +47,14 @@ class VMSController(http.Controller):
     
     @validate_token
     @http.route("/api/vms/v1.0/vspurchase", type="http", auth="none", methods=["POST"], csrf=False)
-    def vspurchase(self, **payload):
+    def vspurchase(self, **post):
+        
+        if 'trans_type' not in post:
+            return json.dumps({'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]})
 
-        #if payload['trans_type'] == 'redeem':
-            
         values = {}
         
-        #Save Voucher Purchase Transaction
+        # #Save Voucher Purchase Transaction
         voucher_purchase_obj = http.request.env['voucher.purchase']
         values.update({'name': post['name']})
         values.update({'voucher_type': post['voucher_type']}) 
@@ -85,10 +86,11 @@ class VMSController(http.Controller):
     
 
         data = {
-            'status': 'ok'
+            'status': 'ok',
+            'payload': post
         }
 
-        return json.dumps({'err': False, 'msg': 'VS Purchase Successfully', 'datas':json.dumps(data)})
+        return json.dumps({'err': False, 'msg': 'VS Purchase Successfully', 'datas':[]})
     
     @validate_token
     @http.route("/api/vms/v1.0/bankpurchase", type="http", auth="none", methods=["POST"], csrf=False)
