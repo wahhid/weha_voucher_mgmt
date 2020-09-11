@@ -218,6 +218,7 @@ class VoucherOrder(models.Model):
     end_number = fields.Integer(string='End Number', required=True)
     #estimate_voucher_count = fields.Integer('Estimate Voucher Count', compute="_calculate_voucher_count", store=True)
     year = fields.Integer(string='Year Made')
+
     
     kanban_state = fields.Selection([
         ('normal', 'Default'),

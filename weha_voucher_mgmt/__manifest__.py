@@ -9,6 +9,8 @@
     "license": "AGPL-3",
     'data': [
         'data/weha_voucher_data.xml',
+        'data/weha_voucher_order_data.xml',
+        'data/weha_voucher_request_data.xml',
         'data/ir_config_param.xml',
         'security/weha_voucher_security.xml',
         'security/ir.model.access.csv',
@@ -16,7 +18,6 @@
         'wizard/weha_select_order_line_wizard_view.xml',
         'wizard/weha_received_request_wizard_view.xml',
         'wizard/weha_received_allocate_wizard_view.xml',
-        'views/weha_voucher_dashboard_view.xml',
         'views/weha_voucher_menu.xml',
         'views/weha_voucher_stage_view.xml',
         'views/weha_voucher_order_view.xml',
@@ -47,6 +48,8 @@
         'views/weha_voucher_stock_transfer_stage_view.xml',
         'views/weha_voucher_code_minimum_stock_view.xml',
         'views/res_company_settings_view.xml',
+        'views/weha_voucher_dashboard_view.xml',
+        
         
          
     ],

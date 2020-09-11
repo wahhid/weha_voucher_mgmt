@@ -202,9 +202,10 @@
             <field name="action" ref="action_weha_voucher_stock_transfer_act_window" />
             <field name="parent_id" ref="weha_voucher_main_menu" />
         </record> -->
-        
+        <!--
         <menuitem id="weha_voucher_stock_transfer_menu" name="Stock Transfer" parent="weha_voucher_main_menu"
             action="action_weha_voucher_stock_transfer_act_window" sequence="13"/>
+        -->
 
         
     </data>

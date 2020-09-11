@@ -22,9 +22,6 @@
             parent="weha_voucher_mgmt_main_menu" sequence="25"
             groups="group_voucher_user,group_voucher_finance_user"/>
 
-        <menuitem id="weha_voucher_dashboard_menu" name="Dashboard"
-            parent="weha_voucher_mgmt_main_menu" action="weha_voucher_mgmt.open_board_my_dash_action" sequence="1"/>
-
          <menuitem id="weha_voucher_reporting_main_menu" name="Reporting"
             parent="weha_voucher_mgmt_main_menu" sequence="30"
             groups="group_voucher_manager"/>
