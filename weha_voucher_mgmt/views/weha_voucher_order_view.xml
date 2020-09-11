@@ -60,9 +60,6 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                             class="btn btn-primary" name="trans_reject" string="Reject" 
                             groups="weha_voucher_mgmt.group_voucher_manager" confirm="Are you sure you want to Approve?"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
-                            class="btn btn-primary" name="trans_reject" string="Reject" 
-                            groups="weha_voucher_mgmt.group_voucher_manager"/>
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
