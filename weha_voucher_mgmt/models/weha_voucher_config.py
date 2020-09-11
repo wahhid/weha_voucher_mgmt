@@ -19,7 +19,6 @@ class VoucherLocation(models.Model):
         required=True
     )
 
-
 class VoucherType(models.Model):
     _name = 'weha.voucher.type'
 
@@ -29,7 +28,6 @@ class VoucherType(models.Model):
         required=True
     )
     
-
 class VoucherTerms(models.Model):
     _name = 'weha.voucher.terms'
 
@@ -81,6 +79,10 @@ class VoucherMappingSku(models.Model):
         required=True
     )
 
+class VoucherPromo(models.Model):
+    _name = 'weha.voucher.promo'
+    
+    name = fields.Char("Name", size=200)
 
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'

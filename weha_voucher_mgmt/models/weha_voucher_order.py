@@ -122,6 +122,14 @@ class VoucherOrder(models.Model):
                 raise ValidationError("Start Number 6 digit maximum")
             if len(str(record.end_number)) > 6:
                 raise ValidationError("End Number 6 digit maximum")
+    
+    @api.constrains('year')
+    def _check_year(self):
+        for record in self:
+            if not isinstance(record.year, int):
+                raise ValidationError("Year must be integer")
+            if len(str(record.year)) != 4:
+                raise ValidationError("Year 4 Digit")
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
@@ -146,28 +154,6 @@ class VoucherOrder(models.Model):
         #_logger.info("Next Stage = " + str(stage))
         #self.write({'stage_id': stage})
 
-    def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
-        self.write({'stage_id': stage_id.id})
-        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
-        template = self.env['mail.template'].browse(template_id)
-        #_logger.info(next_stage_id.approval_user_id)
-        #template.email_to = next_stage_id.approval_user_id.partner_id.email
-        #template.send_mail(self.id, force_send=True)
-        # self.send_l1_request_mail()
-
-        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
-        return res
-    
-    def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
-        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
-        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
-        template = self.env['mail.template'].browse(template_id)
-        #_logger.info(next_stage_id.approval_user_id)
-        #template.email_to = next_stage_id.approval_user_id.partner_id.email
-        #template.send_mail(self.id, force_send=True)
-        return res
     
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
@@ -222,11 +208,12 @@ class VoucherOrder(models.Model):
    
     color = fields.Integer(string='Color Index')
     
+    voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
     start_number = fields.Integer(string='Start Number', required=True)
     end_number = fields.Integer(string='End Number', required=True)
     #estimate_voucher_count = fields.Integer('Estimate Voucher Count', compute="_calculate_voucher_count", store=True)
     year = fields.Integer(string='Year Made')
-
+    
     
     kanban_state = fields.Selection([
         ('normal', 'Default'),

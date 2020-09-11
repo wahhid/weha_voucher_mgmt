@@ -38,6 +38,7 @@
         # 'views/weha_voucher_config_number_range_view.xml',
         'views/weha_voucher_config_terms_view.xml',
         'views/weha_voucher_config_type_view.xml',
+        'views/weha_voucher_config_promo_view.xml',
         'views/weha_voucher_return_stage_view.xml',
         'views/weha_voucher_allocate_stage_view.xml',
         'views/weha_voucher_scrap_stage_view.xml',
