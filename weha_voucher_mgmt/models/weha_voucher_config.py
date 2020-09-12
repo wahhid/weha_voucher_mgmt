@@ -70,9 +70,9 @@ class VoucherMappingSku(models.Model):
 
     voucher_mapping_pos_id = fields.Many2one('weha.voucher.mapping.pos', 'Voucher Mapping POS Id', required=False
     )
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False
-    )
-   
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
+    
+
     code_sku = fields.Char(
         string='Code SKU',
         size=8,

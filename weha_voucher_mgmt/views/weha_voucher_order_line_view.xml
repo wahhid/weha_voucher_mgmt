@@ -104,6 +104,14 @@
             <field name="arch" type="xml">
                 <search string="model_search">
                     <field name="name" />
+                    <filter string="Status" name="open_status" domain="[('state', '=', 'open')]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Operating Unit" name="operating_unit" domain="[]" context="{'group_by': 'operating_unit_id'}"/>
+                        <filter string="Voucher Type" name="voucher_type" domain="[]" context="{'group_by': 'voucher_type'}"/>
+                        <filter string="Voucher Code" name="voucher_code" domain="[]" context="{'group_by': 'voucher_code_id'}"/>
+                        <filter string="Status" name="state" domain="[]" context="{'group_by': 'state'}"/>
+                    </group>
                 </search>
             </field>
         </record>

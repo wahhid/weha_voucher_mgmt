@@ -27,6 +27,9 @@ class VoucherOrder(models.Model):
     def _get_default_stage_id(self):
         return self.env['weha.voucher.order.stage'].search([], limit=1).id
     
+    def _check_voucher_order_number(self):
+        pass
+
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
         stage_ids = self.env['weha.voucher.order.stage'].search([])
@@ -99,6 +102,10 @@ class VoucherOrder(models.Model):
             raise ValidationError("Can't generate voucher because this number "+ str(start_number) +" <--> "+ str(end_number) +" already exists")
         
         self.is_voucher_generated = True
+        next_stage_id =  self.stage_id.next_stage_id
+        vals = { 'stage_id': next_stage_id.id}
+        #self.write(vals)
+        super(VoucherOrder,self).write(vals)
         
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
@@ -135,11 +142,13 @@ class VoucherOrder(models.Model):
         stage_id = self.stage_id.next_stage_id
 
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        
         #Send Notification
-        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
-        template = self.env['mail.template'].browse(template_id)
-        template.email_to = self.user_id.partner_id.email
-        template.send_mail(self.id, force_send=True)
+
+        #template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
+        #template = self.env['mail.template'].browse(template_id)
+        #template.email_to = self.user_id.partner_id.email
+        #template.send_mail(self.id, force_send=True)
     
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
@@ -154,21 +163,24 @@ class VoucherOrder(models.Model):
         #_logger.info("Next Stage = " + str(stage))
         #self.write({'stage_id': stage})
 
-    
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
         
+    
     def trans_request_approval(self):    
+    
         next_stage_id =  self.stage_id.next_stage_id
         vals = { 'stage_id': next_stage_id.id}
-        self.write(vals)
-        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
-        template = self.env['mail.template'].browse(template_id)
-        _logger.info(next_stage_id.approval_user_id)
-        template.email_to = next_stage_id.approval_user_id.partner_id.email
-        template.send_mail(self.id, force_send=True)
+        #self.write(vals)
+        super(VoucherOrder,self).write(vals)
+
+        #template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
+        #template = self.env['mail.template'].browse(template_id)
+        #_logger.info(next_stage_id.approval_user_id)
+        #template.email_to = next_stage_id.approval_user_id.partner_id.email
+        #template.send_mail(self.id, force_send=True)
         
     def trans_order_approval(self):    
         stage_id = self.stage_id.next_stage_id
@@ -228,6 +240,7 @@ class VoucherOrder(models.Model):
         comodel_name='weha.voucher.order.line',
         inverse_name='voucher_order_id',
     )
+
     
     @api.model
     def create(self, vals):

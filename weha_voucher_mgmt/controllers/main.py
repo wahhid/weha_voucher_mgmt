@@ -90,7 +90,7 @@ class VMSController(http.Controller):
             'payload': post
         }
 
-        return json.dumps({'err': False, 'msg': 'VS Purchase Successfully', 'datas':[]})
+        return json.dumps({'err': False, 'msg': 'VS Purchase Successfully', 'datas':[data]})
     
     @validate_token
     @http.route("/api/vms/v1.0/bankpurchase", type="http", auth="none", methods=["POST"], csrf=False)

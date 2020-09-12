@@ -30,7 +30,7 @@ class VoucherOrderLine(models.Model):
         year = x.strftime("%y")
 
         # company_code,type,year,classification,number
-        code12 = [company_code,voucher_code,year,classifi,number]
+        code12 = [c_code ,v_code,year,classifi,number]
         _logger.info("CODE 12 = " + str(code12))
         return code12
 
@@ -205,7 +205,7 @@ class VoucherOrderLine(models.Model):
         _logger.info("str_ean ID = " + str_ean)
         vals['voucher_ean'] = str_ean
 
-        vals['name'] = "VC" + str_ean
+        vals['name'] = str_ean
         res = super(VoucherOrderLine, self).create(vals)
         res.create_order_line_trans(res)
 

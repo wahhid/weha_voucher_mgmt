@@ -40,16 +40,13 @@
             <field name="priority" eval="16" />
             <field name="active" eval="True" />
             <field name="arch" type="xml">
-                <form string="model_form" create="true" delete="true" edit="true">
+                <form string="model_form">
                     <header>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_order_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-primary" name="trans_generate_voucher" string="Generate Voucher" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-primary" name="generate_voucher" string="Generate Voucher" 
                             groups="weha_voucher_mgmt.group_voucher_user" confirm="Are you sure you want to Generate Voucher?"/>/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Order" 
@@ -77,27 +74,28 @@
                             <label for="number" class="oe_edit_only" />
                             <h1>
                                 <field name="number" class="oe_inline"
-                                    placeholder="Number" />
+                                    placeholder="Number" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
                             </h1>
                         </div>
                         <group>
                             <group>
-                                <field name="request_date"/>
+                                <field name="request_date" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="voucher_type" widget="radio" options="{'horizontal': true}"/>
-                                <field name="voucher_code_id"/>
-                                <field name="voucher_promo_id"/>
+                                <field name="voucher_type" widget="radio" options="{'horizontal': true}" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_code_id" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_promo_id" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
                                 <field name="current_stage" invisible="1"/>
                             </group>
                             <group>
-                                <field name="ref"/>
+                                <field name="ref" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
                                 <field name="voucher_count"/>
+                                <field name="is_voucher_generated" invisible="1"/>
                             </group>
                             <group string='Voucher Number'>
-                                <field name="year"/>
-                                <field name="start_number"/>
-                                <field name="end_number"/>
+                                <field name="year" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
+                                <field name="start_number" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
+                                <field name="end_number" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
                             </group>
                         </group>
                     </sheet>
