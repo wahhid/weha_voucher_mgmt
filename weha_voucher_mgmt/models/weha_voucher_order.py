@@ -87,6 +87,8 @@ class VoucherOrder(models.Model):
                 vals.update({'voucher_order_id': self.id})
                 vals.update({'voucher_code': self.voucher_code_id.code})
                 vals.update({'voucher_code_id': self.voucher_code_id.id})
+                if self.voucher_promo_id:
+                    vals.update({'voucher_promo_id': self.voucher_promo_id.id})
                 vals.update({'year_id': self.year.id})
                 vals.update({'check_number': number})
                 vals.update({'voucher_type': self.voucher_type})
@@ -254,7 +256,7 @@ class VoucherOrder(models.Model):
     def create(self, vals):
         if vals.get('start_number') > vals.get('end_number'):
             raise ValidationError('Start Number greater than End Number')
-        
+
         if vals.get('number', '/') == '/':
             seq = self.env['ir.sequence']
             if 'company_id' in vals:

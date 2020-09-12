@@ -10,6 +10,7 @@
             <field name="name">Approve</field>
             <field name="approval">True</field>
             <field name="fold">True</field>
+            <field name="next_stage_id" ref="voucher_order_stage_open"/>
         </record>
 
         <record id="voucher_order_stage_request" model="weha.voucher.order.stage">

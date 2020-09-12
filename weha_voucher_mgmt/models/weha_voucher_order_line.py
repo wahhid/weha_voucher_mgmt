@@ -80,11 +80,9 @@ class VoucherOrderLine(models.Model):
         comodel_name='weha.voucher.order',
         ondelete='restrict',
     )
-    # voucher_request_id = fields.Many2one(
-    #     string='Voucher Request',
-    #     comodel_name='weha.voucher.request',
-    #     ondelete='restrict',
-    # )
+
+    #Voucher Promo
+    voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
     voucher_12_digit = fields.Char('Code 12', )
     voucher_ean = fields.Char('Code', )
     
