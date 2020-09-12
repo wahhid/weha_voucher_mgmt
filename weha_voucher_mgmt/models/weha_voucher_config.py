@@ -82,7 +82,21 @@ class VoucherMappingSku(models.Model):
 class VoucherPromo(models.Model):
     _name = 'weha.voucher.promo'
     
-    name = fields.Char("Name", size=200)
+    name = fields.Char("Name", size=200, required=True)
+
+class VoucherYear(models.Model):
+    _name = 'weha.voucher.year'
+
+    @api.constrains('year')
+    def _check_year(self):
+        for record in self:
+            if not isinstance(record.year, int):
+                raise ValidationError("Year must be integer")
+            if len(str(record.year)) != 4:
+                raise ValidationError("Year 4 Digit")    
+            
+    name = fields.Char("Name", size=4, required=True)
+    year = fields.Integer("Year", required=True)
 
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'

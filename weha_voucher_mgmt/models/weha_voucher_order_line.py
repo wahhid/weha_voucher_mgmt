@@ -57,7 +57,7 @@ class VoucherOrderLine(models.Model):
         for row in self:
             order_line_trans_obj = self.env['weha.voucher.order.line.trans']
 
-            vals = {}
+            vals = {} 
             vals.update({'name': row.name})
             vals.update({'trans_date': datetime.now()})
             vals.update({'voucher_order_line_id': vals_.id})
@@ -95,14 +95,6 @@ class VoucherOrderLine(models.Model):
         ondelete='restrict',
     )
 
-    voucher_code = fields.Char(string='Voucher #')
-    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Code')
-
-
-    #Voucher Type
-    voucher_code = fields.Char(string='Voucher Code')
-    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
-
     #Loc Fr
     operating_unit_loc_fr_id = fields.Many2one(string='Loc.Fr', comodel_name='operating.unit', ondelete='restrict',)
     #Loc To
@@ -126,11 +118,11 @@ class VoucherOrderLine(models.Model):
     # end_number = fields.Integer(string='End Number')
 
     #Check Number Voucher
-    check_number = fields.Char(string='Check Number')
+    check_number = fields.Integer(string='Check Number')
 
     #Expired Date Voucher & Year
     expired_date = fields.Date(string='Expired Date')
-    year = fields.Integer(string='Year Made', size=5)
+    year_id = fields.Many2one('weha.voucher.year',string='Year')
     
     #Many2one relation
     voucher_order_id = fields.Many2one(

@@ -51,7 +51,7 @@
                             <group>
                                 <field name="voucher_terms_id"/>
                                 <field name="expired_date"/>
-                                <field name="year"/>
+                                <field name="year_id"/>
                             </group>
                             <group>
                                 <field name="voucher_12_digit"/>

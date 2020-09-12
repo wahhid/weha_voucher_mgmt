@@ -60,9 +60,9 @@ class VoucherOrder(models.Model):
         _logger.info("End Number = " + str(end_number))
 
         # initialize tuple 
-        strSQL = """SELECT """ \
-                     """check_number """ \
-                     """FROM weha_voucher_order_line WHERE year={} AND check_number BETWEEN '{}' AND '{}'""".format(voucher_year, start_number, end_number)
+        strSQL = """SELECT check_number
+                    FROM weha_voucher_order_line 
+                    WHERE year_id={} AND check_number BETWEEN '{}' AND '{}'""".format(voucher_year.id, start_number, end_number)
 
         self.env.cr.execute(strSQL)
         test_tup = self.env.cr.fetchall()
@@ -87,7 +87,7 @@ class VoucherOrder(models.Model):
                 vals.update({'voucher_order_id': self.id})
                 vals.update({'voucher_code': self.voucher_code_id.code})
                 vals.update({'voucher_code_id': self.voucher_code_id.id})
-                vals.update({'year': voucher_year})
+                vals.update({'year_id': self.year.id})
                 vals.update({'check_number': number})
                 vals.update({'voucher_type': self.voucher_type})
                 vals.update({'state': 'open'})
@@ -109,10 +109,25 @@ class VoucherOrder(models.Model):
         
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
-        self.voucher_code_id = False
-        res = {}
-        res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
-        return res
+        if self.voucher_type:
+            self.voucher_code_id = False
+            res = {}
+            res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
+
+    @api.onchange('year')
+    def _onchange_year(self):
+        if self.year:
+            domain = [
+                ('voucher_type','=', self.voucher_type),
+                ('voucher_code_id','=', self.voucher_code_id.id),
+                ('year_id','=', self.year.id),
+            ]
+            voucher_order_line_id = self.env['weha.voucher.order.line'].search(domain, order="check_number desc", limit=1)
+            _logger.info(voucher_order_line_id)
+            if not voucher_order_line_id:
+                self.start_number = 1
+            else:
+                self.start_number = voucher_order_line_id.check_number + 1
 
     @api.onchange('start_number','end_number')
     def check_voucher_order_line(self):
@@ -130,13 +145,6 @@ class VoucherOrder(models.Model):
             if len(str(record.end_number)) > 6:
                 raise ValidationError("End Number 6 digit maximum")
     
-    @api.constrains('year')
-    def _check_year(self):
-        for record in self:
-            if not isinstance(record.year, int):
-                raise ValidationError("Year must be integer")
-            if len(str(record.year)) != 4:
-                raise ValidationError("Year 4 Digit")
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
@@ -224,7 +232,7 @@ class VoucherOrder(models.Model):
     start_number = fields.Integer(string='Start Number', required=True)
     end_number = fields.Integer(string='End Number', required=True)
     #estimate_voucher_count = fields.Integer('Estimate Voucher Count', compute="_calculate_voucher_count", store=True)
-    year = fields.Integer(string='Year Made')
+    year = fields.Many2one('weha.voucher.year', 'Year', required=True)
     
     
     kanban_state = fields.Selection([
@@ -244,6 +252,9 @@ class VoucherOrder(models.Model):
     
     @api.model
     def create(self, vals):
+        if vals.get('start_number') > vals.get('end_number'):
+            raise ValidationError('Start Number greater than End Number')
+        
         if vals.get('number', '/') == '/':
             seq = self.env['ir.sequence']
             if 'company_id' in vals:

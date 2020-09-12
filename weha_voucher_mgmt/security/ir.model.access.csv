@@ -109,3 +109,6 @@ access_weha_voucher_mapping_sku_user,weha.voucher.mapping.sku.user,model_weha_vo
 
 access_weha_voucher_promo_manager,weha.voucher.promo.manager,model_weha_voucher_promo,group_voucher_manager,1,1,1,1
 access_weha_voucher_promo_user,weha.voucher.promo.user,model_weha_voucher_promo,group_voucher_user,1,1,1,0
+
+access_weha_voucher_year_manager,weha.voucher.year.manager,model_weha_voucher_year,group_voucher_manager,1,1,1,1
+access_weha_voucher_year_user,weha.voucher.year.user,model_weha_voucher_year,group_voucher_user,1,1,1,0

@@ -12,7 +12,7 @@
             <field name="active" eval="True" />
             <field name="arch" type="xml">
                 <tree string="model_tree" create="true" delete="true" edit="true">
-                    <field name="voucher_code_id" />
+                    <field name="voucher_order_line_id" />
                     <field name="amount" />
                 </tree>
             </field>

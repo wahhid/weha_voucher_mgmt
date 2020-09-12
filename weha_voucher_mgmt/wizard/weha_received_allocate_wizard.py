@@ -3,10 +3,47 @@
 
 from odoo import api, fields, models, _
 from datetime import datetime, timedelta, date
-from odoo.exceptions import UserError, Warning
+from odoo.exceptions import ValidationError, UserError, Warning
 import logging
 
 _logger = logging.getLogger(__name__)
+
+class WizardScanVoucherAllocate(models.TransientModel):
+    _name = "weha.wizard.scan.voucher.allocate"
+
+
+    @api.onchange('start_number', 'end_number')
+    def _onchange_voucher(self):     
+        if self.start_number:     
+            voucher_ids  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)])
+            if not voucher_ids:
+                self.start_number = ''
+                raise Warning('Voucher in start number not found')
+
+        if self.end_number:     
+            voucher_ids  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.end_number)])
+            if not voucher_ids:
+                self.end_number = ''
+                raise Warning('Voucher in end number not found')    
+
+        if self.start_number and self.end_number:
+            self.estimate_count = 10
+        
+        
+
+    start_number = fields.Char("Start Number", size=13, required=True)
+    end_number = fields.Char("End Number", size=13, required=True)
+    estimate_count = fields.Integer("Estimate Count", readonly=True)
+
+    def process(self):
+        voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)], limit=1)
+        start_check_number = voucher_id.check_number        
+        voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.end_number)], limit=1)
+        end_check_number = voucher_id.check_number
+        voucher_ranges = range(start_check_number, end_check_number)
+        _logger.info(voucher_ranges)  
+
+
 
 class WehaWizardReceivedAllocate(models.TransientModel):
     _name = 'weha.wizard.received.allocate'
