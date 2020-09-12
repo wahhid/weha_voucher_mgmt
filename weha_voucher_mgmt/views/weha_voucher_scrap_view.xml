@@ -182,7 +182,10 @@
         </record>
     
         
-        <menuitem id="weha_voucher_scrap_menu" name="Scrap" parent="weha_voucher_main_menu"
+        <menuitem 
+            id="weha_voucher_scrap_menu" 
+            name="Scrap" 
+            parent="weha_transaction_main_menu"
             action="action_weha_voucher_scrap_act_window" sequence="24"/>
 
         

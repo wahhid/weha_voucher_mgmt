@@ -158,7 +158,10 @@
             <field name="parent_id" ref="weha_voucher_main_menu" />
         </record> -->
 
-        <menuitem id="weha_voucher_issuing_menu" name="Issuing" parent="weha_voucher_main_menu"
+        <menuitem 
+            id="weha_voucher_issuing_menu" 
+            name="Issuing" 
+            parent="weha_transaction_main_menu"
             action="action_weha_voucher_issuing_act_window" sequence="23"/>
         
 

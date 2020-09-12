@@ -193,7 +193,10 @@
         </record>
     
         
-        <menuitem id="weha_voucher_return_menu" name="Return" parent="weha_voucher_main_menu"
+        <menuitem 
+            id="weha_voucher_return_menu" 
+            name="Return" 
+            parent="weha_transaction_main_menu"
             action="action_weha_voucher_return_act_window" sequence="22"/>
 
         

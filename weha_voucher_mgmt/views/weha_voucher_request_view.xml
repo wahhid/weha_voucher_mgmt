@@ -219,8 +219,12 @@
             <field name="parent_id" ref="weha_voucher_main_menu" />
         </record> -->
 
-        <menuitem id="weha_voucher_request_menu" name="Request" parent="weha_voucher_main_menu"
-            action="action_weha_voucher_request_act_window" sequence="21"/>
+        <menuitem 
+            id="weha_voucher_request_menu" 
+            name="Request" 
+            parent="weha_transaction_main_menu"
+            action="action_weha_voucher_request_act_window" 
+            sequence="21"/>
         
 
         

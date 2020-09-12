@@ -134,7 +134,7 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_order_line_menu" name="Master Voucher" parent="weha_voucher_main_menu"
+        <menuitem id="weha_voucher_order_line_menu" name="Vouchers" parent="weha_voucher_main_menu"
             action="action_weha_voucher_order_line_act_window" sequence="40"/>
 
     </data>

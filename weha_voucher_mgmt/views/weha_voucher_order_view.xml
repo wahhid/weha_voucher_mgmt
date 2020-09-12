@@ -228,7 +228,7 @@
         <menuitem
             action="action_weha_voucher_order_act_window"
              id="menu_voucher_order"
-             parent="weha_voucher_main_menu"
+             parent="weha_transaction_main_menu"
              groups="weha_voucher_mgmt.group_voucher_finance_user"/>
 
         <!--
