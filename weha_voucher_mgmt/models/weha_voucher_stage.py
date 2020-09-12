@@ -198,6 +198,8 @@ class WehaVoucherAllocateStage(models.Model):
         string='In Progress')
     receiving = fields.Boolean(
         string='Receiving')
+    closed = fields.Boolean(
+        string='Closed')
     cancelled = fields.Boolean(
         string='Cancelled')
     rejected = fields.Boolean(

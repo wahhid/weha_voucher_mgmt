@@ -104,7 +104,7 @@
             <field name="arch" type="xml">
                 <search string="model_search">
                     <field name="name" />
-                    <filter string="Status" name="open_status" domain="[('state', '=', 'open')]"/>
+                    <filter string="Open" name="open_status" domain="[('state', '=', 'open')]"/>
                     <separator/>
                     <group expand="0" string="Group By">
                         <filter string="Operating Unit" name="operating_unit" domain="[]" context="{'group_by': 'operating_unit_id'}"/>
