@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report
+            string="Delivery Receipt"
+            id="action_report_voucher_allocate_delivery_receipt"
+            model="weha.voucher.allocate"
+            report_type="qweb-pdf"
+            name="weha_voucher_mgmt.report_voucher_allocate_delivery_receipt"
+            file="weha_voucher_mgmt.report_voucher_allocate_delivery_receipt"
+        />
+
+    </data>
+</odoo>

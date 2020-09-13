@@ -12,6 +12,7 @@
                         <field name="end_number"/>
                     </group>
                     <group>
+                        <field name="estimate_total"/>
                         <field name="estimate_count"/>
                     </group>
                 </group>

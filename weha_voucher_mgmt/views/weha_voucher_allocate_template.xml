@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="voucher_allocate_external_layout">
+            <!-- Multicompany -->
+            <t t-if="not o" t-set="o" t-value="doc"/>
+
+            <t t-if="not company">
+                <!-- Multicompany -->
+                <t t-if="company_id">
+                    <t t-set="company" t-value="company_id"/>
+                </t>
+                <t t-elif="o and 'company_id' in o">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                </t>
+                <t t-else="else">
+                    <t t-set="company" t-value="res_company"/>
+                </t>
+            </t>
+
+            <t t-call="weha_voucher_mgmt.voucher_allocate_external_layout_header"/>
+            <t t-raw="0" />
+            <t t-call="weha_voucher_mgmt.voucher_allocate_external_layout_footer"/>
+        </template>
+
+        <template id="voucher_allocate_external_layout_header">
+            <div class="header">
+                <div class="row">
+                    <div class="col-6" style="padding:0;margin:0;">
+                            <div class="col-3">
+                                <div class="row">
+                                    <span><![CDATA[&nbsp;]]></span>
+                                </div>
+                                <img src='/weha_voucher_mgmt/static/src/img/logo.png' style="max-height: 60px;"/>
+                            </div>
+                            <div class="col-9">
+                                <div class="row">
+                                    <span>
+                                        <strong>DELIVERY RECEIPT</strong>
+                                    </span>
+                                </div>
+                                <div class="row">
+                                    <span t-esc="company.name"/>
+                                </div>
+                                <div class="row">
+                                    <span t-esc="company.street"/>
+                                </div>
+                                <div class="row">
+                                    <span>NPWP : </span>
+                                    <span t-esc="company.vat"/>
+                                </div>
+                                <div class="row">
+                                    <span t-esc="o.create_uid.name"/>
+                                    <span>/</span>
+                                    <span class="page"/>
+                                    <span >of</span>
+                                    <span class="topage"/>
+                                    <span ></span>
+                                </div>
+                            </div>
+                        
+                    </div>
+                    <div class="col-6" style="padding:0;margin:0;">
+                        <div class="row">
+                            <div class="col-4">
+                                <span>
+                                    
+                                </span>
+                            </div>
+                            <div class="col-8">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="voucher_allocate_external_layout_footer">
+            <div class="footer">
+            </div>
+        </template>
+
+        <template id="report_voucher_allocate_delivery_receipt_document">
+                <!--
+                <t t-set="o" t-value="o.with_context(lang=lang)" />
+                -->
+                <t t-call="weha_voucher_mgmt.voucher_allocate_external_layout">
+                        <div class="article">
+                            <table width="100%">
+                                <thead>
+                                    <tr>
+                                        <th width="3%" style=" border-top: 0.5px solid black;border-bottom: 0.5px solid black;border-collapse: collapse;">
+                                            <span >No </span>
+                                        </th>
+                                        <th width="10%" style=" border-top: 0.5px solid black;border-bottom: 0.5px solid black;border-collapse: collapse;">
+                                            <span >Voucher #</span>
+                                        </th>
+                                        <th width="10%" style=" border-top: 0.5px solid black;border-bottom: 0.5px solid black;border-collapse: collapse;">
+                                            <span >Voucher Code</span>
+                                        </th>
+                                        <th width="7%" style=" border-top: 0.5px solid black;border-bottom: 0.5px solid black;border-collapse: collapse;">
+                                            <span >Year</span>
+                                        </th>
+                                        <th style="border-top: 0.5px solid black;border-bottom: 0.5px solid black;border-collapse: collapse;">
+                                            <span >Voucher Promo</span>
+                                        </th>
+                                        <th width="5%" style=" border-top: 0.5px solid black;border-bottom: 0.5px solid black;border-collapse: collapse;">
+                                            <span >Barcode</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="no" t-value="0"/>
+                                    <t t-foreach="o.voucher_allocate_line_ids" t-as="row">
+                                            <t t-set="no" t-value="no + 1"/>
+                                            <tr>
+                                                <td style="white-space:nowrap;">
+                                                    <span t-esc="no"/>
+                                                </td>
+                                                <td style="white-space:nowrap;">
+                                                    <span t-field="row.voucher_order_line_id"/>
+                                                </td>
+                                                <td style="white-space:nowrap;">
+                                                    <span t-field="row.voucher_code_id"/>
+                                                </td>
+                                                <td style="overflow:hidden;white-space:nowrap;">
+                                                    <span t-field="row.year_id"/>
+                                                </td>
+                                                <td style="white-space:nowrap;">
+                                                     <span t-field="row.voucher_promo_id"/>
+                                                </td>
+                                                <td style="white-space:nowrap;" class="text-right">
+                                                   <img t-att-src="'/report/barcode/EAN13/%s' % row.voucher_order_line_id.voucher_ean" width="100"/>
+                                                </td>
+                                            </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                </t>
+        </template>
+
+        <template id="report_voucher_allocate_delivery_receipt">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="weha_voucher_mgmt.report_voucher_allocate_delivery_receipt_document"/>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>

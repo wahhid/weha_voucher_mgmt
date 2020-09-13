@@ -44,7 +44,6 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}" 
                             class="btn btn-primary" name="trans_voucher_allocate_activate" string="Activated from Allocate" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
-
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_allocate_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
@@ -57,6 +56,9 @@
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Allocated" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                            class="btn btn-light" name="trans_delivery" string="Delivery" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
@@ -90,21 +92,33 @@
                                 <field name="operating_unit_id"/>
                                 <field name="source_operating_unit"/>
                                 <field name="voucher_terms_id"/>
+                                <field name="current_stage" invisible="1"/>
                             </group>
                             <group>
                                  <field name="ref"/>
                                 <field name="voucher_count"/>
-                            
-                            </group>
-                            <group>
-                                <field name="current_stage"/>
                             </group>
                         </group>
+                        <group>
+                            <group>
+                                <field name="voucher_code_id"/>
+                                <field name="year_id"/>     
+                                <field name="voucher_promo_id"/>   
+                            </group>
+                            <group>
+                                <field name="start_number"/>
+                                <field name="end_number"/>
+                            </group>
+                        </group>
+
                         <notebook colspan="4">
                             <page string="Allocate Lines">
 	                        	<field name="voucher_allocate_line_ids" widget="one2many_list" nolabel="0" readonly="1">
 	                            	<tree string="Allocate Lines">
-	                            	    <field name="voucher_order_line_id" />                           	                                                                                                                                                                                                                                   
+	                            	    <field name="voucher_order_line_id" /> 
+                                        <field name="voucher_code_id"/>
+                                        <field name="year_id"/>
+                                        <field name="voucher_promo_id"/>                          	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>	   

@@ -122,6 +122,10 @@ class VoucherAllocate(models.Model):
                     val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
                     _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
 
+    def trans_delivery(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        return res
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
@@ -145,17 +149,23 @@ class VoucherAllocate(models.Model):
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Allocate Number', default="/",readonly=True)
-    ref = fields.Char(string='Source Document', required=False)
+    ref = fields.Char(string='Source Document', required=True)
     allocate_date = fields.Date('Allocate Date', required=False, default=lambda self: fields.date.today(), readonly=True)
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    source_operating_unit = fields.Many2one('operating.unit','Source Store', )
+    source_operating_unit = fields.Many2one('operating.unit','Source Store', required=True)
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
+    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=True)
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
+    year_id = fields.Many2one('weha.voucher.year','Year', required=True)
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo')
+    start_number = fields.Integer(string='Start Number', required=False, readonly=True)
+    end_number = fields.Integer(string='End Number', required=False, readonly=True)
+    
     stage_id = fields.Many2one(
         'weha.voucher.allocate.stage',
         string='Stage',
@@ -171,8 +181,6 @@ class VoucherAllocate(models.Model):
         ('3', _('Very High')),
     ], string='Priority', default='1')
 
-    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=False)
-   
     color = fields.Integer(string='Color Index')
     kanban_state = fields.Selection([
         ('normal', 'Default'),
@@ -180,7 +188,7 @@ class VoucherAllocate(models.Model):
         ('blocked', 'Blocked')], string='Kanban State')
 
     voucher_allocate_line_ids = fields.One2many(comodel_name='weha.voucher.allocate.line', inverse_name='voucher_allocate_id', string='Voucher Allocate Lines')
-
+    
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
     
     @api.model

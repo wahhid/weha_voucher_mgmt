@@ -12,6 +12,31 @@ class WizardScanVoucherAllocate(models.TransientModel):
     _name = "weha.wizard.scan.voucher.allocate"
 
 
+    @api.model
+    def default_get(self, fields):
+        res = super(WizardScanVoucherAllocate, self).default_get(fields)
+        active_id = self.env.context.get('active_id') or False
+        if active_id:
+            voucher_allocate_id = self.env['weha.voucher.allocate'].browse(active_id)
+            if voucher_allocate_id.voucher_promo_id:
+                domain = [
+                    ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
+                    ('year_id','=', voucher_allocate_id.year_id.id),
+                    ('voucher_promo_id', '=', voucher_allocate_id.voucher_promo_id.id)
+                ]
+            else:
+                domain = [
+                    ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
+                    ('year_id','=', voucher_allocate_id.year_id.id),
+                ]
+            voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
+
+            res.update({'voucher_code_id':  voucher_allocate_id.voucher_code_id.id})
+            res.update({'year_id':  voucher_allocate_id.year_id.id})
+            res.update({'voucher_promo_id':  voucher_allocate_id.voucher_promo_id.id})
+            res.update({'estimate_total': len(voucher_order_line_ids)})
+        return res
+
     @api.onchange('start_number', 'end_number')
     def _onchange_voucher(self):     
         if self.start_number:     
@@ -30,19 +55,56 @@ class WizardScanVoucherAllocate(models.TransientModel):
             self.estimate_count = 10
         
         
-
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
+    year_id = fields.Many2one('weha.voucher.year','Year', required=True)
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo')
     start_number = fields.Char("Start Number", size=13, required=True)
     end_number = fields.Char("End Number", size=13, required=True)
+
     estimate_count = fields.Integer("Estimate Count", readonly=True)
+    estimate_total = fields.Integer("Current Stock", readonly=True)
 
     def process(self):
+        #Get Current Voucher Order Allocate
+        active_id = self.env.context.get('active_id') or False
+
+        #Get Voucher Check Number
         voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)], limit=1)
         start_check_number = voucher_id.check_number        
         voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.end_number)], limit=1)
         end_check_number = voucher_id.check_number
-        voucher_ranges = range(start_check_number, end_check_number)
+
+        #Get Voucher Range
+        voucher_ranges = range(start_check_number, end_check_number+1)
         _logger.info(voucher_ranges)  
 
+        #Get Vouchers
+        if self.voucher_promo_id:
+            domain = [
+                    ('voucher_code_id','=', self.voucher_code_id.id),
+                    ('year_id','=', self.year_id.id),
+                    ('voucher_promo_id', '=', self.voucher_promo_id.id)
+                    ('check_number', 'in', tuple(voucher_ranges))
+            ]
+        else:
+            domain = [
+                    ('voucher_code_id','=', self.voucher_code_id.id),
+                    ('year_id','=', self.year_id.id),
+                    ('check_number', 'in', tuple(voucher_ranges))
+            ]
+
+        voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
+        _logger.info(voucher_order_line_ids)
+
+        for voucher_order_line_id in voucher_order_line_ids:
+            vals = {
+                'voucher_allocate_id': active_id,
+                'voucher_order_line_id': voucher_order_line_id.id
+            }
+            self.env['weha.voucher.allocate.line'].create(vals)
+           
+
+        
 
 
 class WehaWizardReceivedAllocate(models.TransientModel):

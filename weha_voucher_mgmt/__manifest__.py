@@ -29,6 +29,8 @@
         'views/weha_voucher_return_view.xml',
         'views/weha_voucher_return_line_view.xml',
         'views/weha_voucher_allocate_view.xml',
+        'views/weha_voucher_allocate_template.xml',
+        'views/weha_voucher_allocate_report.xml',
         #'views/weha_voucher_allocate_line_view.xml',
         'views/weha_voucher_stock_transfer_view.xml',
         'views/weha_voucher_stock_transfer_line_view.xml',
