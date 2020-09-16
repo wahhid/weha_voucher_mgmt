@@ -12,11 +12,11 @@
 
         <!-- Menus -->
         <menuitem id="weha_voucher_mgmt_main_menu" name="Voucher" sequence="16"
-            web_icon="helpdesk_mgmt,static/description/icon.png" groups="group_voucher_user,group_voucher_finance_user"/>
+            web_icon="helpdesk_mgmt,static/description/icon.png" groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user"/>
         
         <menuitem id="weha_transaction_main_menu" name="Transaction"
             parent="weha_voucher_mgmt_main_menu" sequence="20"
-            groups="group_voucher_user,group_voucher_finance_user"/>
+            groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user"/>
         
         <menuitem id="weha_voucher_api_menu" name="Api"
             parent="weha_voucher_mgmt_main_menu" sequence="25"
@@ -24,7 +24,7 @@
 
         <menuitem id="weha_voucher_main_menu" name="Voucher"
             parent="weha_voucher_mgmt_main_menu" sequence="26"
-            groups="group_voucher_user,group_voucher_finance_user"/>
+            groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user"/>
 
          <menuitem id="weha_voucher_reporting_main_menu" name="Reporting"
             parent="weha_voucher_mgmt_main_menu" sequence="30"

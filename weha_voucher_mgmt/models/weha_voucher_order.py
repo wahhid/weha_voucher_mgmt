@@ -47,62 +47,31 @@ class VoucherOrder(models.Model):
 
     # Generate Voucher
     def trans_generate_voucher(self):
-        _logger.info("Generate Voucher ID = " + str('OKK'))
-
+        _logger.info("Generate Voucher ID = " + str('OK'))
+        obj_voucher_order_line = self.env['weha.voucher.order.line']        
+        
         start_number = self.start_number
         end_number = self.end_number
         voucher_year = self.year
-        obj_voucher_order_line = self.env['weha.voucher.order.line']
-        _logger.info("Voucher LINE ID = " + str(obj_voucher_order_line))
-        
         number = start_number
-        _logger.info("Start Number = " + str(start_number))
-        _logger.info("End Number = " + str(end_number))
 
-        # initialize tuple 
-        strSQL = """SELECT check_number
-                    FROM weha_voucher_order_line 
-                    WHERE year_id={} AND check_number BETWEEN '{}' AND '{}'""".format(voucher_year.id, start_number, end_number)
-
-        self.env.cr.execute(strSQL)
-        test_tup = self.env.cr.fetchall()
-
-        # printing original tuple 
-        _logger.info("The original tuple : " + str(test_tup)) 
-
-        # Check if tuple has any None value 
-        # using any() + map() + lambda 
-        res_start = any(map(lambda ele: ele is start_number, test_tup))
-        res_end = any(map(lambda ele: ele is end_number, test_tup))
-
-        # printing result 
-        _logger.info("Does tuple contain value ? : " + str(res_start))
-        _logger.info("Does tuple contain value ? : " + str(res_end)) 
-
-        if res_start == False or res_end == False:
-            for i in range(start_number,end_number): 
-                vals = {}
-                vals.update({'operating_unit_id': self.operating_unit_id.id})
-                vals.update({'operating_unit_loc_fr_id': self.operating_unit_id.id})
-                vals.update({'voucher_order_id': self.id})
-                vals.update({'voucher_code': self.voucher_code_id.code})
-                vals.update({'voucher_code_id': self.voucher_code_id.id})
-                if self.voucher_promo_id:
-                    vals.update({'voucher_promo_id': self.voucher_promo_id.id})
-                vals.update({'year_id': self.year.id})
-                vals.update({'check_number': number})
-                vals.update({'voucher_type': self.voucher_type})
-                vals.update({'state': 'open'})
-                val_order_line_obj = obj_voucher_order_line.sudo().create(vals)
-
-                _logger.info("Generate Voucher ID = " + str(val_order_line_obj))
-                
-                if not val_order_line_obj:
-                    raise ValidationError("Can't Generate voucher order line, contact administrator!")
-                number = number+1
-        else:
-            raise ValidationError("Can't generate voucher because this number "+ str(start_number) +" <--> "+ str(end_number) +" already exists")
-        
+        for i in range(self.start_number,self.end_number + 1): 
+            vals = {}
+            vals.update({'operating_unit_id': self.operating_unit_id.id})
+            #vals.update({'operating_unit_loc_fr_id': self.operating_unit_id.id})
+            vals.update({'voucher_type': self.voucher_type})
+            vals.update({'voucher_order_id': self.id})
+            #vals.update({'voucher_code': self.voucher_code_id.code})
+            vals.update({'voucher_code_id': self.voucher_code_id.id})
+            if self.voucher_promo_id:
+                vals.update({'voucher_promo_id': self.voucher_promo_id.id})
+            vals.update({'year_id': self.year.id})
+            vals.update({'check_number': i})
+            
+            val_order_line_obj = obj_voucher_order_line.sudo().create(vals)            
+            if not val_order_line_obj:
+                raise ValidationError("Can't Generate voucher order line, contact administrator!")
+         
         self.is_voucher_generated = True
         next_stage_id =  self.stage_id.next_stage_id
         vals = { 'stage_id': next_stage_id.id}
@@ -147,6 +116,44 @@ class VoucherOrder(models.Model):
             if len(str(record.end_number)) > 6:
                 raise ValidationError("End Number 6 digit maximum")
     
+    def overlap(self, start1, end1, start2, end2):
+        """Does the range (start1, end1) overlap with (start2, end2)?"""
+        return (
+            start1 <= start2 <= end1 or
+            start1 <= end2 <= end1 or
+            start2 <= start1 <= end2 or
+            start2 <= end1 <= end2
+        )
+
+    def check_order_overlap(self, voucher_type, voucher_code_id, year, voucher_promo_id, start_number, end_number):
+        if voucher_promo_id:
+            domain = [
+                ('voucher_type','=', voucher_type),
+                ('voucher_code_id','=', voucher_code_id),
+                ('year','=', year),
+                ('voucher_promo_id','=', voucher_promo_id)
+            ]
+        else:
+            domain = [
+                ('voucher_type','=', voucher_type),
+                ('voucher_code_id','=',voucher_code_id),
+                ('year','=', year)
+            ]
+
+        _logger.info(domain)
+        voucher_order_ids = self.env['weha.voucher.order'].search(domain)
+        _logger.info(voucher_order_ids)
+        is_overlap = False
+        for voucher_order_id in voucher_order_ids:
+            _logger.info(voucher_order_ids)
+            result = self.overlap(start_number,end_number,voucher_order_id.start_number, voucher_order_id.end_number)
+            _logger.info(result)
+            if result:
+                is_overlap = True
+                break 
+
+        if is_overlap:
+            raise ValidationError('Overlap Voucher Number')
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
@@ -178,13 +185,21 @@ class VoucherOrder(models.Model):
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
         
-    
     def trans_request_approval(self):    
     
         next_stage_id =  self.stage_id.next_stage_id
         vals = { 'stage_id': next_stage_id.id}
         #self.write(vals)
         super(VoucherOrder,self).write(vals)
+
+        #Create Schedule Activity
+        activity = self.env['mail.activity'].create({
+            'activity_type_id': 4,
+            'note': 'Voucher Order Approval',
+            'res_id': self.id,
+            'res_model_id': self.env.ref('model_weha_voucher_order').id,
+            'user_id': next_stage_id.approval_user_id.id
+        })
 
         #template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
         #template = self.env['mail.template'].browse(template_id)
@@ -196,6 +211,15 @@ class VoucherOrder(models.Model):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
+
+    def trans_create_activity(self):
+        activity = self.env['mail.activity'].create({
+            'activity_type_id': 4,
+            'note': 'Voucher Order Approval',
+            'res_id': self.id,
+            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_order').id,
+            'user_id': self.stage_id.approval_user_id.id
+        })
 
 
     company_id = fields.Many2one('res.company', 'Company')
@@ -254,16 +278,22 @@ class VoucherOrder(models.Model):
     
     @api.model
     def create(self, vals):
+        #Check Start Number and End Number
         if vals.get('start_number') > vals.get('end_number'):
             raise ValidationError('Start Number greater than End Number')
 
+        #Check Overlap Range Number
+        self.check_order_overlap(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year') , vals.get('voucher_promo_id'), vals.get('start_number'),vals.get('end_number'))
+
+        #Create Trans #
         if vals.get('number', '/') == '/':
             seq = self.env['ir.sequence']
             if 'company_id' in vals:
                 seq = seq.with_context(force_company=vals['company_id'])
             vals['number'] = seq.next_by_code(
                 'weha.voucher.order.sequence') or '/'
-            
+
+        #Create Trans
         res = super(VoucherOrder, self).create(vals)
         return res    
     

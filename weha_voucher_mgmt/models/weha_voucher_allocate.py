@@ -27,10 +27,13 @@ class VoucherAllocate(models.Model):
                 rec.current_stage = 'progress'
             if rec.stage_id.receiving:
                 rec.current_stage = 'receiving'
+            if rec.stage_id.closed:
+                rec.current_stage = 'closed'
             if rec.stage_id.cancelled:
                 rec.current_stage = 'cancelled'
             if rec.stage_id.rejected:
                 rec.current_stage = 'rejected'
+
             
     def _get_default_stage_id(self):
         return self.env['weha.voucher.allocate.stage'].search([], limit=1).id
@@ -40,11 +43,19 @@ class VoucherAllocate(models.Model):
         stage_ids = self.env['weha.voucher.allocate.stage'].search([])
         return stage_ids
     
-    @api.depends('voucher_count')
+    @api.depends('voucher_allocate_line_ids')
     def _calculate_voucher_count(self):
-        voucher_master = self.env['weha.voucher.order.line'].sudo().search_count([('voucher_allocate_id','=', self.id)])
-        return voucher_master
+        self.voucher_count = len(self.voucher_allocate_line_ids)
     
+
+    @api.depends('voucher_allocate_line_ids')
+    def _calculate_voucher_received(self):
+        count = 0
+        for voucher_allocate_line_id in self.voucher_allocate_line_ids:
+            if voucher_allocate_line_id.state == 'received':
+                count += 1
+        self.voucher_received_count = count
+
     # def send_l1_allocate_mail(self):
     #     for rec in self:
     #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
@@ -125,6 +136,13 @@ class VoucherAllocate(models.Model):
     def trans_delivery(self):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        for row in self.voucher_allocate_line_ids:
+            row.voucher_order_line_id.write({'state':'intransit'})
+        return res
+
+    def trans_confirm_received(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         return res
 
     def trans_approve(self):
@@ -138,11 +156,15 @@ class VoucherAllocate(models.Model):
         return res
     
     def trans_close(self):
+        if self.voucher_count != self.voucher_received_count:
+            raise ValidationError("Receiving not completed")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         return res
         
     def trans_allocate_approval(self):    
+        if len(self.voucher_allocate_line_ids) == 0:
+            raise ValidationError("No Voucher Allocated")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         return res
@@ -160,9 +182,9 @@ class VoucherAllocate(models.Model):
         default='physical'
     )
     voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=True)
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
-    year_id = fields.Many2one('weha.voucher.year','Year', required=True)
-    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo')
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
+    year_id = fields.Many2one('weha.voucher.year','Year', required=False, readonly=True)
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', required=False, readonly=True)
     start_number = fields.Integer(string='Start Number', required=False, readonly=True)
     end_number = fields.Integer(string='End Number', required=False, readonly=True)
     
@@ -187,10 +209,23 @@ class VoucherAllocate(models.Model):
         ('done', 'Ready for next stage'),
         ('blocked', 'Blocked')], string='Kanban State')
 
-    voucher_allocate_line_ids = fields.One2many(comodel_name='weha.voucher.allocate.line', inverse_name='voucher_allocate_id', string='Voucher Allocate Lines')
-    
+    voucher_allocate_line_ids = fields.One2many(
+        comodel_name='weha.voucher.allocate.line', 
+        inverse_name='voucher_allocate_id', 
+        string='Allocate Lines',
+        domain="[('state','=','open')]"
+    )
+
+    voucher_allocate_line_received_ids = fields.One2many(
+        comodel_name='weha.voucher.allocate.line', 
+        inverse_name='voucher_allocate_id', 
+        string='Received Lines',
+        domain="[('state','=','received')]"
+    )
+
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
-    
+    voucher_received_count = fields.Integer('Voucher Received', compute="_calculate_voucher_received", store=False)
+
     @api.model
     def create(self, vals):
         if vals.get('number', '/') == '/':

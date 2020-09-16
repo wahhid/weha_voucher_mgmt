@@ -46,28 +46,28 @@
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_allocate_approval" string="Request Approval" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
                         <button 
                             type="action" 
                             attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" 
                             name="%(weha_voucher_mgmt.act_open_scan_voucher_allocate_view_form)d" 
                             string="Scan Allocate Voucher" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
                             class="btn btn-light" name="trans_close" string="Closed Allocated" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_delivery" string="Delivery" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>                        
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
-                            groups="weha_voucher_mgmt.group_voucher_manager" confirm="Are you sure you want to Approve?"/>
+                            groups="weha_voucher_mgmt.group_voucher_finance_manager" confirm="Are you sure you want to Approve?"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                             class="btn btn-primary" name="trans_reject" string="Reject" 
-                            groups="weha_voucher_mgmt.group_voucher_manager"/>
+                            groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
                         <button name="%(weha_voucher_mgmt.act_open_received_allocate_view_form)d" type="action" string="Received Voucher"
-                            class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
+                            class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'progress')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
@@ -95,8 +95,9 @@
                                 <field name="current_stage" invisible="1"/>
                             </group>
                             <group>
-                                 <field name="ref"/>
+                                <field name="ref"/>
                                 <field name="voucher_count"/>
+                                <field name="voucher_received_count"/>
                             </group>
                         </group>
                         <group>
@@ -118,10 +119,22 @@
 	                            	    <field name="voucher_order_line_id" /> 
                                         <field name="voucher_code_id"/>
                                         <field name="year_id"/>
-                                        <field name="voucher_promo_id"/>                          	                                                                                                                                                                                                                                   
+                                        <field name="voucher_promo_id"/>       
+                                        <field name="state"/>                   	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
 	                        	</field>
-	                        </page>	   
+	                        </page>
+                            <page string="Recevied Lines">
+	                        	<field name="voucher_allocate_line_received_ids" widget="one2many_list" nolabel="0" readonly="1">
+	                            	<tree string="Recevied Lines">
+	                            	    <field name="voucher_order_line_id" /> 
+                                        <field name="voucher_code_id"/>
+                                        <field name="year_id"/>
+                                        <field name="voucher_promo_id"/>       
+                                        <field name="state"/>                   	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>	 	   
                         </notebook>
                     </sheet>
                     <div class="oe_chatter">
@@ -243,7 +256,7 @@
             parent="weha_transaction_main_menu"
             action="action_weha_voucher_allocate_act_window" 
             sequence="14"
-            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
         
 
         

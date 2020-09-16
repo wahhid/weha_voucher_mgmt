@@ -9,9 +9,14 @@
                 <group>
                     <group>
                         <field name="start_number"/>
-                        <field name="end_number"/>
+                        <field name="end_number" attrs="{'invisible':[('is_valid','=', False)]}"/>
+                        <field name="is_valid" invisible="1"/>
                     </group>
                     <group>
+                        <field name="operating_unit_id"/>
+                        <field name="voucher_code_id"/>
+                        <field name="year_id"/>
+                        <field name="voucher_promo_id"/>
                         <field name="estimate_total"/>
                         <field name="estimate_count"/>
                     </group>
@@ -39,18 +44,28 @@
         <field name="arch" type="xml">
             <form string="Received Voucher Allocate">
                 <group>
-                    <h1>
-                        <field name="code_ean"/>
-                    </h1>
+                    <field name="scan_method" widget="radio"/>
+                </group>
+                <group>
+                    <group>
+                        <h1>
+                            <field name="code_ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
+                            <field name="start_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
+                        </h1>
+                    </group>
+                    <group>
+                        <h1>
+                            <field name="end_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
+                        </h1>
+                    </group>
                 </group>
                 <notebook>
-                    <page string="Allocate Move">
-                        <field name="allocate_line_wizard_ids" mode="tree,kanban">
-                            <tree string="Allocate Move" editable="bottom">
+                    <page string="Allocate Move" attrs="{'invisible':[('scan_method','=', 'all')]}"> 
+                        <field name="allocate_line_wizard_ids" readonly="1">
+                            <tree string="Allocate Move">
                                 <field name="name" />
                                 <field name="date" />
-                                <field name="voucher_order_line_id" />
-                                                   	                                                                                                                                                                                                                                   
+                                <field name="voucher_order_line_id"/>  	                                                                                                                                                                                                                                   
                             </tree>                    	                            	
                         </field>
                     </page>	   
@@ -58,7 +73,6 @@
                 <footer>
                     <button name="trans_received" string="Received" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-default" special="cancel" />
-                    <button name="trans_received_all" string="Received All" type="object" class="btn-primary"/>
                 </footer>
             </form>
         </field>

@@ -55,4 +55,7 @@ class WehaWizardReceivedRequest(models.TransientModel):
             vals.update({'trans_type': 'AC'})
             obj_order_line_trans.create(vals)
 
+   
     code_ean = fields.Char(string="Scan Code")
+
+  

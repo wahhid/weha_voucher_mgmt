@@ -12,26 +12,36 @@ class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
+    
+    def calc_check_digit(self, number):
+        """Calculate the EAN check digit for 13-digit numbers. The number passed
+        should not have the check bit included."""
+        return str((10 - sum((3, 1)[i % 2] * int(n)
+                            for i, n in enumerate(reversed(number)))) % 10)
+
+    def generate_12_numbers(self, voucher_type, voucher_code_id, year_id, voucher_promo_id, check_number):
+
+        c_code = str(self.env.user.default_operating_unit_id.company_id.res_company_code)
+
+        if voucher_type == 'physical':
+            classifi = '1'
+        else:
+            classifi = '2'
+
+        voucher_code = self.env['weha.voucher.code'].browse(voucher_code_id)
+        v_code = voucher_code.code
         
-    def generate_12_random_numbers(self, vals):
+        number = str(check_number).zfill(6)
 
-        start = vals.get('start_number')
-        end = vals.get('end_number')
-        c_code = self.env.user.default_operating_unit_id.company_id.res_company_code
-        v_code = vals.get('voucher_code')
-        num = vals.get('check_number')
-
-        if vals.get('voucher_type') == 'physical':
-            classifi = 1
-        elif vals.get('voucher_type') == 'electronic':
-            classifi = 2
-        number = str(num).zfill(6)
-        x = datetime.now()
-        year = x.strftime("%y")
+        year = self.env['weha.voucher.year'].browse(year_id)
+        year_code = str(year.year)
 
         # company_code,type,year,classification,number
-        code12 = [c_code ,v_code,year,classifi,number]
+        #code12 = [c_code ,v_code,year,classifi,number]
+    
+        code12 = c_code + v_code + year_code + classifi + number
         _logger.info("CODE 12 = " + str(code12))
+        
         return code12
 
     def calculate_checksum(self, ean):
@@ -73,51 +83,35 @@ class VoucherOrderLine(models.Model):
     
     #Customer Code
     customer_id = fields.Many2one('res.partner', 'Customer')
-
-    #Voucher No
-    voucher_order_id = fields.Many2one(
-        string='Voucher Order',
-        comodel_name='weha.voucher.order',
-        ondelete='restrict',
-    )
-
-    #Voucher Promo
-    voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
-    voucher_12_digit = fields.Char('Code 12', )
-    voucher_ean = fields.Char('Code', )
-    
-    #Company
+    #Operating Unit
     operating_unit_id = fields.Many2one(
         string='Operating Unit',
         comodel_name='operating.unit',
         ondelete='restrict',
     )
-
-    #Loc Fr
-    operating_unit_loc_fr_id = fields.Many2one(string='Loc.Fr', comodel_name='operating.unit', ondelete='restrict',)
-    #Loc To
-    operating_unit_loc_to_id = fields.Many2one(string='Loc.To', comodel_name='operating.unit', ondelete='restrict',)
-
-    #Voucher Terms
-    voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
-
-    #P-Voucher or E-Voucher
-    voucher_code = fields.Char(string='Voucher Code')
-    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
-    voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
-    
+    #Voucher Type
     voucher_type = fields.Selection(
         string='Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-
-    # start_number = fields.Integer(string='Start Number')
-    # end_number = fields.Integer(string='End Number')
-
+    #P-Voucher or E-Voucher
+    voucher_code = fields.Char(string='Voucher Code')
+    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
+    #Voucher Term (Expired Date)
+    voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
+    #Voucher Promo
+    voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
     #Check Number Voucher
     check_number = fields.Integer(string='Check Number')
-
+    #Voucher 12 Digit
+    voucher_12_digit = fields.Char('Code 12', size=12 )
+    #Voucher EAN
+    voucher_ean = fields.Char('Code', size=13)
+    #Loc Fr
+    operating_unit_loc_fr_id = fields.Many2one(string='Loc.Fr', comodel_name='operating.unit', ondelete='restrict',)
+    #Loc To
+    operating_unit_loc_to_id = fields.Many2one(string='Loc.To', comodel_name='operating.unit', ondelete='restrict',)
     #Expired Date Voucher & Year
     expired_date = fields.Date(string='Expired Date')
     year_id = fields.Many2one('weha.voucher.year',string='Year')
@@ -170,32 +164,27 @@ class VoucherOrderLine(models.Model):
             ('activated','Activated'), 
             ('damage', 'Damage'),
             ('transferred','Transferred'),
+            ('intransit', 'In-Transit'),
             ('reserved', 'Reserved'),
             ('used', 'Used'),
             ('return', 'Return'),
             ('done','Close'),
             ('scrap','Scrap')
-        ]
+        ],
+        default='open'
     )
 
     @api.model
     def create(self, vals):
 
-        val_12_digit = self.generate_12_random_numbers(vals)
-        str_val_12_digit = ''.join(map(str, val_12_digit))
+        #Generate 12 Digit
+        voucher_12_digit = self.generate_12_numbers(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year_id'), vals.get('voucher_promo_id'), vals.get('check_number'))
+        #Check Digit and Generate EAN 13
+        ean = voucher_12_digit + self.calc_check_digit(voucher_12_digit)
+        vals['voucher_12_digit'] = voucher_12_digit
+        vals['voucher_ean'] = ean
 
-        checksum = self.calculate_checksum(val_12_digit)
-        val_12_digit.append(checksum)
-
-        str_ean = ''.join(map(str, val_12_digit))
-
-        _logger.info("12 Digit ID = " + str(str_val_12_digit))
-        vals['voucher_12_digit'] = str_val_12_digit
-        
-        _logger.info("str_ean ID = " + str_ean)
-        vals['voucher_ean'] = str_ean
-
-        vals['name'] = str_ean
+        vals['name'] = ean
         res = super(VoucherOrderLine, self).create(vals)
         res.create_order_line_trans(res)
 
@@ -207,6 +196,7 @@ class VoucherOrderLineTrans(models.Model):
     name = fields.Char(
         string='Voucher Trans ID', readonly=True
     )
+    
     trans_date = fields.Datetime('Date and Time')
     
     voucher_order_line_id = fields.Many2one(
@@ -215,7 +205,6 @@ class VoucherOrderLineTrans(models.Model):
         ondelete='restrict', required=True,
     )
 
-    
     trans_type = fields.Selection(
         string='Transaction Type', 
         selection=[
@@ -224,8 +213,14 @@ class VoucherOrderLineTrans(models.Model):
             ('ST', 'Stock Transfer'), 
             ('IC', 'Issued Customer'), 
             ('RT', 'Return'), 
-            ('AC', 'Activated')])
+            ('AC', 'Activated')],
+        default='open')
             
     trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), ('DV', 'Delivery'),
         ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'), ('AC','Activated')])
 
+    #Loc Fr
+    operating_unit_loc_fr_id = fields.Many2one(string='Loc.Fr', comodel_name='operating.unit', ondelete='restrict',)
+    #Loc To
+    operating_unit_loc_to_id = fields.Many2one(string='Loc.To', comodel_name='operating.unit', ondelete='restrict',)
+ 

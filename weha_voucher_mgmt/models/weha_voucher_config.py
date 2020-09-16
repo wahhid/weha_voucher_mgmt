@@ -87,16 +87,17 @@ class VoucherPromo(models.Model):
 class VoucherYear(models.Model):
     _name = 'weha.voucher.year'
 
-    @api.constrains('year')
-    def _check_year(self):
-        for record in self:
-            if not isinstance(record.year, int):
-                raise ValidationError("Year must be integer")
-            if len(str(record.year)) != 4:
-                raise ValidationError("Year 4 Digit")    
+    # @api.constrains('year')
+    # def _check_year(self):
+    #     for record in self:
+    #         if not isinstance(record.year, int):
+    #             raise ValidationError("Year must be integer")
+    #         if len(str(record.year)) != 4:
+    #             raise ValidationError("Year 4 Digit")    
             
     name = fields.Char("Name", size=4, required=True)
     year = fields.Integer("Year", required=True)
+    active = fields.Boolean('Active', default=True)
 
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'

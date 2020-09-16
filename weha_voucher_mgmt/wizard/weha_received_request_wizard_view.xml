@@ -20,6 +20,7 @@
         </field>
     </record>
 
+
     <record id="act_open_received_request_view_form" model="ir.actions.act_window">
         <field name="name">Received Request</field>
         <field name="res_model">weha.wizard.received.request</field>

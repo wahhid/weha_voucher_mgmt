@@ -52,6 +52,7 @@
                                 <field name="opened"/>
                                 <field name="progress"/>
                                 <field name="receiving"/>
+                                <field name="closed"/>
                                 <field name="cancelled"/>
                                 <field name="rejected"/>
                                 <field name="fold"/>
