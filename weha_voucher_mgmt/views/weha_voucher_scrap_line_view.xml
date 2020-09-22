@@ -12,11 +12,14 @@
             <field name="active" eval="True" />
             <field name="arch" type="xml">
                 <tree string="model_tree" create="true" delete="true" edit="true">
-                    <field name="voucher_code_id" />
-                    <field name="amount" />
+                    <field name="voucher_order_line_id"/>
+                    <field name="voucher_code_id"/>
+                    <field name="year_id"/>
+                    <field name="voucher_promo_id"/>       
+                    <field name="state"/> 
                 </tree>
             </field>
-        </record>stock_transfer
+        </record>
         
         <!-- Form view for Voucher Stage -->
         <record id="view_weha_voucher_scrap_line_form" model="ir.ui.view">
@@ -32,19 +35,12 @@
                     </header>
                     <sheet>
                         <group>
-                            <field name="voucher_code_id" domain="[('voucher_type','=','physical')]"/>
-                            <field name="amount" />
+                            <field name="voucher_order_line_id" /> 
+                            <field name="voucher_code_id"/>
+                            <field name="year_id"/>
+                            <field name="voucher_promo_id"/>       
+                            <field name="state"/> 
                         </group>
-                        <notebook colspan="4">
-                            <page string="Voucher Range">
-	                        	<field name="number_ranges_ids" widget="one2many_list" nolabel="0" readonly="0">
-	                            	<tree string="Range Voucher" create="true" delete="true" edit="true">
-	                            	    <field name="start_num" />
-                                        <field name="end_num" />	                                	                                                                                                                                                                                                                                   
-	                            	</tree>                                        	                            	
-	                        	</field>
-	                        </page>   
-                        </notebook>
                     </sheet>
                 </form>
             </field>
@@ -60,7 +56,7 @@
             <field name="active" eval="True" />
             <field name="arch" type="xml">
                 <search string="model_search">
-                    <field name="voucher_code_id" />
+                    <field name="voucher_order_line_id" />
                 </search>
             </field>
         </record>
@@ -72,7 +68,7 @@
             <field name="res_model">weha.voucher.scrap.line</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
-            <field name="context">\{}</field>
+            <field name="context">{}</field>
             <field name="search_view_id" ref="view_weha_voucher_scrap_line_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">

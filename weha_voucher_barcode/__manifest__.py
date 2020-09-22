@@ -10,12 +10,11 @@
     "data": [
         "security/ir.model.access.csv",
         "views/assets.xml",
-        "views/voucher_order_view.xml",
         "views/voucher_allocation_view.xml",
-        "views/voucher_request_view.xml",
         "views/voucher_return_view.xml",
+        "views/voucher_scrap_view.xml",
+        "views/voucher_issuing_view.xml",
         "wizards/stock_barcodes_read_views.xml",
-        "wizards/stock_barcodes_read_voucher_order_views.xml",
     ],
     "installable": True,
 }

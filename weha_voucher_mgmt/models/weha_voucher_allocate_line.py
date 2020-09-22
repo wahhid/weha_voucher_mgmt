@@ -13,3 +13,4 @@ class VoucherAllocateLine(models.Model):
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
     voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo", related="voucher_order_line_id.voucher_promo_id")
     state = fields.Selection([('open','Open'),('received','Received')], 'Status', default='open')
+    

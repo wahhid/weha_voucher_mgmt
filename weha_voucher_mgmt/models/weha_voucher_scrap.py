@@ -1,5 +1,6 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
+from datetime import datetime
 import logging
 from random import randrange
 
@@ -29,22 +30,13 @@ class VoucherScrap(models.Model):
                 rec.current_stage = 'rejected'
             
     def _get_default_stage_id(self):
-        return self.env['weha.voucher.scrap.stage'].search([], limit=1).id
+        return self.env['weha.voucher.scrap.stage'].search([('unattended','=', True)], limit=1).id
     
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
         stage_ids = self.env['weha.voucher.scrap.stage'].search([])
         return stage_ids
     
-    # @api.depends('line_ids')
-    # def _calculate_voucher_count(self):
-    #     for row in self:
-    #         self.voucher_count = len(self.line_ids)
-    
-    # def send_l1_request_mail(self):
-    #     for rec in self:
-    #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
-    #         template.send_mail(rec.id)
 
     def trans_voucher_scrap(self):
         line = len(self.voucher_return_line_ids)
@@ -99,42 +91,72 @@ class VoucherScrap(models.Model):
         return res
 
     def trans_approve(self):
+        #stage_id = self.stage_id.next_stage_id
+        #res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
+
+        for voucher_scrap_line_id in self.voucher_scrap_line_ids:
+            vals = {}
+            vals.update({'state': 'damaged'})
+            res = voucher_scrap_line_id.write(vals)
+
+            vals = {}
+            #vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
+            vals.update({'state': 'damage'})
+            voucher_scrap_line_id.voucher_order_line_id.write(vals)
+
+            vals = {}
+            vals.update({'name': self.number})
+            vals.update({'voucher_order_line_id': voucher_scrap_line_id.voucher_order_line_id.id})
+            vals.update({'trans_date': datetime.now()})
+            #vals.update({'operating_unit_loc_fr_id': voucher_allocate_id.operating_unit_id.id})
+            #vals.update({'operating_unit_loc_to_id': voucher_allocate_id.source_operating_unit.id})
+            vals.update({'trans_type': 'DM'})
+            self.env['weha.voucher.order.line.trans'].create(vals)
+            
         stage_id = self.stage_id.next_stage_id
-        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
-        return res
-    
+        super(VoucherScrap, self).write({'stage_id': stage_id.id})
+
+
     def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
-        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
-        return res
+        stage_id = self.env['weha.voucher.scrap.stage'].search([('rejected','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage Cancelled not found')
+        super(VoucherScrap, self).write({'stage_id': stage_id.id})
     
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
         
-    def trans_cancelled(self):    
+    def trans_cancelled(self):
+        stage_id = self.env['weha.voucher.scrap.stage'].search([('cancelled','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage Cancelled not found')
+        super(VoucherScrap, self).write({'stage_id': stage_id.id})
+
+    def trans_scrap_approval(self):    
+        if len(self.voucher_scrap_line_ids) == 0:
+            raise ValidationError("No Voucher Scrap Lines")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
         
 
     company_id = fields.Many2one('res.company', 'Company')
-    number = fields.Char(string='Return number', default="/",readonly=True)
-    ref = fields.Char(string='Source Document', required=False)
-    scrap_date = fields.Date('Return Date', required=False, default=lambda self: fields.date.today())
+    number = fields.Char(string='Number', default="/",readonly=True)
+    ref = fields.Char(string='Source Document', required=True)
+    scrap_date = fields.Date('Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    source_operating_unit_id = fields.Many2one('operating.unit','Resource Store', related="user_id.default_operating_unit_id.company_id.res_company_return_operating_unit")
+
     stage_id = fields.Many2one(
-        'weha.voucher.order.stage',
+        'weha.voucher.scrap.stage',
         string='Stage',
         group_expand='_read_group_stage_ids',
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
-    voucher_order_line_ids = fields.Many2many(comodel_name='weha.voucher.order.line', string='Voucher Lines')
-    
+
     current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
     voucher_scrap_line_ids = fields.One2many(comodel_name='weha.voucher.scrap.line', inverse_name='voucher_scrap_id', string='Scrap Line')
     
@@ -162,16 +184,11 @@ class VoucherScrap(models.Model):
                 seq = seq.with_context(force_company=vals['company_id'])
             vals['number'] = seq.next_by_code(
                 'weha.voucher.scrap.sequence') or '/'
-        res = super(VoucherScrap, self).create(vals)
-
-        # Check if mail to the user has to be sent
-        #if vals.get('user_id') and res:
-        #    res.send_user_mail()
+        res = super(VoucherScrap, self).create(vals)    
         return res    
     
     def write(self, vals):
         if 'stage_id' in vals:
-            # stage_obj = self.env['weha.voucher.scrap.stage'].browse([vals['stage_id']])
             if self.stage_id.approval:
                 raise ValidationError("Please using approve or reject button")
             if self.stage_id.opened:
@@ -179,13 +196,5 @@ class VoucherScrap(models.Model):
             if self.stage_id.closed:
                 raise ValidationError("Can't Move, Because Status Closed")
 
-            #Change To L1, Get User from Param
-            # trans_approve = False
-            # trans_approve = self.trans_approve()
-            # if stage_obj.approval:
-            #     if self.stage_id.id != stage_obj.from_stage_id.id:
-            #         raise ValidationError('Cannot Process Approval')
-            #     # self.send_l1_request_mail()
-           
         res = super(VoucherScrap, self).write(vals)
         return res

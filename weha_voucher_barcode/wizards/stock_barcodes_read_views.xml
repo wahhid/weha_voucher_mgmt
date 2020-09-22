@@ -35,26 +35,29 @@
                             <field name="message" />
                         </div>
                     </div>
+                     <!--
                     <div>
                         <label for="manual_entry">
                             Manual entry data
                         </label>
+                       
                         <field name="manual_entry" widget="barcode_boolean_toggle" />
                     </div>
-                    <field name="message_type" invisible="1" />
-                    <field name="barcode" invisible="1" force_save="1" />
-                    <field name="res_model_id" invisible="1" />
-                    <field name="res_id" invisible="1" />
-<<<<<<< HEAD
-                    <field name="_barcode_scanned" widget="barcode_handler" invisible="1"/>
-=======
-                    <field
-                        name="_barcode_scanned"
-                        widget="barcode_handler"
-                        invisible="1"
-                    />
->>>>>>> master
+                    -->
+                    <group>
+                        <field name="message_type" invisible="1" />
+                        <field name="barcode" invisible="1" force_save="1"/>
+                        <field name="res_model_id" invisible="1" />
+                        <field name="res_id" invisible="1" />
+                        <field name="received_process" invisible="1" />
+                        <field
+                            name="_barcode_scanned"
+                            widget="barcode_handler"
+                            invisible="1"
+                        />
+                    </group>
                     <group />
+                    <!--
                     <group>
                         <button
                             name="action_manual_entry"
@@ -65,8 +68,10 @@
                             class="btn-primary"
                         />
                     </group>
+                    -->
                     <group />
-                    <group string="Current product scanning log">
+                    <group string="Current voucher scanning log">
+                        <!--
                         <group>
                             <button
                                 name="action_undo_last_scan"
@@ -75,6 +80,7 @@
                                 icon="fa-trash"
                             />
                         </group>
+                        -->
                         <field
                             name="scan_log_ids"
                             options="{'no_open': True}"
@@ -82,13 +88,10 @@
                             mode="tree,kanban"
                         >
                             <tree string="Current product scanning log">
-<<<<<<< HEAD
-=======
                                 <!--
                                 <field name="create_date" />
                                 <field name="create_uid" />
                                 -->
->>>>>>> master
                                 <field name="name" />
                                 <field name="voucher_line_id" />
                             </tree>

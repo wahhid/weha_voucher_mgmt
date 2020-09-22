@@ -13,10 +13,12 @@
             <field name="arch" type="xml">
                 <tree string="model_tree" create="false" delete="false" edit="false">
                     <field name="name" />
+                    <field name="check_number" />
                     <field name="operating_unit_id" />
                     <field name="voucher_type"/>
                     <field name="voucher_code_id"/>
                     <field name="voucher_promo_id"/>
+                    <field name="voucher_amount" sum="Amount"/>
                     <field name="state" />
                 </tree>
             </field>
@@ -103,6 +105,11 @@
             <field name="arch" type="xml">
                 <search string="model_search">
                     <field name="name" />
+                    <field name="operating_unit_id" />
+                    <field name="voucher_type" />
+                    <field name="voucher_code_id" />
+                    <field name="year_id"/>
+                    <field name="voucher_promo_id" />
                     <filter string="Open" name="open_status" domain="[('state', '=', 'open')]"/>
                     <separator/>
                     <group expand="0" string="Group By">

@@ -49,27 +49,16 @@
                 <group>
                     <group>
                         <h1>
-                            <field name="code_ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
-                            <field name="start_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
+                            <field name="code_ean" placeholder="Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
+                            <field name="start_ean" placeholder="Start Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
                         </h1>
                     </group>
                     <group>
                         <h1>
-                            <field name="end_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
+                            <field name="end_ean" placeholder="End Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
                         </h1>
                     </group>
                 </group>
-                <notebook>
-                    <page string="Allocate Move" attrs="{'invisible':[('scan_method','=', 'all')]}"> 
-                        <field name="allocate_line_wizard_ids" readonly="1">
-                            <tree string="Allocate Move">
-                                <field name="name" />
-                                <field name="date" />
-                                <field name="voucher_order_line_id"/>  	                                                                                                                                                                                                                                   
-                            </tree>                    	                            	
-                        </field>
-                    </page>	   
-                </notebook>
                 <footer>
                     <button name="trans_received" string="Received" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-default" special="cancel" />

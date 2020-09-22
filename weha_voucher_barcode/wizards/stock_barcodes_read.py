@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+from datetime import datetime
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -14,9 +15,15 @@ class WizStockBarcodesRead(models.AbstractModel):
     # To prevent remove the record wizard until 2 days old
     _transient_max_hours = 48
 
-    barcode = fields.Char()
+    barcode = fields.Char("Barcode")
     res_model_id = fields.Many2one(comodel_name="ir.model", index=True)
     res_id = fields.Integer(index=True)
+    received_process = fields.Selection(
+        [
+            ('allocate', 'Allocate')
+        ],
+        'Process'
+    )
     manual_entry = fields.Boolean(string="Manual entry data")
     # Computed field for display all scanning logs from res_model and res_id
     # when change product_id
@@ -50,39 +57,85 @@ class WizStockBarcodesRead(models.AbstractModel):
     def process_barcode(self, barcode):
         self._set_messagge_info("success", _("Barcode read correctly"))
         domain = self._barcode_domain(barcode)
-        voucher_line = self.env["weha.voucher.order.line"].search(domain)
-        if voucher_line:
-            if len(voucher_line) > 1:
-                self._set_messagge_info("more_match", _("More than one product found"))
-                return
-            else:
-                # update state received
-                vals = {}
-                vals.update({'state': 'received'})
-                res = voucher_line.write(vals)
-		        
-                _logger.info('Voucher Line Write : '+ str(res))
-                # if not res:
-				# 	raise ValidationError("Can't write received Voucher!")
-				
-                # obj_order_line_trans = self.env['weha.voucher.order.line.trans']
+        if self.received_process == 'allocate':
+            active_id = self.env.context.get('active_id') or False
+            if active_id:
+                voucher_allocate_id = self.env['weha.voucher.allocate'].browse(active_id)
+                domain = [
+                    ('voucher_ean', '=', barcode),
+                    #('state', '=', 'intransit')
+                ]
+                voucher_line_order_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
+                if voucher_line_order_id:
+                    domain = [
+                        ('voucher_order_line_id','=',voucher_line_order_id.id),
+                        ('state', '=', 'open')
+                    ]
+                    voucher_allocate_line_id = self.env['weha.voucher.allocate.line'].sudo().search(domain, limit=1)
+                    _logger.info(voucher_allocate_line_id)
+                    
+                    if not voucher_allocate_line_id:
+                        raise ValidationError("No Voucher Allocation found or already received")
 
-                # vals = {}
-                # vals.update({'name': obj_request.number})
-                # vals.update({'voucher_order_line_id': voucher_line.id})
-                # vals.update({'trans_date': datetime.now()})
-                # vals.update({'trans_type': 'RV'})
-                # row = obj_order_line_trans.create(vals)
+                    vals = {}
+                    vals.update({'state': 'received'})
+                    res = voucher_allocate_line_id.write(vals)
+
+                    vals = {}
+                    vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
+                    vals.update({'state': 'open'})
+                    voucher_allocate_line_id.voucher_order_line_id.write(vals)
+
+                    vals = {}
+                    vals.update({'name': voucher_allocate_id.number})
+                    vals.update({'voucher_order_line_id': voucher_allocate_line_id.voucher_order_line_id.id})
+                    vals.update({'trans_date': datetime.now()})
+                    vals.update({'operating_unit_loc_fr_id': voucher_allocate_id.operating_unit_id.id})
+                    vals.update({'operating_unit_loc_to_id': voucher_allocate_id.source_operating_unit.id})
+                    vals.update({'trans_type': 'RV'})
+                    self.env['weha.voucher.order.line.trans'].create(vals)
+                    self._set_messagge_info("success", _("Voucher Received"))
+                else:
+                    self._set_messagge_info("not_found", _("Scan Voucher Process Error"))   
+            else:
+                self._set_messagge_info("not_found", _("Voucher not found"))
+        else:
+             self._set_messagge_info("not_found", _("Missing process information"))
+
+
+        # voucher_line = self.env["weha.voucher.order.line"].search(domain)
+        # if voucher_line:
+        #     if len(voucher_line) > 1:
+        #         self._set_messagge_info("more_match", _("More than one product found"))
+        #         return
+        #     else:
+        #         # update state received
+        #         vals = {}
+        #         vals.update({'state': 'received'})
+        #         res = voucher_line.write(vals)
+		        
+        #         _logger.info('Voucher Line Write : '+ str(res))
+        #         # if not res:
+		# 		# 	raise ValidationError("Can't write received Voucher!")
 				
-				# if not row:
-				# 	raise ValidationError("Can't create Voucher Line Trans!")
+        #         # obj_order_line_trans = self.env['weha.voucher.order.line.trans']
+
+        #         # vals = {}
+        #         # vals.update({'name': obj_request.number})
+        #         # vals.update({'voucher_order_line_id': voucher_line.id})
+        #         # vals.update({'trans_date': datetime.now()})
+        #         # vals.update({'trans_type': 'RV'})
+        #         # row = obj_order_line_trans.create(vals)
+				
+		# 		# if not row:
+		# 		# 	raise ValidationError("Can't create Voucher Line Trans!")
 				
                 
-                #self.action_product_scaned_post(product)
-                self.action_done()
-                return
-        _logger.info('Voucher Line Not found')
-        self._set_messagge_info("not_found", _("Barcode not found"))
+        #         #self.action_product_scaned_post(product)
+        #         self.action_done()
+        #         return
+        # _logger.info('Voucher Line Not found')
+        #self._set_messagge_info("not_found", _("Barcode not found"))
 
     def _barcode_domain(self, barcode):
         return [("voucher_ean", "=", barcode)]

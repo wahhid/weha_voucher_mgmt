@@ -151,16 +151,21 @@ class VoucherAllocate(models.Model):
         return res
     
     def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
-        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
-        return res
+        stage_id = self.env['weha.voucher.allocate.stage'].search([('rejected','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage Rejected not found')
+        super(VoucherAllocate, self).write({'stage_id': stage_id.id})
     
+    def trans_cancelled(self):
+        stage_id = self.env['weha.voucher.allocate.stage'].search([('cancelled','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage Cancelled not found')
+        super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+
     def trans_close(self):
-        if self.voucher_count != self.voucher_received_count:
-            raise ValidationError("Receiving not completed")
-        stage_id = self.stage_id.next_stage_id
-        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
-        return res
+        if self.voucher_count == self.voucher_received_count:
+            stage_id = self.stage_id.next_stage_id
+            res = super(VoucherAllocate, self).sudo().write({'stage_id': stage_id.id})
         
     def trans_allocate_approval(self):    
         if len(self.voucher_allocate_line_ids) == 0:

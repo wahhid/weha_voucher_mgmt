@@ -4,6 +4,7 @@ import ast
 import functools
 import logging
 import json
+import werkzeug.wrappers
 from odoo.exceptions import AccessError
 from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response
 
@@ -14,6 +15,7 @@ from odoo.addons.weha_voucher_mgmt.common import (
     invalid_response,
     valid_response,
 )
+
 
 from odoo.http import request
 
@@ -46,34 +48,75 @@ def validate_token(func):
 class VMSController(http.Controller):
     
     @validate_token
-    @http.route("/api/vms/v1.0/vspurchase", type="http", auth="none", methods=["POST"], csrf=False)
+    @http.route("/api/vms/v1.0/purchase", type="http", auth="none", methods=["POST"], csrf=False)
     def vspurchase(self, **post):
-        
-        if 'trans_type' not in post:
-            return json.dumps({'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]})
+        if 'voucher_type' not in post or 'sku' not in post:
+            return werkzeug.wrappers.Response(
+            status=200,
+            content_type="application/json; charset=utf-8",
+            headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+            response=json.dumps(
+                {
+                    "err": True,
+                    "message": "Fields are missing",
+                    "data": []
+                }
+            ),
+        )
 
+        #Check Bank Promo and Voucher Availability
+        if post['voucher_type'] == '2':
+            domain = [
+                ('code_sku','=', post['sku']),
+            ]
+            mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
+            if not mapping_sku_id:
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "SKU not found",
+                            "data": []
+                        }
+                    ),
+                )
+
+            voucher_count = http.request.env['weha.voucher.order.line'].search_count([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id)])
+            if voucher_count < int(post['quantity']):
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "Voucher not available",
+                            "data": []
+                        }
+                    ),
+                )
+                        
         values = {}
         
         # #Save Voucher Purchase Transaction
-        voucher_purchase_obj = http.request.env['voucher.purchase']
-        values.update({'name': post['name']})
-        values.update({'voucher_type': post['voucher_type']}) 
-        values.update({'trans_date': post['trans_date']}) 
-        values.update({'receipt_number': post['receipt_number']}) 
-        values.update({'cashier_id': post['cashier_id']}) 
-        values.update({'store_id': post['store_id']}) 
-        values.update({'sku': post['sku']}) 
-        values.update({'quantity': post['quantity']}) 
-        values.update({'amount': post['amount']}) 
-        values.update({'member_id': post['member_id']}) 
-        values.update({'point': post['point']}) 
-        values.update({'return_code': post['return_code']}) 
-        values.update({'status_1': post['status_1']}) 
-        values.update({'status_1_date': post['status_1_date']}) 
-        values.update({'status_2': post['status_2']}) 
-        values.update({'status_2_date': post['status_2_date']}) 
-        #Save Data
+        voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
+        trans_date = post['date']  +  " "  + post['time'] + ":00"
+        values.update({'trans_date': trans_date})
+        values.update({'receipt_number': post['receipt_number']})
+        values.update({'t_id': post['t_id']})
+        values.update({'cashier_id': post['cashier_id']})
+        values.update({'store_id': post['store_id']})
+        values.update({'member_id': post['member_id']})
+        values.update({'sku': post['sku']})
+        values.update({'quantity': post['quantity']})
+        values.update({'amount': post['amount']})
+        values.update({'voucher_type': post['voucher_type']})
 
+        #Save Data
+        result = voucher_trans_purchase_obj.sudo().create(values)
         #validate Data
 
         #if validate set return_code = Y
@@ -84,14 +127,31 @@ class VMSController(http.Controller):
         #VMSyyyymmdd_Success 
         #VMSyyyymmdd_Fail 
     
-
-        data = {
-            'status': 'ok',
-            'payload': post
-        }
-
-        return json.dumps({'err': False, 'msg': 'VS Purchase Successfully', 'datas':[data]})
+        return werkzeug.wrappers.Response(
+            status=200,
+            content_type="application/json; charset=utf-8",
+            headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+            response=json.dumps(
+                {
+                    "err": False,
+                    "message": "Create Successfully",
+                    "data": []
+                }
+            ),
+        )
     
+    
+    @validate_token
+    @http.route("/api/vms/v1.0/payment", type="http", auth="none", methods=["POST"], csrf=False)
+    def vspayment(self, **payload):
+        if 'trans_type' not in payload:
+            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
+
+        if payload['trans_type'] != 'payment':
+            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
+        return {'err': False, 'msg': 'VS Payment Succesfully', 'datas':[]}
+    
+
     @validate_token
     @http.route("/api/vms/v1.0/bankpurchase", type="http", auth="none", methods=["POST"], csrf=False)
     def bankpurchase(self, **payload):
@@ -114,16 +174,7 @@ class VMSController(http.Controller):
 
         return {'err': False, 'msg': 'Redeem Successfully', 'datas':[]}
     
-    @validate_token
-    @http.route("/api/vms/v1.0/vspayment", type="http", auth="none", methods=["POST"], csrf=False)
-    def vspayment(self, **payload):
-        if 'trans_type' not in payload:
-            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
 
-        if payload['trans_type'] != 'payment':
-            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
-        return {'err': False, 'msg': 'VS Payment Succesfully', 'datas':[]}
-    
     @validate_token
     @http.route("/api/vms/v1.0/bankpayment", type="http", auth="none", methods=["POST"], csrf=False)
     def bankpayment(self, **payload):

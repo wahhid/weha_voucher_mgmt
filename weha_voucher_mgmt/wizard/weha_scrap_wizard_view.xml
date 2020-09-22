@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_wizard_scan_voucer_scrap" model="ir.ui.view">
+        <field name="name">wizard.scan.voucer.scrap.form.view</field>
+        <field name="model">weha.wizard.scan.voucher.scrap</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Scan Voucher Scrap">
+                <group>
+                    <group>
+                        <field name="start_number"/>
+                        <field name="end_number" attrs="{'invisible':[('is_valid','=', False)]}"/>
+                        <field name="is_valid" invisible="1"/>
+                    </group>
+                    <group>
+                        <field name="operating_unit_id"/>
+                        <field name="voucher_code_id"/>
+                        <field name="year_id"/>
+                        <field name="voucher_promo_id"/>
+                        <field name="estimate_total"/>
+                        <field name="estimate_count"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="process" string="Process" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="act_open_scan_voucher_scrap_view_form" model="ir.actions.act_window">
+        <field name="name">Scan Voucher Scrap</field>
+        <field name="res_model">weha.wizard.scan.voucher.scrap</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

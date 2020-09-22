@@ -24,7 +24,7 @@ class VoucherCode(models.Model):
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-    
+    voucher_terms_id = fields.Many2one("weha.voucher.terms", "Terms")
     voucher_amount = fields.Float('Denom', default=0.0)
     
 

@@ -30,10 +30,26 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-                        
-                        <field name="stage_id" widget="statusbar" clickable="True" />
+                        <button type="object" 
+                            attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                            class="btn btn-primary"
+                            name="trans_confirm" 
+                            string="Confirm" 
+                            confirm="Are you sure to continue ?"
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" attrs="{'invisible': ['|', ('current_stage', '!=', 'unattended'),('current_stage', '!=', 'open')]}"
+                            class="btn btn-light" name="trans_cancelled" string="Cancel Order" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>                     
+                        <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
                     <sheet>
+                        <div name="button_box" class="oe_button_box">
+                            <button class="oe_stat_button" 
+                                    groups="weha_voucher_mgmt.group_voucher_user"
+                                    icon="fa-ticket">
+                                    <field string="Vouchers" name="voucher_count" widget="statinfo"/>
+                            </button>
+                        </div>
                         
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
@@ -46,15 +62,30 @@
                             <group>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
+                                <field name="voucher_code_id"/>
                             </group>
                             <group>
+                                <field name="ref"/>
+                                <field name="estimate_voucher_count"/>
                                 <field name="voucher_count"/>
                             </group>
                             <group>
                                 <field name="current_stage"/>
                             </group>
                         </group>
-                        
+                         <notebook colspan="4">
+                            <page string="Issued Lines">
+	                        	<field name="voucher_issuing_line_ids" widget="one2many_list" nolabel="0" readonly="1">
+	                            	<tree string="Issued Lines">
+	                            	    <field name="voucher_order_line_id" /> 
+                                        <field name="voucher_code_id"/>
+                                        <field name="year_id"/>
+                                        <field name="voucher_promo_id"/>       
+                                        <field name="state"/>                   	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>
+                        </notebook>
                     </sheet>
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>

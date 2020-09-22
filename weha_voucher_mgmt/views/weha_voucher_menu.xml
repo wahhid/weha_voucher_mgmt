@@ -20,7 +20,7 @@
         
         <menuitem id="weha_voucher_api_menu" name="Api"
             parent="weha_voucher_mgmt_main_menu" sequence="25"
-            groups="group_voucher_user,group_voucher_finance_user"/>
+            groups="group_voucher_user,group_voucher_finance_user,group_voucher_api_user"/>
 
         <menuitem id="weha_voucher_main_menu" name="Voucher"
             parent="weha_voucher_mgmt_main_menu" sequence="26"

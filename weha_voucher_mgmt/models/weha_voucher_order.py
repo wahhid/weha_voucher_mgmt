@@ -19,10 +19,14 @@ class VoucherOrder(models.Model):
                 rec.current_stage = 'unattended'
             if rec.stage_id.approval:
                 rec.current_stage = 'approval'
+            if rec.stage_id.rejected:
+                rec.current_stage = 'rejected'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
+            if rec.stage_id.cancelled:
+                rec.current_stage = 'cancelled'
                    
     def _get_default_stage_id(self):
         return self.env['weha.voucher.order.stage'].search([], limit=1).id
@@ -131,17 +135,19 @@ class VoucherOrder(models.Model):
                 ('voucher_type','=', voucher_type),
                 ('voucher_code_id','=', voucher_code_id),
                 ('year','=', year),
-                ('voucher_promo_id','=', voucher_promo_id)
+                ('voucher_promo_id','=', voucher_promo_id),
+                ('current_stage','in', ['unattended','approval']),
             ]
         else:
             domain = [
                 ('voucher_type','=', voucher_type),
                 ('voucher_code_id','=',voucher_code_id),
-                ('year','=', year)
+                ('year','=', year),
+                ('current_stage','in', ['unattended','approval']),
             ]
 
         _logger.info(domain)
-        voucher_order_ids = self.env['weha.voucher.order'].search(domain)
+        voucher_order_ids = self.env['weha.voucher.order'].search(domain, order="create_date desc")
         _logger.info(voucher_order_ids)
         is_overlap = False
         for voucher_order_id in voucher_order_ids:
@@ -168,13 +174,15 @@ class VoucherOrder(models.Model):
         #template.send_mail(self.id, force_send=True)
     
     def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
+        stage_id = self.env['weha.voucher.order.stage'].search([('rejected','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage Rejected not found')
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
         #Send Notification
-        template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
-        template = self.env['mail.template'].browse(template_id)
-        template.email_to = self.user_id.partner_id.email
-        template.send_mail(self.id, force_send=True)
+        #template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
+        #template = self.env['mail.template'].browse(template_id)
+        #template.email_to = self.user_id.partner_id.email
+        #template.send_mail(self.id, force_send=True)
         #stage = self.stage_id.next_stage_id.id
         #_logger.info("Stage Here = " + str(self.stage_id.id))
         #_logger.info("Next Stage = " + str(stage))
@@ -212,6 +220,13 @@ class VoucherOrder(models.Model):
         res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
         return res
 
+    def trans_cancelled(self):
+        stage_id = self.env['weha.voucher.order.stage'].search([('cancelled','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage Cancelled not found')
+        super(VoucherOrder, self).write({'stage_id': stage_id.id})
+
+
     def trans_create_activity(self):
         activity = self.env['mail.activity'].create({
             'activity_type_id': 4,
@@ -223,7 +238,7 @@ class VoucherOrder(models.Model):
 
 
     company_id = fields.Many2one('res.company', 'Company')
-    number = fields.Char(string='Order number', default="/",readonly=True)
+    number = fields.Char(string='Order number', default="/", readonly=True)
     ref = fields.Char(string='Source Document', required=True)
     request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  

@@ -51,6 +51,9 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Order" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
+                         <button type="object" attrs="{'invisible': ['|', ('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
+                            class="btn btn-light" name="trans_cancelled" string="Cancel Order" 
+                            groups="weha_voucher_mgmt.group_finance_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
                             confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_finance_manager" />
@@ -68,38 +71,40 @@
                         <div name="button_box" class="oe_button_box">
                             
 
-                            <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_order_line_from_voucher_order)d" 
+                            <button 
+                                class="oe_stat_button" 
+                                type="action" name="%(weha_voucher_mgmt.action_voucher_order_line_from_voucher_order)d" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user"
-                                icon="fa-ticket">
+                                icon="fa-ticket"
+                                attrs="{'invisible': ['is_voucher_generated','=', False]}">
                                 <field string="Vouchers" name="voucher_count" widget="statinfo"/>
                             </button>
                         </div>
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
                             <h1>
-                                <field name="number" class="oe_inline"
-                                    placeholder="Number" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
+                                <field name="number" class="oe_inline" placeholder="Number"/>
                             </h1>
                         </div>
                         <group>
                             <group>
-                                <field name="request_date" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
+                                <field name="request_date" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="voucher_type" widget="radio" options="{'horizontal': true}" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
-                                <field name="voucher_code_id" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
-                                <field name="voucher_promo_id" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_type" widget="radio" options="{'horizontal': true}" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_code_id" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_promo_id" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="current_stage" invisible="1"/>
                             </group>
                             <group>
-                                <field name="ref" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
-                                <field name="voucher_count"/>
+                                <field name="ref" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_count" />
                                 <field name="is_voucher_generated" invisible="1"/>
                             </group>
                             <group string='Voucher Number'>
-                                <field name="year" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
-                                <field name="start_number" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
-                                <field name="end_number" attrs="{'readonly':[('is_voucher_generated', '=', True)]}"/>
+                                <field name="year" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="start_number" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="end_number" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                             </group>
                         </group>
                     </sheet>

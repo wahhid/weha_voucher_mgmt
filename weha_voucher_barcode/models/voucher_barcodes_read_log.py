@@ -12,6 +12,7 @@ class VoucherBarcodesReadLog(models.Model):
     res_model_id = fields.Many2one(comodel_name="ir.model", index=True)
     res_id = fields.Integer(index=True)
     voucher_order_id = fields.Many2one('weha.voucher.order', 'Voucher Order #')
+    
     manual_entry = fields.Boolean(string="Manual entry")
     voucher_line_id = fields.Many2one(
         comodel_name="weha.voucher.order.line", string="Voucher Line", readonly=True

@@ -54,9 +54,12 @@
                             name="%(weha_voucher_mgmt.act_open_scan_voucher_allocate_view_form)d" 
                             string="Scan Allocate Voucher" 
                             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                        <button type="object" attrs="{'invisible': ['|', ('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
+                            class="btn btn-light" name="trans_cancelled" string="Cancel Order" 
+                            groups="weha_voucher_mgmt.group_finance_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
                             class="btn btn-light" name="trans_close" string="Closed Allocated" 
-                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_delivery" string="Delivery" 
                             groups="weha_voucher_mgmt.group_voucher_finance_user"/>                        
@@ -87,28 +90,28 @@
                         </div>
                         <group>
                             <group>
-                                <field name="allocate_date"/>
+                                <field name="allocate_date" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="source_operating_unit"/>
-                                <field name="voucher_terms_id"/>
+                                <field name="source_operating_unit" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
+                                <field name="voucher_terms_id" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="current_stage" invisible="1"/>
                             </group>
                             <group>
-                                <field name="ref"/>
+                                <field name="ref" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="voucher_count"/>
                                 <field name="voucher_received_count"/>
                             </group>
                         </group>
                         <group>
                             <group>
-                                <field name="voucher_code_id"/>
-                                <field name="year_id"/>     
-                                <field name="voucher_promo_id"/>   
+                                <field name="voucher_code_id" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
+                                <field name="year_id" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>     
+                                <field name="voucher_promo_id" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>   
                             </group>
                             <group>
-                                <field name="start_number"/>
-                                <field name="end_number"/>
+                                <field name="start_number" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
+                                <field name="end_number" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                             </group>
                         </group>
 

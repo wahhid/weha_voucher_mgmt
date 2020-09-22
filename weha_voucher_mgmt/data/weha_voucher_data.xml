@@ -41,7 +41,21 @@
         <record id="weha_voucher_allocate_sequence" model="ir.sequence">
             <field name="name">Voucher Allocate Sequence</field>
             <field name="code">weha.voucher.allocate.sequence</field>
-            <field name="prefix">AL</field>
+            <field name="prefix">VA/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="weha_voucher_issuing_sequence" model="ir.sequence">
+            <field name="name">Voucher Issuing Sequence</field>
+            <field name="code">weha.voucher.issuing.sequence</field>
+            <field name="prefix">VI/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="weha_voucher_trans_purchae" model="ir.sequence">
+            <field name="name">Voucher Trans Purchase Sequence</field>
+            <field name="code">weha.voucher.trans.purchase.sequence</field>
+            <field name="prefix">VP/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
 

@@ -42,25 +42,11 @@ class VoucherIssuing(models.Model):
     #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
     #         template.send_mail(rec.id)
 
-        
-    @api.onchange('voucher_type')
-    def _voucher_code_onchange(self):
-        res = {}
-        res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
-        return res
 
     @api.depends('stage_id')
-    def trans_approve(self):
-        
+    def trans_confirm(self):
         stage = self.stage_id.next_stage_id.id
-        _logger.info("Stage Here = " + str(self.stage_id.id))
-        _logger.info("Next Stage = " + str(stage))
-        self.write({'stage_id': stage})
-
-        return True
-        # def trans_reject(self):
-        #     pass
-
+        self.write({'stage_id': stage.id})
 
 
     company_id = fields.Many2one('res.company', 'Company')
@@ -99,8 +85,16 @@ class VoucherIssuing(models.Model):
         ('done', 'Ready for next stage'),
         ('blocked', 'Blocked')], string='Kanban State')
     
+    estimate_voucher_count = fields.Integer('Voucher #', default=0)
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
     
+    voucher_issuing_line_ids = fields.One2many(
+        comodel_name='weha.voucher.issuing.line', 
+        inverse_name='voucher_issuing_id', 
+        string='Issued Lines',
+        domain="[('state','=','open')]"
+    )
+
     @api.model
     def create(self, vals):
         if vals.get('number', '/') == '/':
@@ -121,14 +115,5 @@ class VoucherIssuing(models.Model):
             stage_obj = self.env['weha.voucher.issuing.stage'].browse([vals['stage_id']])
             if stage_obj.unattended:
                 pass
-
-            #Change To L1, Get User from Param
-            # trans_approve = False
-            # trans_approve = self.trans_approve()
-            # if stage_obj.approval:
-            #     if self.stage_id.id != stage_obj.from_stage_id.id:
-            #         raise ValidationError('Cannot Process Approval')
-            #     # self.send_l1_request_mail()
-           
         res = super(VoucherIssuing, self).write(vals)
         return res

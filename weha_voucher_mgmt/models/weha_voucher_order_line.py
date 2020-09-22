@@ -98,12 +98,13 @@ class VoucherOrderLine(models.Model):
     #P-Voucher or E-Voucher
     voucher_code = fields.Char(string='Voucher Code')
     voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
+    voucher_amount = fields.Float("Amount", related="voucher_code_id.voucher_amount", store=True)
     #Voucher Term (Expired Date)
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
     #Voucher Promo
     voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
     #Check Number Voucher
-    check_number = fields.Integer(string='Check Number')
+    check_number = fields.Integer(string='Check Number', group_operator=False)
     #Voucher 12 Digit
     voucher_12_digit = fields.Char('Code 12', size=12 )
     #Voucher EAN
@@ -204,20 +205,20 @@ class VoucherOrderLineTrans(models.Model):
         comodel_name='weha.voucher.order.line',
         ondelete='restrict', required=True,
     )
-
+            
     trans_type = fields.Selection(
         string='Transaction Type', 
         selection=[
             ('OP', 'Open'), 
             ('RV', 'Received'), 
+            ('DV', 'Delivery'),
             ('ST', 'Stock Transfer'), 
             ('IC', 'Issued Customer'), 
             ('RT', 'Return'), 
-            ('AC', 'Activated')],
-        default='open')
-            
-    trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), ('DV', 'Delivery'),
-        ('ST', 'Stock Transfer'), ('IC', 'Issued Customer'), ('RT', 'Return'), ('AC','Activated')])
+            ('AC','Activated'), 
+            ('DM', 'Damage')],
+        default='OP'
+    )
 
     #Loc Fr
     operating_unit_loc_fr_id = fields.Many2one(string='Loc.Fr', comodel_name='operating.unit', ondelete='restrict',)
