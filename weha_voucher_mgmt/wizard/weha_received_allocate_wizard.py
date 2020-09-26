@@ -116,6 +116,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
 
         #Set Voucher Order Allocate Data
         voucher_allocate_id.voucher_code_id = voucher_order_line_start_id.voucher_code_id.id
+        voucher_allocate_id.voucher_terms_id = voucher_order_line_start_id.voucher_code_id.voucher_terms_id.id
         voucher_allocate_id.year_id = voucher_order_line_start_id.year_id.id 
         voucher_allocate_id.voucher_promo_id = voucher_order_line_start_id.voucher_promo_id.id 
         voucher_allocate_id.start_number = start_check_number

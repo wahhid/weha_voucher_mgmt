@@ -53,8 +53,6 @@
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
-
-
      <!-- Voucher Order Operating Unit Rules -->
     <record id="voucher_order_operating_unit_rule" model="ir.rule">
         <field name="name">Voucher Order Operating Unit Rule</field>

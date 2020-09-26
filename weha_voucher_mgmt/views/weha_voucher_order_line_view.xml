@@ -18,6 +18,7 @@
                     <field name="voucher_type"/>
                     <field name="voucher_code_id"/>
                     <field name="voucher_promo_id"/>
+                    <field name="expired_date"/>
                     <field name="voucher_amount" sum="Amount"/>
                     <field name="state" />
                 </tree>
@@ -48,11 +49,14 @@
                                 <field name="voucher_type"/>
                                 <field name="voucher_code_id"/>
                                 <field name="voucher_promo_id"/>
+                                <field name="tender_type_id"/>
+                                <field name="bank_category_id"/>
                                 <field name="operating_unit_id" />
                                 <field name="check_number"/>
                             </group>
                             <group>
                                 <field name="voucher_terms_id"/>
+                                <field name="member_id"/>
                                 <field name="expired_date"/>
                                 <field name="year_id"/>
                             </group>
@@ -73,6 +77,7 @@
 	                                	<field name="trans_type"/>
                                         <field name="operating_unit_loc_fr_id"/>
                                         <field name="operating_unit_loc_to_id"/>
+                                        <field name="user_id"/>
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>	   

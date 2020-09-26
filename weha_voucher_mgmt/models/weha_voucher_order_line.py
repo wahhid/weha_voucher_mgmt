@@ -78,11 +78,11 @@ class VoucherOrderLine(models.Model):
             if not val_order_line_trans_obj:
                 raise ValidationError("Can't create voucher order line trans, contact administrator!")
 
-
     name = fields.Char('Name', )
     
     #Customer Code
     customer_id = fields.Many2one('res.partner', 'Customer')
+    member_id = fields.Char("Member #", size=20)
     #Operating Unit
     operating_unit_id = fields.Many2one(
         string='Operating Unit',
@@ -103,6 +103,8 @@ class VoucherOrderLine(models.Model):
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
     #Voucher Promo
     voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
+    tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type', related='voucher_promo_id.tender_type_id', store=True)
+    bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category', related='voucher_promo_id.bank_category_id', store=True)
     #Check Number Voucher
     check_number = fields.Integer(string='Check Number', group_operator=False)
     #Voucher 12 Digit
@@ -194,6 +196,7 @@ class VoucherOrderLine(models.Model):
 class VoucherOrderLineTrans(models.Model):
     _name = 'weha.voucher.order.line.trans'
     
+
     name = fields.Char(
         string='Voucher Trans ID', readonly=True
     )
@@ -224,4 +227,6 @@ class VoucherOrderLineTrans(models.Model):
     operating_unit_loc_fr_id = fields.Many2one(string='Loc.Fr', comodel_name='operating.unit', ondelete='restrict',)
     #Loc To
     operating_unit_loc_to_id = fields.Many2one(string='Loc.To', comodel_name='operating.unit', ondelete='restrict',)
- 
+
+    #User    
+    user_id = fields.Many2one('res.users', 'User')

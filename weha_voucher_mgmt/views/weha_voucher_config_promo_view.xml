@@ -13,6 +13,8 @@
             <field name="arch" type="xml">
                 <tree string="Promo">
                     <field name="name" />
+                    <field name="tender_type_id"/>
+                    <field name="bank_category_id"/>
                 </tree>
             </field>
         </record>
@@ -36,6 +38,12 @@
                                 <field name="name" class="oe_inline" placeholder="Name" />
                             </h1>
                         </div>
+                        <group>
+                            <group>
+                                <field name="tender_type_id"/>
+                                <field name="bank_category_id"/>
+                            </group>
+                        </group>
 
                     </sheet>
                 </form>

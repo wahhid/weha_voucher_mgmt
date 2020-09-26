@@ -12,9 +12,10 @@
             <field name="active" eval="True" />
             <field name="arch" type="xml">
                 <tree string="model_tree" create="true" delete="true" edit="true">
-                    <field name="voucher_mapping_pos_id"/>
-                    <field name="voucher_code_id"/>
                     <field name="code_sku"/>
+                    <field name="voucher_mapping_pos_id"/>
+                    <field name="voucher_code_id"/>  
+                    <field name="point_redeem"/>
                 </tree>
             </field>
         </record>
@@ -34,9 +35,10 @@
                     <sheet>
                         <group>
                             <group>
+                                <field name="code_sku"/>
                                 <field name="voucher_mapping_pos_id"/>
                                 <field name="voucher_code_id"/>
-                                <field name="code_sku"/>
+                                <foeld name="point_redeem"/>
                             </group>
                         </group>
                     </sheet>
@@ -54,9 +56,10 @@
             <field name="active" eval="True" />
             <field name="arch" type="xml">
                 <search string="model_search">
+                    <field name="code_sku"/>
                     <field name="voucher_mapping_pos_id"/>
                     <field name="voucher_code_id"/>
-                    <field name="code_sku"/>
+                   
                 </search>
             </field>
         </record>

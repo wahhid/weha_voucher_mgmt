@@ -36,12 +36,12 @@ class VoucherTerms(models.Model):
         size=200,
         required=True
     )
-
     code = fields.Char(
         string='Code',
         size=10,
         required=True
     )
+    number_of_days = fields.Integer('Number of Days', required=True, default=0)
 
 class VoucherMappingPos(models.Model):
     _name = 'weha.voucher.mapping.pos'
@@ -67,22 +67,26 @@ class VoucherMappingPos(models.Model):
     
 class VoucherMappingSku(models.Model):
     _name = 'weha.voucher.mapping.sku'
-
-    voucher_mapping_pos_id = fields.Many2one('weha.voucher.mapping.pos', 'Voucher Mapping POS Id', required=False
-    )
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
-    
+    _rec_name = 'code_sku'
 
     code_sku = fields.Char(
         string='Code SKU',
-        size=8,
+        size=20,
         required=True
     )
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
+    voucher_mapping_pos_id = fields.Many2one('weha.voucher.mapping.pos', 'Voucher Mapping POS Id', required=False)
+    
+    point_redeem = fields.Integer('Point Redeem')
+    
 
 class VoucherPromo(models.Model):
     _name = 'weha.voucher.promo'
     
     name = fields.Char("Name", size=200, required=True)
+    tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
+    bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category')
+
 
 class VoucherYear(models.Model):
     _name = 'weha.voucher.year'
@@ -98,6 +102,21 @@ class VoucherYear(models.Model):
     name = fields.Char("Name", size=4, required=True)
     year = fields.Integer("Year", required=True)
     active = fields.Boolean('Active', default=True)
+
+
+class VoucherTenderType(models.Model):
+    _name = 'weha.voucher.tender.type'
+
+    name = fields.Char('Name', size=100, required=True)
+    code = fields.Char('Code', size=10, required=True)
+
+
+class VoucherBankCategory(models.Model):
+    _name = 'weha.voucher.bank.category'
+
+    name = fields.Char('Name', size=100, required=True)
+    bin_number = fields.Char('Bin', size=10, required=True)
+    classfication = fields.Char('Classification', size=50, required=True)
 
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'

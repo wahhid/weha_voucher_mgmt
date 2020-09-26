@@ -12,8 +12,8 @@
             <field name="active" eval="True" />
             <field name="arch" type="xml">
                 <tree string="model_tree" create="true" delete="true" edit="true">
-                    <field name="start_num" />
-                    <field name="end_num" />
+                    <field name="year_id" />
+                    <field name="voucher_code_id" />
                 </tree>
             </field>
         </record>
@@ -32,8 +32,14 @@
                     </header>
                     <sheet>
                         <group>
-                            <field name="start_num" />
-                            <field name="end_num" />
+                            <group>
+                                <field name="year_id" />
+                                <field name="voucher_code_id" />
+                            </group>
+                            <group>
+                                <field name="sequence_id"/>
+                            </group>
+
                         </group>
                     </sheet>
                 </form>
@@ -47,7 +53,7 @@
             <field name="res_model">weha.voucher.number.ranges</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
-            <field name="context">\{}</field>
+            <field name="context">{}</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
                     Click to add new Human readable name
@@ -56,6 +62,14 @@
                 </p>
             </field>
         </record>
+
+        <menuitem 
+            id="weha_voucher_number_range_menu" 
+            name="Voucher Number Range" 
+            parent="weha_voucher_config_main_menu"
+            action="action_weha_voucher_number_ranges_act_window" 
+            sequence="28" 
+        />
 
     </data>
 </odoo>

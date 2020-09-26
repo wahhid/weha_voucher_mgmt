@@ -67,6 +67,7 @@ class VoucherOrder(models.Model):
             vals.update({'voucher_order_id': self.id})
             #vals.update({'voucher_code': self.voucher_code_id.code})
             vals.update({'voucher_code_id': self.voucher_code_id.id})
+            vals.update({'voucher_terms_id': self.voucher_code_id.voucher_terms_id.id})
             if self.voucher_promo_id:
                 vals.update({'voucher_promo_id': self.voucher_promo_id.id})
             vals.update({'year_id': self.year.id})

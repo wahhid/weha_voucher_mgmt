@@ -38,51 +38,51 @@ class VoucherScrap(models.Model):
         return stage_ids
     
 
-    def trans_voucher_scrap(self):
-        line = len(self.voucher_return_line_ids)
-        _logger.info("Allocate line = " + str(line))
+    # def trans_voucher_scrap(self):
+    #     line = len(self.voucher_return_line_ids)
+    #     _logger.info("Allocate line = " + str(line))
 
-        for i in range(line):
-            number_range = len(self.voucher_return_line_ids.number_ranges_ids)
-            _logger.info("Number Range = " + str(number_range))
+    #     for i in range(line):
+    #         number_range = len(self.voucher_return_line_ids.number_ranges_ids)
+    #         _logger.info("Number Range = " + str(number_range))
 
-            for rec in range(number_range):
+    #         for rec in range(number_range):
 
-                startnum = self.voucher_return_line_ids.number_ranges_ids.start_num
-                endnum = self.voucher_return_line_ids.number_ranges_ids.end_num
-                vcode = self.voucher_return_line_ids.voucher_code_id.id
-                store_voucher = self.operating_unit_id.id
-                sourch_voucher = self.source_operating_unit_id.id
-                terms = self.voucher_terms_id.code
+    #             startnum = self.voucher_return_line_ids.number_ranges_ids.start_num
+    #             endnum = self.voucher_return_line_ids.number_ranges_ids.end_num
+    #             vcode = self.voucher_return_line_ids.voucher_code_id.id
+    #             store_voucher = self.operating_unit_id.id
+    #             sourch_voucher = self.source_operating_unit_id.id
+    #             terms = self.voucher_terms_id.code
                 
 
-                strSQL = """SELECT """ \
-                     """id,check_number """ \
-                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='activated' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
+    #             strSQL = """SELECT """ \
+    #                  """id,check_number """ \
+    #                  """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='activated' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
 
-                self.env.cr.execute(strSQL)
-                voucher_order_line = self.env.cr.fetchall()
-                _logger.info("fetch = " + str(voucher_order_line))
+    #             self.env.cr.execute(strSQL)
+    #             voucher_order_line = self.env.cr.fetchall()
+    #             _logger.info("fetch = " + str(voucher_order_line))
 
 
-                for row in voucher_order_line:
-                    vals = {}
-                    # vals.update({'voucher_terms_id': self.voucher_terms_id.id})
-                    # vals.update({'expired_date': exp_date})
-                    vals.update({'operating_unit_id': sourch_voucher})
-                    vals.update({'state': 'delivery'})
-                    vals.update({'voucher_return_id': self.id}) 
-                    obj_voucher_order_line_ids = search_se.write(vals)
+    #             for row in voucher_order_line:
+    #                 vals = {}
+    #                 # vals.update({'voucher_terms_id': self.voucher_terms_id.id})
+    #                 # vals.update({'expired_date': exp_date})
+    #                 vals.update({'operating_unit_id': sourch_voucher})
+    #                 vals.update({'state': 'delivery'})
+    #                 vals.update({'voucher_return_id': self.id}) 
+    #                 obj_voucher_order_line_ids = search_se.write(vals)
 
-                    order_line_trans_obj = self.env['weha.voucher.order.line.trans']
+    #                 order_line_trans_obj = self.env['weha.voucher.order.line.trans']
 
-                    vals = {}
-                    vals.update({'name': self.number})
-                    vals.update({'trans_date': datetime.now()})
-                    vals.update({'voucher_order_line_id': row[0]})
-                    vals.update({'trans_type': 'DV'})
-                    val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
-                    _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
+    #                 vals = {}
+    #                 vals.update({'name': self.number})
+    #                 vals.update({'trans_date': datetime.now()})
+    #                 vals.update({'voucher_order_line_id': row[0]})
+    #                 vals.update({'trans_type': 'DV'})
+    #                 val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+    #                 _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
         
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):

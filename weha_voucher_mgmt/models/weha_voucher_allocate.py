@@ -69,69 +69,69 @@ class VoucherAllocate(models.Model):
         return res
 
 
-    def trans_voucher_allocate_activate(self):
-        line = len(self.voucher_allocate_line_ids)
-        _logger.info("Allocate line = " + str(line))
+    # def trans_voucher_allocate_activate(self):
+    #     line = len(self.voucher_allocate_line_ids)
+    #     _logger.info("Allocate line = " + str(line))
 
-        for i in range(line):
-            number_range = len(self.voucher_allocate_line_ids.number_ranges_ids)
-            _logger.info("Number Range = " + str(number_range))
+    #     for i in range(line):
+    #         number_range = len(self.voucher_allocate_line_ids.number_ranges_ids)
+    #         _logger.info("Number Range = " + str(number_range))
 
-            for rec in range(number_range):
+    #         for rec in range(number_range):
 
-                startnum = self.voucher_allocate_line_ids.number_ranges_ids.start_num
-                endnum = self.voucher_allocate_line_ids.number_ranges_ids.end_num
-                vcode = self.voucher_allocate_line_ids.voucher_code_id.id
-                store_voucher = self.operating_unit_id.id
-                sourch_voucher = self.source_operating_unit.id
-                terms = self.voucher_terms_id.code
+    #             startnum = self.voucher_allocate_line_ids.number_ranges_ids.start_num
+    #             endnum = self.voucher_allocate_line_ids.number_ranges_ids.end_num
+    #             vcode = self.voucher_allocate_line_ids.voucher_code_id.id
+    #             store_voucher = self.operating_unit_id.id
+    #             sourch_voucher = self.source_operating_unit.id
+    #             terms = self.voucher_terms_id.code
 
-                _logger.info("start number = " + str(startnum))
-                _logger.info("end number = " + str(endnum))
+    #             _logger.info("start number = " + str(startnum))
+    #             _logger.info("end number = " + str(endnum))
                 
-                date_now = datetime.now()
-                str_start_date = str(date_now.year) + "-" + str(date_now.month).zfill(2) + "-" + str(date_now.day).zfill(
-                    2) + " 23:59:59"
-                date_now = datetime.strptime(str_start_date, "%Y-%m-%d %H:%M:%S") + relativedelta(days=int(terms))
-                exp_date = date_now - relativedelta(hours=7)
+    #             date_now = datetime.now()
+    #             str_start_date = str(date_now.year) + "-" + str(date_now.month).zfill(2) + "-" + str(date_now.day).zfill(
+    #                 2) + " 23:59:59"
+    #             date_now = datetime.strptime(str_start_date, "%Y-%m-%d %H:%M:%S") + relativedelta(days=int(terms))
+    #             exp_date = date_now - relativedelta(hours=7)
 
-                # obj_voucher_order_line = self.env['weha.voucher.order.line']
-                # # search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', store_voucher),('voucher_code_id','=', vcode)])
-                # search_se = obj_voucher_order_line.search([('check_number','>=',  startnum)])
-                # _logger.info("Store Voucher ID = " + str(search_se))
-                # _logger.info("Store Voucher ID = " + str(exp_date))
+    #             # obj_voucher_order_line = self.env['weha.voucher.order.line']
+    #             # # search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', store_voucher),('voucher_code_id','=', vcode)])
+    #             # search_se = obj_voucher_order_line.search([('check_number','>=',  startnum)])
+    #             # _logger.info("Store Voucher ID = " + str(search_se))
+    #             # _logger.info("Store Voucher ID = " + str(exp_date))
 
-                strSQL = """SELECT """ \
-                     """id,check_number """ \
-                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='open' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
+    #             strSQL = """SELECT """ \
+    #                  """id,check_number """ \
+    #                  """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='open' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
 
-                self.env.cr.execute(strSQL)
-                voucher_order_line = self.env.cr.fetchall()
-                _logger.info("fetch = " + str(voucher_order_line))
+    #             self.env.cr.execute(strSQL)
+    #             voucher_order_line = self.env.cr.fetchall()
+    #             _logger.info("fetch = " + str(voucher_order_line))
 
-                # for order_line in ot:
-                #     check_number = order_line[0]
-                #     order_id = order_line[1]
-                #     _logger.info("check_number = " + str(check_number) + ", " + str(order_id))
+    #             # for order_line in ot:
+    #             #     check_number = order_line[0]
+    #             #     order_id = order_line[1]
+    #             #     _logger.info("check_number = " + str(check_number) + ", " + str(order_id))
 
-                for row in voucher_order_line:
-                    vals = {}
-                    vals.update({'voucher_terms_id': self.voucher_terms_id.id})
-                    vals.update({'expired_date': exp_date})
-                    vals.update({'operating_unit_id': sourch_voucher})
-                    vals.update({'state': 'delivery'})
-                    vals.update({'voucher_allocate_id': self.id}) 
-                    obj_voucher_order_line_ids = voucher_order_line.write(vals)
+    #             for row in voucher_order_line:
+    #                 vals = {}
+    #                 vals.update({'voucher_terms_id': self.voucher_terms_id.id})
+    #                 vals.update({'expired_date': exp_date})
+    #                 vals.update({'operating_unit_id': sourch_voucher})
+    #                 vals.update({'state': 'delivery'})
+    #                 vals.update({'voucher_allocate_id': self.id}) 
+    #                 obj_voucher_order_line_ids = voucher_order_line.write(vals)
 
-                    order_line_trans_obj = self.env['weha.voucher.order.line.trans']
+    #                 order_line_trans_obj = self.env['weha.voucher.order.line.trans']
 
-                    vals = {}
-                    vals.update({'name': self.number})
-                    vals.update({'trans_date': datetime.now()})
-                    vals.update({'voucher_order_line_id': row[0]})
-                    vals.update({'trans_type': 'DV'})
-                    val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
-                    _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
+    #                 vals = {}
+    #                 vals.update({'name': self.number})
+    #                 vals.update({'trans_date': datetime.now()})
+    #                 vals.update({'voucher_order_line_id': row[0]})
+    #                 vals.update({'trans_type': 'DV'})
+    #                 val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+    #                 _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
 
     def trans_delivery(self):
         stage_id = self.stage_id.next_stage_id
@@ -186,7 +186,7 @@ class VoucherAllocate(models.Model):
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=True)
+    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=False, readonly=True)
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
     year_id = fields.Many2one('weha.voucher.year','Year', required=False, readonly=True)
     voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', required=False, readonly=True)

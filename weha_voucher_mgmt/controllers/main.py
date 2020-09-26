@@ -47,10 +47,43 @@ def validate_token(func):
 
 class VMSController(http.Controller):
     
+
+    @validate_token
+    @http.route("/api/vms/v1.0/sales", type="http", auth="none", methods=["POST"], csrf=False)
+    def vssales(self, **post):
+        data =  {
+                    "err": False,
+                    "message": "",
+                    "data": []
+                }
+        return valid_response(data)
+
+    @validate_token
+    @http.route("/api/vms/v1.0/promo", type="http", auth="none", methods=["POST"], csrf=False)
+    def vspromo(self, **post):
+        data =  {
+                    "err": False,
+                    "message": "Fields are missing",
+                    "data": []
+                }
+        return valid_response(data)
+
+    @validate_token
+    @http.route("/api/vms/v1.0/redeem", type="http", auth="none", methods=["POST"], csrf=False)
+    def csredeem(self, **post):
+        data =  {
+                    "err": False,
+                    "message": "Fields are missing",
+                    "data": []
+                }
+        return valid_response(data)
+
+
+    #API 1, API3
     @validate_token
     @http.route("/api/vms/v1.0/purchase", type="http", auth="none", methods=["POST"], csrf=False)
     def vspurchase(self, **post):
-        if 'voucher_type' not in post or 'sku' not in post:
+        if 'voucher_type' not in post:
             return werkzeug.wrappers.Response(
             status=200,
             content_type="application/json; charset=utf-8",
@@ -65,11 +98,11 @@ class VMSController(http.Controller):
         )
 
         #Check Bank Promo and Voucher Availability
-        if post['voucher_type'] == '2':
+        if post['voucher_type'] == '1':
             domain = [
                 ('code_sku','=', post['sku']),
             ]
-            mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
+            mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].sudo().search(domain, limit=1)
             if not mapping_sku_id:
                 return werkzeug.wrappers.Response(
                     status=200,
@@ -79,12 +112,19 @@ class VMSController(http.Controller):
                         {
                             "err": True,
                             "message": "SKU not found",
-                            "data": []
+                            "data": [
+                                {'code': 'N'}
+                            ]
                         }
                     ),
                 )
 
-            voucher_count = http.request.env['weha.voucher.order.line'].search_count([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id)])
+            domain = [
+                ('voucher_code_id','=',mapping_sku_id.voucher_code_id.id),
+                ('state', '=', 'open')
+            ]
+
+            voucher_count = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
             if voucher_count < int(post['quantity']):
                 return werkzeug.wrappers.Response(
                     status=200,
@@ -94,53 +134,366 @@ class VMSController(http.Controller):
                         {
                             "err": True,
                             "message": "Voucher not available",
+                            "data": [
+                                {'code': 'N'}
+                            ]
+                        }
+                    ),
+                )
+                            
+            values = {}
+            
+            # #Save Voucher Purchase Transaction
+            voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
+            trans_date = post['date']  +  " "  + post['time'] + ":00"
+            values.update({'trans_date': trans_date})
+            values.update({'receipt_number': post['receipt_number']})
+            values.update({'t_id': post['t_id']})
+            values.update({'cashier_id': post['cashier_id']})
+            values.update({'store_id': post['store_id']})
+            values.update({'member_id': post['member_id']})
+            values.update({'sku': post['sku']})
+            values.update({'quantity': post['quantity']})
+            values.update({'amount': post['amount']})
+            values.update({'voucher_type': post['voucher_type']})
+
+            #Save Data
+            result = voucher_trans_purchase_obj.create(values)
+            #validate Data
+
+            #if validate set return_code = Y
+
+            #if not validate set return_code = N
+
+            #if return code not receive by VS send file to FTP
+            #VMSyyyymmdd_Success 
+            #VMSyyyymmdd_Fail 
+        
+            return werkzeug.wrappers.Response(
+                status=200,
+                content_type="application/json; charset=utf-8",
+                headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                response=json.dumps(
+                    {
+                        "err": False,
+                        "message": "Create Successfully",
+                        "data": [
+                            {
+                                'code': 'Y',
+                                'vouchers': []
+                            }
+                        ]
+                    }
+                ),
+            )
+        
+        elif post['voucher_type'] == '2':
+            
+            tender_type_id = http.request.env['weha.voucher.tender.type'].search([('code', '=', post['tender_type'])], limit=1)
+            if not tender_type_id:
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "Voucher not available",
+                            "data": [
+                                {'code': 'N'}
+                            ]
+                        }
+                    ),
+                )
+
+            bank_category_id = http.request.env['weha.voucher.bank.category'].search([('bin_number', '=', post['bin_number'])], limit=1)
+            if not tender_type_id:
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "Voucher not available",
+                            "data": [
+                                {'code': 'N'}
+                            ]
+                        }
+                    ),
+                )
+
+            domain = [
+                ('tender_type_id','=', tender_type_id.id),
+                ('bank_category_id', '=', bank_category_id.id),
+                ('state', '=', 'open')
+            ]
+
+            voucher_count = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
+            if voucher_count < int(post['quantity']):
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "Voucher not available",
+                            "data": [
+                                {'code': 'N'}
+                            ]
+                        }
+                    ),
+                )
+                          
+
+            values = {}
+            
+            # #Save Voucher Purchase Transaction
+            voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
+            trans_date = post['date']  +  " "  + post['time'] + ":00"
+            values.update({'trans_date': trans_date})
+            values.update({'t_id': post['t_id']})
+            values.update({'cashier_id': post['cashier_id']})
+            values.update({'store_id': post['store_id']})
+            values.update({'bin_number': post['bin_number']})
+            values.update({'tender_type': post['tender_type']})
+            values.update({'bank_category': post['bank_category']})
+            values.update({'quantity': post['quantity']})
+            values.update({'amount': post['amount']})
+            values.update({'voucher_type': post['voucher_type']})
+
+            #Save Data
+            result = voucher_trans_purchase_obj.create(values)
+            #validate Data
+
+            #if validate set return_code = Y
+
+            #if not validate set return_code = N
+
+            #if return code not receive by VS send file to FTP
+            #VMSyyyymmdd_Success 
+            #VMSyyyymmdd_Fail 
+        
+            return werkzeug.wrappers.Response(
+                status=200,
+                content_type="application/json; charset=utf-8",
+                headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                response=json.dumps(
+                    {
+                        "err": False,
+                        "message": "Create Successfully",
+                        "data": [
+                            {
+                                'code': 'Y'
+                            }
+                        ]
+                    }
+                ),
+            )
+
+        elif post['voucher_type'] == '3':
+            #Redeem
+            domain = [
+                ('code_sku','=', post['sku']),
+            ]
+            mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].sudo().search(domain, limit=1)
+            if not mapping_sku_id:
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "SKU not found",
+                            "data": [
+                                {'code': 'N'}
+                            ]
+                        }
+                    ),
+                )
+
+            domain = [
+                ('voucher_code_id','=',mapping_sku_id.voucher_code_id.id),
+                ('state', '=', 'open')
+            ]
+
+            voucher_count = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
+            if voucher_count < int(post['quantity']):
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "Voucher not available",
+                            "data": [
+                                {'code': 'N'}
+                            ]
+                        }
+                    ),
+                )
+                            
+            values = {}
+            
+            # #Save Voucher Purchase Transaction
+            voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
+            trans_date = post['date']  +  " "  + post['time'] + ":00"
+            values.update({'trans_date': trans_date})
+            values.update({'receipt_number': post['receipt_number']})
+            values.update({'t_id': post['t_id']})
+            values.update({'cashier_id': post['cashier_id']})
+            values.update({'store_id': post['store_id']})
+            values.update({'member_id': post['member_id']})
+            values.update({'sku': post['sku']})
+            values.update({'quantity': post['quantity']})
+            values.update({'amount': post['amount']})
+            values.update({'voucher_type': post['voucher_type']})
+
+            #Save Data
+            result = voucher_trans_purchase_obj.create(values)
+            #validate Data
+
+            #if validate set return_code = Y
+
+            #if not validate set return_code = N
+
+            #if return code not receive by VS send file to FTP
+            #VMSyyyymmdd_Success 
+            #VMSyyyymmdd_Fail 
+        
+            return werkzeug.wrappers.Response(
+                status=200,
+                content_type="application/json; charset=utf-8",
+                headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                response=json.dumps(
+                    {
+                        "err": False,
+                        "message": "Create Successfully",
+                        "data": [
+                            {
+                                'code': 'Y',
+                                'vouchers': []
+                            }
+                        ]
+                    }
+                ),
+            )
+        
+
+        else:
+            return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "Unknown Transaction",
                             "data": []
                         }
                     ),
                 )
-                        
-        values = {}
-        
-        # #Save Voucher Purchase Transaction
-        voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
-        trans_date = post['date']  +  " "  + post['time'] + ":00"
-        values.update({'trans_date': trans_date})
-        values.update({'receipt_number': post['receipt_number']})
-        values.update({'t_id': post['t_id']})
-        values.update({'cashier_id': post['cashier_id']})
-        values.update({'store_id': post['store_id']})
-        values.update({'member_id': post['member_id']})
-        values.update({'sku': post['sku']})
-        values.update({'quantity': post['quantity']})
-        values.update({'amount': post['amount']})
-        values.update({'voucher_type': post['voucher_type']})
 
-        #Save Data
-        result = voucher_trans_purchase_obj.sudo().create(values)
-        #validate Data
-
-        #if validate set return_code = Y
-
-        #if not validate set return_code = N
-
-        #if return code not receive by VS send file to FTP
-        #VMSyyyymmdd_Success 
-        #VMSyyyymmdd_Fail 
-    
-        return werkzeug.wrappers.Response(
+      
+    #API4
+    @validate_token
+    @http.route("/api/vms/v1.0/voucherstatus", type="http", auth="none", methods=["POST"], csrf=False)
+    def updatevoucherstatus(self, **post):
+        if 'voucher_type' not in post:
+            return werkzeug.wrappers.Response(
             status=200,
             content_type="application/json; charset=utf-8",
             headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
             response=json.dumps(
                 {
-                    "err": False,
-                    "message": "Create Successfully",
+                    "err": True,
+                    "message": "Fields are missing",
                     "data": []
                 }
             ),
         )
-    
-    
+
+        #Tender Type, Bank Category ,BIN
+        #Check Bank Promo and Voucher Availability
+        if post['voucher_type'] == '2':
+            tender_type_id = http.request.env['weha.voucher.tender.type'].search([('code', '=', post['tender_type'])], limit=1)
+            if not tender_type_id:
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "Voucher not available",
+                            "data": [
+                                {'code': 'N'}
+                            ]
+                        }
+                    ),
+                )
+
+            bank_category_id = http.request.env['weha.voucher.bank.category'].search([('bin_number', '=', post['bin_number'])], limit=1)
+            if not tender_type_id:
+                return werkzeug.wrappers.Response(
+                    status=200,
+                    content_type="application/json; charset=utf-8",
+                    headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                    response=json.dumps(
+                        {
+                            "err": True,
+                            "message": "Voucher not available",
+                            "data": [
+                                {'code': 'N'}
+                            ]
+                        }
+                    ),
+                )
+
+            domain = [
+                ('tender_type_id','=', tender_type_id.id),
+                ('bank_category_id', '=', bank_category_id.id),
+                ('state', '=', 'activated')
+            ]
+
+            voucher_order_line_ids = http.request.env['weha.voucher.order.line'].sudo().search(domain,limit=int(post['quantity']))
+            for voucher_order_line_id in voucher_order_line_ids:
+                voucher_order_line_id.write({'member_id': post['member_id'], 'state':'activated'})
+
+            return werkzeug.wrappers.Response(
+                status=200,
+                content_type="application/json; charset=utf-8",
+                headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                response=json.dumps(
+                    {
+                        "err": True,
+                        "message": "Voucher not available",
+                        "data": [
+                            {'code': 'N'}
+                        ]
+                    }
+                ),
+            )
+                          
+        else:
+            return werkzeug.wrappers.Response(
+                status=200,
+                content_type="application/json; charset=utf-8",
+                headers=[("Cache-Control", "no-store"), ("Pragma", "no-cache")],
+                response=json.dumps(
+                    {
+                        "err": True,
+                        "message": "Voucher Available",
+                        "data": []
+                    }
+                ),
+            )
+
+
+    #
     @validate_token
     @http.route("/api/vms/v1.0/payment", type="http", auth="none", methods=["POST"], csrf=False)
     def vspayment(self, **payload):
@@ -152,38 +505,4 @@ class VMSController(http.Controller):
         return {'err': False, 'msg': 'VS Payment Succesfully', 'datas':[]}
     
 
-    @validate_token
-    @http.route("/api/vms/v1.0/bankpurchase", type="http", auth="none", methods=["POST"], csrf=False)
-    def bankpurchase(self, **payload):
-        if 'trans_type' not in payload:
-            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
-
-        if payload['trans_type'] != 'promo':
-            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
-        
-        return {'err': False, 'msg': 'Bank Purchase Successfully', 'datas':[]}
-
-    @validate_token
-    @http.route("/api/vms/v1.0/custredeem", type="http", auth="none", methods=["POST"], csrf=False)
-    def custredeem(self, **payload):
-        if 'trans_type' not in payload:
-            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
-
-        if payload['trans_type'] != 'redeem':
-            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
-
-        return {'err': False, 'msg': 'Redeem Successfully', 'datas':[]}
-    
-
-    @validate_token
-    @http.route("/api/vms/v1.0/bankpayment", type="http", auth="none", methods=["POST"], csrf=False)
-    def bankpayment(self, **payload):
-        if 'trans_type' not in payload:
-            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
-
-        if payload['trans_type'] != 'payment':
-            return {'err': True, 'msg': 'Bank Purchase Successfully', 'datas':[]}
-        return {'err': False, 'msg': 'Bank Payment Successfully', 'datas':[]}
-    
-    
-    
+   

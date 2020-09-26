@@ -47,6 +47,8 @@
         'views/weha_voucher_config_type_view.xml',
         'views/weha_voucher_config_promo_view.xml',
         'views/weha_voucher_config_year_view.xml',
+        'views/weha_voucher_config_tender_type_view.xml',
+        'views/weha_voucher_config_bank_category_view.xml',
         'views/weha_voucher_return_stage_view.xml',
         'views/weha_voucher_allocate_stage_view.xml',
         'views/weha_voucher_scrap_stage_view.xml',
