@@ -67,7 +67,13 @@ class VoucherMappingPos(models.Model):
     
 class VoucherMappingSku(models.Model):
     _name = 'weha.voucher.mapping.sku'
-    _rec_name = 'code_sku'
+
+    def name_get(self):
+        result = []
+        for record in self:
+            name = record.code_sku + ' - ' + record.voucher_code_id.name
+            result.append((record.id, name))
+        return result
 
     code_sku = fields.Char(
         string='Code SKU',
@@ -76,9 +82,8 @@ class VoucherMappingSku(models.Model):
     )
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
     voucher_mapping_pos_id = fields.Many2one('weha.voucher.mapping.pos', 'Voucher Mapping POS Id', required=False)
-    
     point_redeem = fields.Integer('Point Redeem')
-    
+
 
 class VoucherPromo(models.Model):
     _name = 'weha.voucher.promo'
@@ -86,6 +91,26 @@ class VoucherPromo(models.Model):
     name = fields.Char("Name", size=200, required=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
     bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category')
+    voucher_promo_line_ids = fields.One2many('weha.voucher.promo.line','voucher_promo_id','Lines')
+
+class VoucherPromoLine(models.Model):
+    _name = 'weha.voucher.promo.line'
+
+    def get_usage_quota(self):
+        strSQL = """SELECT sum(amount) FROM weha_voucher_trans_purchase_sku WHERE voucher_mapping_sku_id={}""".format(self.voucher_mapping_sku_id.id)
+        _logger.info(strSQL)
+        self.env.cr.execute(strSQL)
+        row = self.env.cr.fetchone()
+        if row:
+            self.current_amount = row[0]
+        else:
+            self.current_amount = 0.0
+
+    voucher_promo_id = fields.Many2one('weha.voucher.promo')
+    voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku','Mapping SKU #')
+    current_amount = fields.Float('Quota Usage', compute="get_usage_quota")
+    amount = fields.Float('Max Quota', default=0.0)
+
 
 
 class VoucherYear(models.Model):

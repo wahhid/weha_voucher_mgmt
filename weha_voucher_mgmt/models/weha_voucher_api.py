@@ -37,6 +37,7 @@ class VoucherTransPurchase(models.Model):
                         vals['voucher_code_id']  = voucher_number_range_id.voucher_code_id.id
                         vals['voucher_terms_id']  = voucher_number_range_id.voucher_code_id.voucher_terms_id.id
                         vals['year_id'] =  voucher_number_range_id.year_id.id
+                        vals['voucher_mapping_sku_id'] = mapping_sku_id.id
                         self.env['weha.voucher.trans.purchase.sku'].create(vals)
 
         else:
@@ -60,7 +61,7 @@ class VoucherTransPurchase(models.Model):
                    vals['voucher_code_id']  = voucher_number_range_id.voucher_code_id.id
                    vals['voucher_terms_id']  = voucher_number_range_id.voucher_code_id.voucher_terms_id.id
                    vals['year_id'] =  voucher_number_range_id.year_id.id
-
+                   vals['voucher_mapping_sku_id'] = mapping_sku_id.id
                 self.env['weha.voucher.trans.purchase.sku'].create(vals)
                    
     def send_data_to_trust(self):
@@ -181,17 +182,18 @@ class VoucherTransPurchase(models.Model):
             pass     
 
         if vals.get('voucher_type') == '2':
-            tender_type_id = self.env['weha.voucher.tender.type'].search([('code', '=', vals['tender_type'])], limit=1)
-            bank_category_id = self.env['weha.voucher.bank.category'].search([('bin_number', '=', vals['bin_number'])], limit=1)
+            # tender_type_id = self.env['weha.voucher.tender.type'].search([('code', '=', vals['tender_type'])], limit=1)
+            # bank_category_id = self.env['weha.voucher.bank.category'].search([('bin_number', '=', vals['bin_number'])], limit=1)
 
-            domain = [
-                ('tender_type_id','=', tender_type_id.id),
-                ('bank_category_id', '=', bank_category_id.id),
-                ('state', '=', 'open')
-            ]
+            # domain = [
+            #     ('tender_type_id','=', tender_type_id.id),
+            #     ('bank_category_id', '=', bank_category_id.id),
+            #     ('state', '=', 'open')
+            # ]
 
-            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
-            vals['voucher_code_id'] = voucher_order_line_id.voucher_code_id.id
+            #voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+            #vals['voucher_code_id'] = voucher_order_line_id.voucher_code_id.id
+            pass
 
 
         #Create Trans
@@ -210,10 +212,11 @@ class VoucherTransPurchase(models.Model):
         return res    
     
     
-class VoucheTransPurchseSku(models.Model):
+class VoucheTransPurchaseSku(models.Model):
     _name = "weha.voucher.trans.purchase.sku"
 
     voucher_trans_purchase_id = fields.Many2one('weha.voucher.trans.purchase', 'Purchase #')
+    voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku', 'Mapping SKU #')
     sku = fields.Char("SKU", size=8)
     quantity = fields.Integer('Qty')
     amount = fields.Float('Amount', default="0.0")
@@ -222,6 +225,7 @@ class VoucheTransPurchseSku(models.Model):
     voucher_terms_id = fields.Many2one("weha.voucher.terms", "Voucher Terms")
     year_id = fields.Many2one("weha.voucher.year", "Year")
     voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
+
 
 class VoucherTransPurchaseLine(models.Model):
     _name = "weha.voucher.trans.purchase.line"
