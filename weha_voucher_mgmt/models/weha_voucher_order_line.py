@@ -219,6 +219,8 @@ class VoucherOrderLineTrans(models.Model):
             ('IC', 'Issued Customer'), 
             ('RT', 'Return'), 
             ('AC','Activated'), 
+            ('RS','Reserved'), 
+            ('US','Used'), 
             ('DM', 'Damage')],
         default='OP'
     )

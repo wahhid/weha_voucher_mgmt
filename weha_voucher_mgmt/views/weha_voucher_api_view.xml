@@ -108,6 +108,11 @@
                 <search string="model_search">
                     <field name="name" />
                     <field name="trans_date"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Voucher Type" name="voucher_type" domain="[]" context="{'group_by': 'voucher_type'}"/>
+                        <filter string="Status" name="state" domain="[]" context="{'group_by': 'state'}"/>
+                    </group>
                 </search>
             </field>
         </record>
@@ -119,7 +124,7 @@
             <field name="res_model">weha.voucher.trans.purchase</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
-            <field name="context">{}</field>
+            <field name="context">{'search_default_voucher_type':1,'search_default_state': 1}</field>
             <field name="search_view_id" ref="view_weha_voucher_trans_purchase_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
@@ -259,6 +264,7 @@
                     <field name="name" />
                     <field name="trans_date" />
                     <field name="member_id"/>
+                    <field name="process_type"/>
                     <field name="state" />
                 </tree>
             </field>
@@ -293,6 +299,7 @@
                                 <field name="receipt_number"/>
                                 <field name="cashier_id"/>
                                 <field name="member_id"/>
+                                <field name="process_type"/>
                             </group>
                         </group>
                         <notebook colspan="4">

@@ -88,10 +88,18 @@ class VoucherMappingSku(models.Model):
 class VoucherPromo(models.Model):
     _name = 'weha.voucher.promo'
     
+    def get_usage_quota(self):
+        amount = 0
+        for voucher_promo_line_id in self.voucher_promo_line_ids:
+            amount = amount + voucher_promo_line_id.current_amount
+        self.current_amount = amount
+
     name = fields.Char("Name", size=200, required=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
     bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category')
     voucher_promo_line_ids = fields.One2many('weha.voucher.promo.line','voucher_promo_id','Lines')
+    current_amount = fields.Float('Quota Usage', compute="get_usage_quota")
+    amount = fields.Float('Max Quota', default=0.0)
 
 class VoucherPromoLine(models.Model):
     _name = 'weha.voucher.promo.line'
@@ -109,7 +117,7 @@ class VoucherPromoLine(models.Model):
     voucher_promo_id = fields.Many2one('weha.voucher.promo')
     voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku','Mapping SKU #')
     current_amount = fields.Float('Quota Usage', compute="get_usage_quota")
-    amount = fields.Float('Max Quota', default=0.0)
+    #amount = fields.Float('Max Quota', default=0.0)
 
 
 

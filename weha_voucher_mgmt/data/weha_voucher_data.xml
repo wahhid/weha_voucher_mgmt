@@ -66,5 +66,18 @@
             <field name="padding">5</field>
         </record>
 
+        <record id="weha_voucher_trans_payment" model="ir.sequence">
+            <field name="name">Voucher Trans Payment Sequence</field>
+            <field name="code">weha.voucher.trans.payment.sequence</field>
+            <field name="prefix">VY/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="weha_voucher_trans_status" model="ir.sequence">
+            <field name="name">Voucher Trans Status Sequence</field>
+            <field name="code">weha.voucher.trans.status.sequence</field>
+            <field name="prefix">VU/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
     </data>
 </odoo>

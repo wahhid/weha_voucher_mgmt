@@ -136,7 +136,8 @@ class VoucherTransPurchase(models.Model):
         [
             ('1', 'Sales'),
             ('2', 'Bank Promo'),
-            ('3', 'Employee'),
+            ('3', 'Redeem'),
+            ('4', 'Employee'),
         ],
         'Voucher Type'
     )
@@ -240,7 +241,6 @@ class VoucherTransPurchaseLine(models.Model):
 class VoucherTransPayment(models.Model):
     _name = "weha.voucher.trans.payment"
 
-   
     name = fields.Char('Name', )
     trans_date = fields.Datetime("Transaction Date")
     receipt_number = fields.Char("Receipt #", size=5)
@@ -282,6 +282,12 @@ class VoucherTransPayment(models.Model):
 
     @api.model 
     def create(self, vals):
+        #Create Trans #
+        seq = self.env['ir.sequence']
+        if 'company_id' in vals:
+            seq = seq.with_context(force_company=vals['company_id'])
+        vals['name'] = seq.next_by_code('weha.voucher.trans.payment.sequence') or '/'
+
         res = super(VoucherTransPayment, self).create(vals)
         voucher_order_line_id = res.voucher_order_line_id
         voucher_order_line_id.sudo().write({'state':'reserved'})
@@ -342,16 +348,34 @@ class VoucherTransStatus(models.Model):
         default='open'
     )
     state_remark = fields.Char('Remark', size=250)
+    process_type = fields.Selection(
+        [  
+            ('reserved', 'Reserved'),
+            ('activated', 'Activated'),
+            ('used', 'Used'),
+            
+        ],
+        'Process Type',
+    )
 
     @api.model 
     def create(self, vals):
+       
+        #Create Trans #
+        seq = self.env['ir.sequence']
+        if 'company_id' in vals:
+            seq = seq.with_context(force_company=vals['company_id'])
+        vals['name'] = seq.next_by_code('weha.voucher.trans.status.sequence') or '/'
+
         res = super(VoucherTransStatus, self).create(vals)
+        order_line_trans_obj = self.env['weha.voucher.order.line.trans']
+
         arr_voucher_ean = vals['voucher_ean'].split("|")
         voucher_ean_ids = []
         for voucher_ean in arr_voucher_ean:
             domain = [
                 ('voucher_ean','=', voucher_ean),
-                ('state','=', 'reserved')
+                ('state','=', 'activated')
             ]
             voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
             if voucher_order_line_id:
@@ -361,7 +385,31 @@ class VoucherTransStatus(models.Model):
                 }
                 result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
                 if result:
-                    voucher_order_line_id.sudo().write({'state': 'used'})
+                    if vals['process_type'] == 'reserved':
+                        voucher_order_line_id.sudo().write({'state': 'reserved'})
+                        vals = {}
+                        vals.update({'name': res.name})
+                        vals.update({'trans_date': datetime.now()})
+                        vals.update({'voucher_order_line_id': voucher_order_line_id.id})
+                        vals.update({'trans_type': 'RS'})
+                        val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+                    if vals['process_type'] == 'activated':
+                        voucher_order_line_id.sudo().write({'state': 'activated'})
+                        vals = {}
+                        vals.update({'name': res.name})
+                        vals.update({'trans_date': datetime.now()})
+                        vals.update({'voucher_order_line_id': voucher_order_line_id.id})
+                        vals.update({'trans_type': 'AC'})
+                        val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+                    if vals['process_type'] == 'used':
+                        voucher_order_line_id.sudo().write({'state': 'used'})
+                        vals = {}
+                        vals.update({'name': res.name})
+                        vals.update({'trans_date': datetime.now()})
+                        vals.update({'voucher_order_line_id': voucher_order_line_id.id})
+                        vals.update({'trans_type': 'US'})
+                        val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+                    
         res.sudo().write({'state': 'done'})
         return res
   

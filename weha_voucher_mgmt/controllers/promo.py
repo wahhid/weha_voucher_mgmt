@@ -158,6 +158,12 @@ class VMSPromoController(http.Controller):
         #Save Data
         result = voucher_trans_purchase_obj.create(values)
         
+        #Prepare Voucher Order Line List
+        vouchers = []
+        for voucher_trans_purchase_line_id in result.voucher_trans_purchase_line_ids:
+            vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
+        
+
         if result:
 
             data =  {

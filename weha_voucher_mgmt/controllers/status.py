@@ -61,6 +61,7 @@ class VMSStatusController(http.Controller):
         #amount = post['amount'] or False  if 'amount' in post else False
         voucher_ean = post['voucher_ean'] or False if 'voucher_ean' in post else False
         #voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
+        process_type = post['process_type'] or False if 'process_type' in post else False
 
         _fields_includes_in_body = all([date, 
                                         time, 
@@ -72,8 +73,9 @@ class VMSStatusController(http.Controller):
                                         #sku,
                                         #quantity,
                                         #amount,
-                                        voucher_ean
+                                        voucher_ean,
                                         #voucher_type
+                                        process_type
                                         ])
         if not _fields_includes_in_body:
             data =  {
@@ -93,15 +95,16 @@ class VMSStatusController(http.Controller):
                 _logger.info(arr_ean)
                 domain = [
                     ('voucher_ean', '=', arr_ean),
-                    ('state', '=', 'reserved')
+                    ('state', '=', 'activated')
                 ]
                 voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
                 if not voucher_order_line_id:
                     is_available = False
         else:
+            arr_ean  = voucher_ean.split('|')
             domain = [
-                ('voucher_ean', '=', voucher_ean),
-                ('state', '=', 'reserved')
+                ('voucher_ean', '=', arr_ean),
+                ('state', '=', 'activated')
             ]
             voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
             if not voucher_order_line_id:
@@ -131,6 +134,8 @@ class VMSStatusController(http.Controller):
         values.update({'store_id': store_id})
         values.update({'member_id': member_id})
         values.update({'voucher_ean': voucher_ean})
+        values.update({'process_type': process_type})
+        
         #values.update({'quantity': quantity})
         #values.update({'amount': amount})
         #values.update({'voucher_type': voucher_type})
