@@ -105,12 +105,17 @@ class VMSPromoController(http.Controller):
                 mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
                 if not mapping_sku_id:
                     is_available = False
+                
                 domain = [
                     ('voucher_mapping_sku_id', '=' , mapping_sku_id.id)
                 ]
                 voucher_promo_line_id = http.request.env['weha.voucher.promo.line'].search(domain, limit=1)
                 if not voucher_promo_line_id:
                     is_available = False
+                
+                if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + float(arr_sku[2]):
+                    is_available = False
+                
         else:
             arr_sku  = sku.split('|')
             _logger.info(arr_sku)
@@ -120,6 +125,7 @@ class VMSPromoController(http.Controller):
             mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
             if not mapping_sku_id:
                 is_available = False
+
             domain = [
                     ('voucher_mapping_sku_id', '=' , mapping_sku_id.id)
             ]
@@ -127,7 +133,10 @@ class VMSPromoController(http.Controller):
             if not voucher_promo_line_id:
                 is_available = False
             
-        
+            if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + float(arr_sku[2]):
+                is_available = False
+            
+            
         if not is_available:
             response_data = {
                 "err": True,
