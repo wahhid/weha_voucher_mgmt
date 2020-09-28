@@ -3,23 +3,51 @@
 <data noupdate="0">
 
     <record id="group_voucher_user" model="res.groups">
-        <field name="name">Voucher User</field>
+        <field name="name">User</field>
         <field name="category_id" ref="module_voucher_category"/>
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_voucher_supervisor" model="res.groups">
-        <field name="name">Voucher Supervisor</field>
+        <field name="name">Supervisor</field>
         <field name="category_id" ref="module_voucher_category"/>
         <field name="implied_ids" eval="[(4, ref('group_voucher_user'))]"/>
     </record>
 
     <record id="group_voucher_manager" model="res.groups">
-        <field name="name">Voucer Manager</field>
+        <field name="name">Manager</field>
         <field name="category_id" ref="module_voucher_category"/>
         <field name="implied_ids" eval="[(4, ref('group_voucher_supervisor'))]"/>
         <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>
+
+    <record id="group_voucher_finance_user" model="res.groups">
+        <field name="name">Finance User</field>
+        <field name="category_id" ref="module_voucher_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_voucher_finance_manager" model="res.groups">
+        <field name="name">Finance Manager</field>
+        <field name="category_id" ref="module_voucher_category"/>
+        <field name="implied_ids" eval="[(4, ref('group_voucher_finance_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <record id="group_voucher_marketing_user" model="res.groups">
+        <field name="name">Marketing User</field>
+        <field name="category_id" ref="module_voucher_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_voucher_marketing_manager" model="res.groups">
+        <field name="name">Marketing Manager</field>
+        <field name="category_id" ref="module_voucher_category"/>
+        <field name="implied_ids" eval="[(4, ref('group_voucher_marketing_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+
 
      <!-- Voucher Order Operating Unit Rules -->
     <record id="voucher_order_operating_unit_rule" model="ir.rule">
@@ -58,10 +86,10 @@
         <field name="name">Voucher Allocate Operating Unit Rule</field>
         <field name="model_id" ref="model_weha_voucher_allocate"/>
         <field name="global" eval="True"/>
-        <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
+        <field name="domain_force">[('source_operating_unit','in',user.operating_unit_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('group_voucher_user'))]"/>
     </record>
 
-<<<<<<< HEAD
     <record id="voucher_stock_transfer_rule" model="ir.rule">
         <field name="name">All Vouchers Stock Transfer</field>
         <field ref="model_weha_voucher_stock_transfer" name="model_id"/>
@@ -69,8 +97,6 @@
         <field name="groups" eval="[(4, ref('group_voucher_user'))]"/>
     </record>
 
-=======
->>>>>>> wahyu
 </data>
 
 <!--

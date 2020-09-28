@@ -19,7 +19,6 @@ class VoucherLocation(models.Model):
         required=True
     )
 
-
 class VoucherType(models.Model):
     _name = 'weha.voucher.type'
 
@@ -29,7 +28,6 @@ class VoucherType(models.Model):
         required=True
     )
     
-
 class VoucherTerms(models.Model):
     _name = 'weha.voucher.terms'
 
@@ -48,7 +46,6 @@ class VoucherTerms(models.Model):
 class VoucherMappingPos(models.Model):
     _name = 'weha.voucher.mapping.pos'
 
-<<<<<<< HEAD
     code = fields.Char(
         string='Code',
         size=10,
@@ -73,18 +70,35 @@ class VoucherMappingSku(models.Model):
 
     voucher_mapping_pos_id = fields.Many2one('weha.voucher.mapping.pos', 'Voucher Mapping POS Id', required=False
     )
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False
-    )
-   
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
+    
+
     code_sku = fields.Char(
         string='Code SKU',
         size=8,
         required=True
     )
 
+class VoucherPromo(models.Model):
+    _name = 'weha.voucher.promo'
+    
+    name = fields.Char("Name", size=200, required=True)
 
-=======
->>>>>>> wahyu
+class VoucherYear(models.Model):
+    _name = 'weha.voucher.year'
+
+    # @api.constrains('year')
+    # def _check_year(self):
+    #     for record in self:
+    #         if not isinstance(record.year, int):
+    #             raise ValidationError("Year must be integer")
+    #         if len(str(record.year)) != 4:
+    #             raise ValidationError("Year 4 Digit")    
+            
+    name = fields.Char("Name", size=4, required=True)
+    year = fields.Integer("Year", required=True)
+    active = fields.Boolean('Active', default=True)
+
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'
 	

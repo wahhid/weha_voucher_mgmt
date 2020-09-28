@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+
+        <!-- Voucher scrap Stage -->
+        <record id="voucher_scrap_stage_done" model="weha.voucher.scrap.stage">
+            <field name="sequence">4</field>
+            <field name="name">Scrap</field>
+            <field name="closed">True</field>
+            <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_scrap_stage_open" model="weha.voucher.scrap.stage">
+            <field name="sequence">3</field>
+            <field name="name">Ready to Scrap</field>
+            <field name="opened">True</field>
+            <field name="next_stage_id" ref="voucher_scrap_stage_done"/>
+        </record>
+
+        <record id="voucher_scrap_stage_approval" model="weha.voucher.scrap.stage">
+            <field name="sequence">2</field>
+            <field name="name">Pending Approval</field>
+            <field name="approval">True</field>
+            <field name="fold">True</field>
+            <field name="next_stage_id" ref="voucher_scrap_stage_open"/>
+        </record>
+
+        <record id="voucher_scrap_stage_scrap" model="weha.voucher.scrap.stage">
+            <field name="sequence">1</field>
+            <field name="name">Draft</field>
+            <field name="unattended">True</field>
+            <field name="next_stage_id" ref="voucher_scrap_stage_approval"/>
+        </record>
+
+        <record id="voucher_scrap_stage_cancelled" model="weha.voucher.scrap.stage">
+            <field name="sequence">5</field>
+            <field name="name">Cancelled</field>
+            <field name="cancelled">True</field>
+            <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_scrap_stage_rejected" model="weha.voucher.scrap.stage">
+            <field name="sequence">6</field>
+            <field name="name">Rejected</field>
+            <field name="rejected">True</field>
+            <field name="fold">True</field>
+        </record>
+
+       
+    </data>
+</odoo>

@@ -30,11 +30,22 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-                        
+             
+                        <button 
+                            type="action" 
+                            attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                            class="btn btn-primary" 
+                            name="%(weha_voucher_mgmt.act_open_scan_voucher_issuing_view_form)d" 
+                            string="Scan Voucher" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
+
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                            class="btn btn-primary" name="action_issuing_voucher" string="Ready to Issuing" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
+
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
-                        
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
                             <h1>
@@ -44,18 +55,40 @@
                         </div>
                         <group>
                             <group>
+                                <field name="issuing_date" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
+                                <field name="current_stage" invisible="1"/>
                             </group>
                             <group>
+                                <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="voucher_count"/>
-                                <field name="priority" widget="priority"/>
-                            </group>
-                            <group>
-                                <field name="current_stage"/>
                             </group>
                         </group>
-                        
+                        <group>
+                            <group>
+                                <field name="voucher_code_id"/>
+                                <field name="year_id"/>     
+                                <field name="voucher_promo_id"/>
+                            </group>
+                            <group>
+                                <field name="start_number"/>
+                                <field name="end_number"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Issuing Lines">
+	                        	<field name="voucher_issuing_line_ids" widget="one2many_list" nolabel="0" readonly="1">
+	                            	<tree string="Issuing Lines">
+	                            	    <field name="voucher_order_line_id" /> 
+                                        <field name="voucher_code_id"/>
+                                        <field name="year_id"/>
+                                        <field name="voucher_promo_id"/>       
+                                        <field name="state"/>                   	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>	   
+                        </notebook>
                     </sheet>
                     <div class="oe_chatter">
                         <field name="message_follower_ids" widget="mail_followers"/>
@@ -144,22 +177,17 @@
             <field name="search_view_id" ref="view_weha_voucher_issuing_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
-                    Click to add for request new voucher request
+                    Click to add for new voucher issuing
                 </p><p>
-                    Voucher request
+                    Voucher Issuing
                 </p>
             </field>
         </record>
-        
-        <!-- Main menu for voucher request -->
-        <!-- <record id="menu_model" model="ir.ui.menu" >
-            <field name="name">Request</field>
-            <field name="sequence" eval="5" />
-            <field name="action" ref="action_weha_voucher_issuing_act_window" />
-            <field name="parent_id" ref="weha_voucher_main_menu" />
-        </record> -->
 
-        <menuitem id="weha_voucher_issuing_menu" name="Issuing" parent="weha_voucher_main_menu"
+        <menuitem 
+            id="weha_voucher_issuing_menu" 
+            name="Issuing" 
+            parent="weha_transaction_main_menu"
             action="action_weha_voucher_issuing_act_window" sequence="23"/>
         
 

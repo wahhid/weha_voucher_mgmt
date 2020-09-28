@@ -13,21 +13,28 @@
         <record id="weha_voucher_order_sequence" model="ir.sequence">
             <field name="name">Voucher Order Sequence</field>
             <field name="code">weha.voucher.order.sequence</field>
-            <field name="prefix">VO</field>
+            <field name="prefix">VO/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
 
         <record id="weha_voucher_request_sequence" model="ir.sequence">
             <field name="name">Voucher Request Sequence</field>
             <field name="code">weha.voucher.request.sequence</field>
-            <field name="prefix">VR</field>
+            <field name="prefix">VR/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
 
         <record id="weha_voucher_return_sequence" model="ir.sequence">
             <field name="name">Voucher Return Sequence</field>
             <field name="code">weha.voucher.return.sequence</field>
-            <field name="prefix">R</field>
+            <field name="prefix">VN/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="weha_voucher_scrap_sequence" model="ir.sequence">
+            <field name="name">Voucher Scrap Sequence</field>
+            <field name="code">weha.voucher.scrap.sequence</field>
+            <field name="prefix">VS/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
 
@@ -41,95 +48,16 @@
         <record id="weha_voucher_allocate_sequence" model="ir.sequence">
             <field name="name">Voucher Allocate Sequence</field>
             <field name="code">weha.voucher.allocate.sequence</field>
-            <field name="prefix">AL</field>
+            <field name="prefix">VA/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
 
-        <!--Voucher Order L1 Approval Notification Email template -->
-        <record id="voucher_order_l1_approval_notification_template" model="mail.template">
-            <field name="name">Voucher Order L1 Approval Notification</field>
-            <field name="model_id" ref="model_weha_voucher_order"/>
-            <field name="email_from">${object.user_id.partner_id.email}</field>
-            <field name="subject">${object.operating_unit_id.name} - Voucher Order Approval (Ref ${object.number or 'n/a' })</field>
-            <field name="auto_delete" eval="False"/>
-            <field name="body_html" type="xml">
-                <p>Hi </p>
-                <p>Voucher Management System is sending this request for your approval.</p>
-                <p>Click here to review the voucher order request</p>
-            </field>
+        <record id="weha_voucher_issuing_sequence" model="ir.sequence">
+            <field name="name">Voucher Issuing Sequence</field>
+            <field name="code">weha.voucher.issuing.sequence</field>
+            <field name="prefix">VI/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
         </record>
-
-        <!--Voucher Request L1 Approval Notification Email template -->
-        <record id="voucher_request_l1_approval_notification_template" model="mail.template">
-            <field name="name">Voucher Request L1 Approval Notification</field>
-            <field name="model_id" ref="model_weha_voucher_request"/>
-            <field name="email_from">${object.user_id.partner_id.email}</field>
-            <field name="subject">${object.operating_unit_id.name} - Voucher Request Approval (Ref ${object.number or 'n/a' })</field>
-            <field name="auto_delete" eval="False"/>
-            <field name="body_html" type="xml">
-                <p>Hi </p>
-                <p>Voucher Management System is sending this request for your approval.</p>
-                <p>Click here to review the voucher request</p>
-            </field>
-        </record>
-
-        <!--Voucher Request L2 Approval Notification Email template -->
-        <record id="voucher_request_l2_approval_notification_template" model="mail.template">
-            <field name="name">Voucher Request L2 Approval Notification</field>
-            <field name="model_id" ref="model_weha_voucher_request"/>
-            <field name="email_from">${object.user_id.partner_id.email}</field>
-            <field name="subject">${object.operating_unit_id.name} - Voucher Request Approval (Ref ${object.number or 'n/a' })</field>
-            <field name="auto_delete" eval="False"/>
-            <field name="body_html" type="xml">
-                <p>Hi </p>
-                <p>Voucher Management System is sending this request for your approval.</p>
-                <p>Click here to review the voucher request</p>
-            </field>
-        </record>
-
-        <!--Voucher Allocate L1 Approval Notification Email template -->
-        <record id="voucher_allocate_l1_approval_notification_template" model="mail.template">
-            <field name="name">Voucher Allocate L1 Approval Notification</field>
-            <field name="model_id" ref="model_weha_voucher_allocate"/>
-            <field name="email_from">${object.user_id.partner_id.email}</field>
-            <field name="subject">${object.operating_unit_id.name} - Voucher Allocate Approval (Ref ${object.number or 'n/a' })</field>
-            <field name="auto_delete" eval="False"/>
-            <field name="body_html" type="xml">
-                <p>Hi </p>
-                <p>Voucher Management System is sending this request for your approval.</p>
-                <p>Click here to review the voucher allocate</p>
-            </field>
-        </record>
-
-        <!--Voucher Return L1 Approval Notification Email template -->
-        <record id="voucher_return_l1_approval_notification_template" model="mail.template">
-            <field name="name">Voucher Return L1 Approval Notification</field>
-            <field name="model_id" ref="model_weha_voucher_return"/>
-            <field name="email_from">${object.user_id.partner_id.email}</field>
-            <field name="subject">${object.operating_unit_id.name} - Voucher Return Approval (Ref ${object.number or 'n/a' })</field>
-            <field name="auto_delete" eval="False"/>
-            <field name="body_html" type="xml">
-                <p>Hi </p>
-                <p>Voucher Management System is sending this request for your approval.</p>
-                <p>Click here to review the voucher return</p>
-            </field>
-        </record>
-        
-        <!--Voucher Stock Transfer L1 Approval Notification Email template -->
-        <record id="voucher_stock_transfer_l1_approval_notification_template" model="mail.template">
-            <field name="name">Voucher Stock Transfer L1 Approval Notification</field>
-            <field name="model_id" ref="model_weha_voucher_stock_transfer"/>
-            <field name="email_from">${object.user_id.partner_id.email}</field>
-            <field name="subject">${object.operating_unit_id.name} - Voucher Stock Transfer Approval (Ref ${object.number or 'n/a' })</field>
-            <field name="auto_delete" eval="False"/>
-            <field name="body_html" type="xml">
-                <p>Hi </p>
-                <p>Voucher Management System is sending this request for your approval.</p>
-                <p>Click here to review the voucher stock transfer</p>
-            </field>
-        </record>
-
 
     </data>
-
 </odoo>

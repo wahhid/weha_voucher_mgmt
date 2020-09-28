@@ -1,26 +1,38 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_api_access_token,access_api_access_token,model_api_access_token,,1,1,1,1
 
-access_weha_voucher_order_stage_manager,weha.voucher.order.stage.manager,model_weha_voucher_order_stage,group_voucher_manager,1,1,1,1
-access_weha_voucher_order_stage_user,weha.voucher.order.stage.user,model_weha_voucher_order_stage,group_voucher_user,1,0,0,0
+access_weha_voucher_order_stage_finance_manager,weha.voucher.order.stage.manager,model_weha_voucher_order_stage,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_order_stage_finance_user,weha.voucher.order.stage.user,model_weha_voucher_order_stage,group_voucher_finance_user,1,0,0,0
 
 access_weha_voucher_request_stage_manager,weha.voucher.request.stage.manager,model_weha_voucher_request_stage,group_voucher_manager,1,1,1,1
 access_weha_voucher_request_stage_user,weha.voucher.request.stage.user,model_weha_voucher_request_stage,group_voucher_user,1,0,0,0
+access_weha_voucher_request_stage_finance_user,weha.voucher.request.stage.finance.user,model_weha_voucher_request_stage,group_voucher_finance_user,1,0,0,0
 
 access_weha_voucher_code_manager,weha.voucher.code.manager,model_weha_voucher_code,group_voucher_manager,1,1,1,1
 access_weha_voucher_code_user,weha.voucher.code.user,model_weha_voucher_code,group_voucher_user,1,0,0,0
+access_weha_voucher_code_finance_user,weha.voucher.code.finance_user,model_weha_voucher_code,group_voucher_finance_user,1,0,0,0
 
 access_weha_voucher_code_minimum_stock_manager,weha.voucher.code.minimum.stock.manager,model_weha_voucher_code_minimum_stock,group_voucher_manager,1,1,1,1
 access_weha_voucher_code_minimum_stock_user,weha.voucher.code.minimum.stock.user,model_weha_voucher_code_minimum_stock,group_voucher_user,1,0,0,0
 
-access_weha_voucher_order_manager,weha.voucher.order.manager,model_weha_voucher_order,group_voucher_manager,1,1,1,1
-access_weha_voucher_order_user,weha.voucher.order.user,model_weha_voucher_order,group_voucher_user,1,1,1,0
+access_weha_voucher_order_finance_manager,weha.voucher.order.finance.manager,model_weha_voucher_order,group_voucher_finance_manager,1,1,1,0
+access_weha_voucher_order_finance_user,weha.voucher.order.finance_user,model_weha_voucher_order,group_voucher_finance_user,1,1,1,0
+access_weha_voucher_order_marketing_user,weha.voucher.order.marketing_user,model_weha_voucher_order,group_voucher_marketing_user,1,0,0,0
+
 
 access_weha_voucher_order_line_manager,weha.voucher.order.line.manager,model_weha_voucher_order_line,group_voucher_manager,1,1,1,1
 access_weha_voucher_order_line_user,weha.voucher.order.line.user,model_weha_voucher_order_line,group_voucher_user,1,1,1,0
+access_weha_voucher_order_line_finance_manager,weha.voucher.order.line.finance.manager,model_weha_voucher_order_line,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_order_line_finance_user,weha.voucher.order.line.finance.user,model_weha_voucher_order_line,group_voucher_finance_user,1,1,1,0
+access_weha_voucher_order_line_marketing_user,weha.voucher.order.line.marketing.user,model_weha_voucher_order_line,group_voucher_marketing_user,1,1,1,0
+
 
 access_weha_voucher_order_line_trans_manager,weha.voucher.order.line.trans.manager,model_weha_voucher_order_line_trans,group_voucher_manager,1,1,1,1
 access_weha_voucher_order_line_trans_user,weha.voucher.order.line.trans.user,model_weha_voucher_order_line_trans,group_voucher_user,1,1,1,0
+access_weha_voucher_order_line_trans_finance_manager,weha.voucher.order.line.trans.finance.manager,model_weha_voucher_order_line_trans,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_order_line_trans_finance_user,weha.voucher.order.line.trans.finance.user,model_weha_voucher_order_line_trans,group_voucher_finance_user,1,1,1,0
+access_weha_voucher_order_line_trans_marketing_user,weha.voucher.order.line.trans.marketing.user,model_weha_voucher_order_line_trans,group_voucher_marketing_user,1,1,1,0
+
 
 access_weha_voucher_location_manager,weha.voucher.location.manager,model_weha_voucher_location,group_voucher_manager,1,1,1,1
 access_weha_voucher_location_user,weha.voucher.location.user,model_weha_voucher_location,group_voucher_user,1,0,0,0
@@ -30,24 +42,31 @@ access_weha_voucher_type_user,weha.voucher.type.user,model_weha_voucher_type,gro
 
 access_weha_voucher_terms_manager,weha.voucher.terms.manager,model_weha_voucher_terms,group_voucher_manager,1,1,1,1
 access_weha_voucher_terms_user,weha.voucher.terms.user,model_weha_voucher_terms,group_voucher_user,1,0,0,0
+access_weha_voucher_terms_finance_user,weha.voucher.terms.finance_user,model_weha_voucher_terms,group_voucher_finance_user,1,0,0,0
+
 
 access_weha_voucher_number_ranges_manager,weha.voucher.number.ranges.manager,model_weha_voucher_number_ranges,group_voucher_manager,1,1,1,1
 access_weha_voucher_number_ranges_user,weha.voucher.number.ranges.user,model_weha_voucher_number_ranges,group_voucher_user,1,1,1,0
 
 access_weha_voucher_request_manager,weha.voucher.request.manager,model_weha_voucher_request,group_voucher_manager,1,1,1,1
 access_weha_voucher_request_user,weha.voucher.request.user,model_weha_voucher_request,group_voucher_user,1,1,1,0
+access_weha_voucher_request_finance_user,weha.voucher.request.finance.user,model_weha_voucher_request,group_voucher_finance_user,1,1,1,0
 
 access_weha_voucher_request_line_manager,weha.voucher.request.line.manager,model_weha_voucher_request_line,group_voucher_manager,1,1,1,1
 access_weha_voucher_request_line_user,weha.voucher.request.line.user,model_weha_voucher_request_line,group_voucher_user,1,1,1,0
+access_weha_voucher_request_line_finance_user,weha.voucher.request.line.finance.user,model_weha_voucher_request_line,group_voucher_finance_user,1,1,1,0
 
 access_weha_voucher_return_stage_manager,weha.voucher.return.stage.manager,model_weha_voucher_return_stage,group_voucher_manager,1,1,1,1
-access_weha_voucher_return_stage_user,weha.voucher.return.stage.user,model_weha_voucher_return_stage,group_voucher_user,1,1,1,0
+access_weha_voucher_return_stage_user,weha.voucher.return.stage.user,model_weha_voucher_return_stage,group_voucher_user,1,0,0,0
+access_weha_voucher_return_stage_finance_user,weha.voucher.return.stage.finance.user,model_weha_voucher_return_stage,group_voucher_finance_user,1,0,0,0
 
 access_weha_voucher_return_manager,weha.voucher.return.manager,model_weha_voucher_return,group_voucher_manager,1,1,1,1
 access_weha_voucher_return_user,weha.voucher.return.user,model_weha_voucher_return,group_voucher_user,1,1,1,0
+access_weha_voucher_return_finance_user,weha.voucher.return.finance.user,model_weha_voucher_return,group_voucher_finance_user,1,1,1,0
 
 access_weha_voucher_return_line_manager,weha.voucher.return.line.manager,model_weha_voucher_return_line,group_voucher_manager,1,1,1,1
 access_weha_voucher_return_line_user,weha.voucher.return.line.user,model_weha_voucher_return_line,group_voucher_user,1,1,1,0
+access_weha_voucher_return_line_finance_user,weha.voucher.return.line.finance.user,model_weha_voucher_return_line,group_voucher_finance_user,1,1,1,0
 
 access_weha_voucher_stock_transfer_stage_manager,weha.voucher.stock.transfer.stage.manager,model_weha_voucher_stock_transfer_stage,group_voucher_manager,1,1,1,1
 access_weha_voucher_stock_transfer_stage_user,weha.voucher.stock.transfer.stage.user,model_weha_voucher_stock_transfer_stage,group_voucher_user,1,1,1,0
@@ -58,30 +77,39 @@ access_weha_voucher_stock_transfer_user,weha.voucher.stock.transfer.user,model_w
 access_weha_voucher_stock_transfer_line_manager,weha.voucher.stock.transfer.line.manager,model_weha_voucher_stock_transfer_line,group_voucher_manager,1,1,1,1
 access_weha_voucher_stock_transfer_line_user,weha.voucher.stock.transfer.line.user,model_weha_voucher_stock_transfer_line,group_voucher_user,1,1,1,0
 
-access_weha_voucher_allocate_stage_manager,weha.voucher.allocate.stage.manager,model_weha_voucher_allocate_stage,group_voucher_manager,1,1,1,1
-access_weha_voucher_allocate_stage_user,weha.voucher.allocate.stage.user,model_weha_voucher_allocate_stage,group_voucher_user,1,1,1,0
+access_weha_voucher_allocate_stage_finance_manager,weha.voucher.allocate.stage.finance.manager,model_weha_voucher_allocate_stage,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_allocate_stage_finance_user,weha.voucher.allocate.stage.finance_user,model_weha_voucher_allocate_stage,group_voucher_finance_user,1,0,0,0
+access_weha_voucher_allocate_stage_marketing_user,weha.voucher.allocate.stage.marketing_user,model_weha_voucher_allocate_stage,group_voucher_marketing_user,1,0,0,0
 
-access_weha_voucher_allocate_manager,weha.voucher.allocate.manager,model_weha_voucher_allocate,group_voucher_manager,1,1,1,1
-access_weha_voucher_allocate_user,weha.voucher.allocate.user,model_weha_voucher_allocate,group_voucher_user,1,1,1,0
-<<<<<<< HEAD
 
-access_weha_voucher_allocate_line_manager,weha.voucher.allocate.line.manager,model_weha_voucher_allocate_line,group_voucher_manager,1,1,1,1
-access_weha_voucher_allocate_line_user,weha.voucher.allocate.line.user,model_weha_voucher_allocate_line,group_voucher_user,1,1,1,0
+access_weha_voucher_allocate_finance_manager,weha.voucher.allocate.finance.manager,model_weha_voucher_allocate,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_allocate_finance_user,weha.voucher.allocate.finance.user,model_weha_voucher_allocate,group_voucher_finance_user,1,1,1,0
+access_weha_voucher_allocate_user,weha.voucher.allocate.user,model_weha_voucher_allocate,group_voucher_user,1,0,0,0
+access_weha_voucher_allocate_marketing_user,weha.voucher.allocate.marketing.user,model_weha_voucher_allocate,group_voucher_marketing_user,1,1,1,0
 
-access_weha_voucher_issuing_stage_manager,weha.voucher.issuing.stage.manager,model_weha_voucher_issuing_stage,group_voucher_manager,1,1,1,1
-access_weha_voucher_issuing_stage_user,weha.voucher.issuing.stage.user,model_weha_voucher_issuing_stage,group_voucher_user,1,1,1,0
+access_weha_voucher_allocate_line_finance_manager,weha.voucher.allocate.line.finance.manager,model_weha_voucher_allocate_line,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_allocate_line_finance_user,weha.voucher.allocate.line.finance.user,model_weha_voucher_allocate_line,group_voucher_finance_user,1,1,1,0
+access_weha_voucher_allocate_line_user,weha.voucher.allocate.line.user,model_weha_voucher_allocate_line,group_voucher_user,1,0,0,0
+access_weha_voucher_allocate_line_marketing_user,weha.voucher.allocate.line.marketing.user,model_weha_voucher_allocate_line,group_voucher_marketing_user,1,1,1,0
+
 
 access_weha_voucher_issuing_manager,weha.voucher.issuing.manager,model_weha_voucher_issuing,group_voucher_manager,1,1,1,1
 access_weha_voucher_issuing_user,weha.voucher.issuing.user,model_weha_voucher_issuing,group_voucher_user,1,1,1,0
 
-access_weha_voucher_scrap_stage_manager,weha.voucher.scrap.stage.manager,model_weha_voucher_scrap_stage,group_voucher_manager,1,1,1,1
-access_weha_voucher_scrap_stage_user,weha.voucher.scrap.stage.user,model_weha_voucher_scrap_stage,group_voucher_user,1,1,1,0
+access_weha_voucher_issuing_line_manager,weha.voucher.issuing.line.manager,model_weha_voucher_issuing_line,group_voucher_manager,1,1,1,1
+access_weha_voucher_issuing_line_user,weha.voucher.issuing.line.user,model_weha_voucher_issuing_line,group_voucher_user,1,1,1,0
 
-access_weha_voucher_scrap_manager,weha.voucher.scrap.manager,model_weha_voucher_scrap,group_voucher_manager,1,1,1,1
-access_weha_voucher_scrap_user,weha.voucher.scrap.user,model_weha_voucher_scrap,group_voucher_user,1,1,1,0
+access_weha_voucher_issuing_stage_manager,weha.voucher.issuing.stage.manager,model_weha_voucher_issuing_stage,group_voucher_manager,1,1,1,1
+access_weha_voucher_issuing_stage_user,weha.voucher.issuing.stage.user,model_weha_voucher_issuing_stage,group_voucher_user,1,0,0,0
 
-access_weha_voucher_scrap_line_manager,weha.voucher.scrap.line.manager,model_weha_voucher_scrap_line,group_voucher_manager,1,1,1,1
-access_weha_voucher_scrap_line_user,weha.voucher.scrap.line.user,model_weha_voucher_scrap_line,group_voucher_user,1,1,1,0
+access_weha_voucher_scrap_stage_finance_manager,weha.voucher.scrap.stage.finance.manager,model_weha_voucher_scrap_stage,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_scrap_stage_finance_user,weha.voucher.scrap.stage.finance.user,model_weha_voucher_scrap_stage,group_voucher_finance_user,1,0,0,0
+
+access_weha_voucher_scrap_finance_manager,weha.voucher.scrap.finance.manager,model_weha_voucher_scrap,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_scrap_finance_user,weha.voucher.scrap.finance.user,model_weha_voucher_scrap,group_voucher_finance_user,1,1,1,0
+
+access_weha_voucher_scrap_line_finance_manager,weha.voucher.scrap.line.finance.manager,model_weha_voucher_scrap_line,group_voucher_finance_manager,1,1,1,1
+access_weha_voucher_scrap_line_finance_user,weha.voucher.scrap.line.finance.user,model_weha_voucher_scrap_line,group_voucher_finance_user,1,1,1,0
 
 access_weha_voucher_mapping_pos_manager,weha.voucher.mapping.pos.manager,model_weha_voucher_mapping_pos,group_voucher_manager,1,1,1,1
 access_weha_voucher_mapping_pos_user,weha.voucher.mapping.pos.user,model_weha_voucher_mapping_pos,group_voucher_user,1,1,1,0
@@ -90,8 +118,10 @@ access_weha_voucher_mapping_sku_manager,weha.voucher.mapping.sku.manager,model_w
 access_weha_voucher_mapping_sku_user,weha.voucher.mapping.sku.user,model_weha_voucher_mapping_sku,group_voucher_user,1,1,1,0
 
 
-=======
+access_weha_voucher_promo_manager,weha.voucher.promo.manager,model_weha_voucher_promo,group_voucher_manager,1,1,1,1
+access_weha_voucher_promo_finance_user,weha.voucher.promo.finance.user,model_weha_voucher_promo,group_voucher_finance_user,1,1,1,0
+access_weha_voucher_promo_user,weha.voucher.promo.user,model_weha_voucher_promo,group_voucher_user,1,1,1,0
 
-access_weha_voucher_allocate_line_manager,weha.voucher.allocate.line.manager,model_weha_voucher_allocate_line,group_voucher_manager,1,1,1,1
-access_weha_voucher_allocate_line_user,weha.voucher.allocate.line.user,model_weha_voucher_allocate_line,group_voucher_user,1,1,1,0
->>>>>>> wahyu
+access_weha_voucher_year_manager,weha.voucher.year.manager,model_weha_voucher_year,group_voucher_manager,1,1,1,1
+access_weha_voucher_year_user,weha.voucher.year.user,model_weha_voucher_year,group_voucher_user,1,0,0,0
+access_weha_voucher_year_finance_user,weha.voucher.year.finance_user,model_weha_voucher_year,group_voucher_finance_user,1,0,0,0

@@ -30,7 +30,6 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-<<<<<<< HEAD
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_voucher_stock_transfer_activate" string="Stock Transfer Activated" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
@@ -39,13 +38,6 @@
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Stock Transfer" 
-=======
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-light" name="trans_close" string="Closed Order" 
->>>>>>> wahyu
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
@@ -83,7 +75,6 @@
                             <group>
                                 <field name="ref"/>
                                 <field name="voucher_count"/>
-                                <field name="priority" widget="priority"/>
                             </group>
                         </group>
                         <notebook colspan="4">
@@ -140,8 +131,6 @@
                                 </div>
                                 <div class="o_kanban_record_body">    
                                     <field name="operating_unit_id"/>
-                                    <br/>
-                                    <field name="priority" widget="priority"/>
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left"/>
@@ -210,9 +199,10 @@
             <field name="action" ref="action_weha_voucher_stock_transfer_act_window" />
             <field name="parent_id" ref="weha_voucher_main_menu" />
         </record> -->
-        
+        <!--
         <menuitem id="weha_voucher_stock_transfer_menu" name="Stock Transfer" parent="weha_voucher_main_menu"
             action="action_weha_voucher_stock_transfer_act_window" sequence="13"/>
+        -->
 
         
     </data>

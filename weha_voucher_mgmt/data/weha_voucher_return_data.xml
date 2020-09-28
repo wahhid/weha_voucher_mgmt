@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+
+        <!-- Voucher return Stage -->
+
+        <record id="voucher_return_stage_done" model="weha.voucher.return.stage">
+            <field name="sequence">6</field>
+            <field name="name">Close</field>
+            <field name="closed">True</field>
+            <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_return_stage_receiving" model="weha.voucher.return.stage">
+            <field name="sequence">5</field>
+            <field name="name">Receiving</field>
+            <field name="receiving">True</field>
+            <field name="next_stage_id" ref="voucher_return_stage_done"/>
+        </record>
+
+        <record id="voucher_return_stage_in_transit" model="weha.voucher.return.stage">
+            <field name="sequence">4</field>
+            <field name="name">In Transit</field>
+            <field name="progress">True</field>
+            <field name="next_stage_id" ref="voucher_return_stage_receiving"/>
+        </record>
+
+        <record id="voucher_return_stage_open" model="weha.voucher.return.stage">
+            <field name="sequence">3</field>
+            <field name="name">Ready to Return</field>
+            <field name="opened">True</field>
+            <field name="next_stage_id" ref="voucher_return_stage_in_transit"/>
+        </record>
+
+        <record id="voucher_return_stage_approval" model="weha.voucher.return.stage">
+            <field name="sequence">2</field>
+            <field name="name">Pending Approve</field>
+            <field name="approval">True</field>
+            <field name="fold">True</field>
+            <field name="next_stage_id" ref="voucher_return_stage_open"/>
+        </record>
+
+
+        <record id="voucher_return_stage_return" model="weha.voucher.return.stage">
+            <field name="sequence">1</field>
+            <field name="name">Draft</field>
+            <field name="unattended">True</field>
+            <field name="next_stage_id" ref="voucher_return_stage_approval"/>
+        </record>
+        
+        <record id="voucher_return_stage_receiving" model="weha.voucher.return.stage">
+            <field name="sequence">5</field>
+            <field name="name">Receiving</field>
+            <field name="receiving">True</field>
+            <field name="next_stage_id" ref="voucher_return_stage_done"/>
+        </record>
+
+        <record id="voucher_return_stage_in_transit" model="weha.voucher.return.stage">
+            <field name="sequence">4</field>
+            <field name="name">In Transit</field>
+            <field name="progress">True</field>
+            <field name="next_stage_id" ref="voucher_return_stage_receiving"/>
+        </record>
+
+        <record id="voucher_return_stage_cancelled" model="weha.voucher.return.stage">
+            <field name="sequence">7</field>
+            <field name="name">Cancelled</field>
+            <field name="cancelled">True</field>
+            <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_return_stage_rejected" model="weha.voucher.return.stage">
+            <field name="sequence">8</field>
+            <field name="name">Rejected</field>
+            <field name="rejected">True</field>
+            <field name="fold">True</field>
+        </record>
+
+       
+    </data>
+</odoo>

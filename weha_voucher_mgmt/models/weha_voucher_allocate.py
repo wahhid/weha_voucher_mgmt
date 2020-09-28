@@ -1,10 +1,7 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
-<<<<<<< HEAD
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import *
-=======
->>>>>>> wahyu
 import logging
 from random import randrange
 
@@ -26,19 +23,17 @@ class VoucherAllocate(models.Model):
                 rec.current_stage = 'approval'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
-<<<<<<< HEAD
             if rec.stage_id.progress:
                 rec.current_stage = 'progress'
             if rec.stage_id.receiving:
                 rec.current_stage = 'receiving'
+            if rec.stage_id.closed:
+                rec.current_stage = 'closed'
             if rec.stage_id.cancelled:
                 rec.current_stage = 'cancelled'
             if rec.stage_id.rejected:
                 rec.current_stage = 'rejected'
-=======
-            if rec.stage_id.closed:
-                rec.current_stage = 'closed'
->>>>>>> wahyu
+
             
     def _get_default_stage_id(self):
         return self.env['weha.voucher.allocate.stage'].search([], limit=1).id
@@ -48,21 +43,20 @@ class VoucherAllocate(models.Model):
         stage_ids = self.env['weha.voucher.allocate.stage'].search([])
         return stage_ids
     
-<<<<<<< HEAD
-    @api.depends('voucher_count')
+    @api.depends('voucher_allocate_line_ids')
     def _calculate_voucher_count(self):
-        voucher_master = self.env['weha.voucher.order.line'].sudo().search_count([('voucher_allocate_id','=', self.id)])
-        return voucher_master
+        self.voucher_count = len(self.voucher_allocate_line_ids)
     
+
+    @api.depends('voucher_allocate_line_ids')
+    def _calculate_voucher_received(self):
+        count = 0
+        for voucher_allocate_line_id in self.voucher_allocate_line_ids:
+            if voucher_allocate_line_id.state == 'received':
+                count += 1
+        self.voucher_received_count = count
+
     # def send_l1_allocate_mail(self):
-=======
-    # @api.depends('line_ids')
-    # def _calculate_voucher_count(self):
-    #     for row in self:
-    #         self.voucher_count = len(self.line_ids)
-    
-    # def send_l1_request_mail(self):
->>>>>>> wahyu
     #     for rec in self:
     #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
     #         template.send_mail(rec.id)
@@ -74,72 +68,82 @@ class VoucherAllocate(models.Model):
         res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
         return res
 
-<<<<<<< HEAD
 
-    def trans_voucher_allocate_activate(self):
-        line = len(self.voucher_allocate_line_ids)
-        _logger.info("Allocate line = " + str(line))
+    # def trans_voucher_allocate_activate(self):
+    #     line = len(self.voucher_allocate_line_ids)
+    #     _logger.info("Allocate line = " + str(line))
+    #
+    #     for i in range(line):
+    #         number_range = len(self.voucher_allocate_line_ids.number_ranges_ids)
+    #         _logger.info("Number Range = " + str(number_range))
+    #
+    #         for rec in range(number_range):
+    #
+    #             startnum = self.voucher_allocate_line_ids.number_ranges_ids.start_num
+    #             endnum = self.voucher_allocate_line_ids.number_ranges_ids.end_num
+    #             vcode = self.voucher_allocate_line_ids.voucher_code_id.id
+    #             store_voucher = self.operating_unit_id.id
+    #             sourch_voucher = self.source_operating_unit.id
+    #             terms = self.voucher_terms_id.code
+    #
+    #             _logger.info("start number = " + str(startnum))
+    #             _logger.info("end number = " + str(endnum))
+    #
+    #             date_now = datetime.now()
+    #             str_start_date = str(date_now.year) + "-" + str(date_now.month).zfill(2) + "-" + str(date_now.day).zfill(
+    #                 2) + " 23:59:59"
+    #             date_now = datetime.strptime(str_start_date, "%Y-%m-%d %H:%M:%S") + relativedelta(days=int(terms))
+    #             exp_date = date_now - relativedelta(hours=7)
+    #
+    #             # obj_voucher_order_line = self.env['weha.voucher.order.line']
+    #             # # search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', store_voucher),('voucher_code_id','=', vcode)])
+    #             # search_se = obj_voucher_order_line.search([('check_number','>=',  startnum)])
+    #             # _logger.info("Store Voucher ID = " + str(search_se))
+    #             # _logger.info("Store Voucher ID = " + str(exp_date))
+    #
+    #             strSQL = """SELECT """ \
+    #                  """id,check_number """ \
+    #                  """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='open' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
+    #
+    #             self.env.cr.execute(strSQL)
+    #             voucher_order_line = self.env.cr.fetchall()
+    #             _logger.info("fetch = " + str(voucher_order_line))
+    #
+    #             # for order_line in ot:
+    #             #     check_number = order_line[0]
+    #             #     order_id = order_line[1]
+    #             #     _logger.info("check_number = " + str(check_number) + ", " + str(order_id))
+    #
+    #             for row in voucher_order_line:
+    #                 vals = {}
+    #                 vals.update({'voucher_terms_id': self.voucher_terms_id.id})
+    #                 vals.update({'expired_date': exp_date})
+    #                 vals.update({'operating_unit_id': sourch_voucher})
+    #                 vals.update({'state': 'delivery'})
+    #                 vals.update({'voucher_allocate_id': self.id})
+    #                 obj_voucher_order_line_ids = voucher_order_line.write(vals)
+    #
+    #                 order_line_trans_obj = self.env['weha.voucher.order.line.trans']
+    #
+    #                 vals = {}
+    #                 vals.update({'name': self.number})
+    #                 vals.update({'trans_date': datetime.now()})
+    #                 vals.update({'voucher_order_line_id': row[0]})
+    #                 vals.update({'trans_type': 'DV'})
+    #                 val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+    #                 _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
 
-        for i in range(line):
-            number_range = len(self.voucher_allocate_line_ids.number_ranges_ids)
-            _logger.info("Number Range = " + str(number_range))
+    def trans_delivery(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        for row in self.voucher_allocate_line_ids:
+            row.voucher_order_line_id.write({'state':'intransit'})
+        return res
 
-            for rec in range(number_range):
-
-                startnum = self.voucher_allocate_line_ids.number_ranges_ids.start_num
-                endnum = self.voucher_allocate_line_ids.number_ranges_ids.end_num
-                vcode = self.voucher_allocate_line_ids.voucher_code_id.id
-                store_voucher = self.operating_unit_id.id
-                sourch_voucher = self.source_operating_unit.id
-                terms = self.voucher_terms_id.code
-
-                _logger.info("start number = " + str(startnum))
-                _logger.info("end number = " + str(endnum))
-                
-                date_now = datetime.now()
-                str_start_date = str(date_now.year) + "-" + str(date_now.month).zfill(2) + "-" + str(date_now.day).zfill(
-                    2) + " 23:59:59"
-                date_now = datetime.strptime(str_start_date, "%Y-%m-%d %H:%M:%S") + relativedelta(days=int(terms))
-                exp_date = date_now - relativedelta(hours=7)
-
-                # obj_voucher_order_line = self.env['weha.voucher.order.line']
-                # # search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', store_voucher),('voucher_code_id','=', vcode)])
-                # search_se = obj_voucher_order_line.search([('check_number','>=',  startnum)])
-                # _logger.info("Store Voucher ID = " + str(search_se))
-                # _logger.info("Store Voucher ID = " + str(exp_date))
-
-                strSQL = """SELECT """ \
-                     """id,check_number """ \
-                     """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='open' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
-
-                self.env.cr.execute(strSQL)
-                voucher_order_line = self.env.cr.fetchall()
-                _logger.info("fetch = " + str(voucher_order_line))
-
-                # for order_line in ot:
-                #     check_number = order_line[0]
-                #     order_id = order_line[1]
-                #     _logger.info("check_number = " + str(check_number) + ", " + str(order_id))
-
-                for row in voucher_order_line:
-                    vals = {}
-                    vals.update({'voucher_terms_id': self.voucher_terms_id.id})
-                    vals.update({'expired_date': exp_date})
-                    vals.update({'operating_unit_id': sourch_voucher})
-                    vals.update({'state': 'delivery'})
-                    vals.update({'voucher_allocate_id': self.id}) 
-                    obj_voucher_order_line_ids = voucher_order_line.write(vals)
-
-                    order_line_trans_obj = self.env['weha.voucher.order.line.trans']
-
-                    vals = {}
-                    vals.update({'name': self.number})
-                    vals.update({'trans_date': datetime.now()})
-                    vals.update({'voucher_order_line_id': row[0]})
-                    vals.update({'trans_type': 'DV'})
-                    val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
-                    _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
-
+    def trans_confirm_received(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        return res
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
@@ -152,58 +156,40 @@ class VoucherAllocate(models.Model):
         return res
     
     def trans_close(self):
+        if self.voucher_count != self.voucher_received_count:
+            raise ValidationError("Receiving not completed")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         return res
         
     def trans_allocate_approval(self):    
+        if len(self.voucher_allocate_line_ids) == 0:
+            raise ValidationError("No Voucher Allocated")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         return res
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Allocate Number', default="/",readonly=True)
-    ref = fields.Char(string='Source Document', required=False)
+    ref = fields.Char(string='Source Document', required=True)
     allocate_date = fields.Date('Allocate Date', required=False, default=lambda self: fields.date.today(), readonly=True)
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    source_operating_unit = fields.Many2one('operating.unit','Source Store', )
-=======
-    @api.depends('stage_id')
-    def trans_approve(self):
-        
-        stage = self.stage_id.next_stage_id.id
-        _logger.info("Stage Here = " + str(self.stage_id.id))
-        _logger.info("Next Stage = " + str(stage))
-        self.write({'stage_id': stage})
-
-        return True
-        # def trans_reject(self):
-        #     pass
-
-
-
-    company_id = fields.Many2one('res.company', 'Company')
-    number = fields.Char(string='Order number', default="/",readonly=True)
-    ref = fields.Char(string='Source Document', required=True)
-    request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
-    user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
-    operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
->>>>>>> wahyu
+    source_operating_unit = fields.Many2one('operating.unit','Source Store', required=True)
     voucher_type = fields.Selection(
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-<<<<<<< HEAD
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
+    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=True)
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
+    year_id = fields.Many2one('weha.voucher.year','Year', required=False, readonly=True)
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', required=False, readonly=True)
+    start_number = fields.Integer(string='Start Number', required=False, readonly=True)
+    end_number = fields.Integer(string='End Number', required=False, readonly=True)
+    
     stage_id = fields.Many2one(
         'weha.voucher.allocate.stage',
-=======
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
-    stage_id = fields.Many2one(
-        'weha.voucher.order.stage',
->>>>>>> wahyu
         string='Stage',
         group_expand='_read_group_stage_ids',
         default=_get_default_stage_id,
@@ -216,22 +202,32 @@ class VoucherAllocate(models.Model):
         ('2', _('High')),
         ('3', _('Very High')),
     ], string='Priority', default='1')
-<<<<<<< HEAD
 
-    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=False)
-=======
->>>>>>> wahyu
-   
     color = fields.Integer(string='Color Index')
     kanban_state = fields.Selection([
         ('normal', 'Default'),
         ('done', 'Ready for next stage'),
         ('blocked', 'Blocked')], string='Kanban State')
 
-    voucher_allocate_line_ids = fields.One2many(comodel_name='weha.voucher.allocate.line', inverse_name='voucher_allocate_id', string='Voucher Allocate Lines')
+    voucher_allocate_line_ids = fields.One2many(
+        comodel_name='weha.voucher.allocate.line', 
+        inverse_name='voucher_allocate_id',
+        string='Allocate Lines',
+        domain="[('state','=','open')]"
+    )
 
+    voucher_allocate_line_received_ids = fields.One2many(
+        comodel_name='weha.voucher.allocate.line', 
+        inverse_name='voucher_allocate_id',
+        string='Received Lines',
+        domain="[('state','=','received')]"
+    )
+
+    voucher_request_id = fields.Many2one('weha.voucher.request', 'Voucher Request', required=False)
+    voucher_qty = fields.Char(string='Quantity Ordered From Request', size=6, required=False)
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
-    
+    voucher_received_count = fields.Integer('Voucher Received', compute="_calculate_voucher_received", store=False)
+
     @api.model
     def create(self, vals):
         if vals.get('number', '/') == '/':
@@ -248,21 +244,20 @@ class VoucherAllocate(models.Model):
         return res    
     
     def write(self, vals):
-        if 'stage_id' in vals:
-<<<<<<< HEAD
-            # stage_obj = self.env['weha.voucher.allocate.stage'].browse([vals['stage_id']])
-            if self.stage_id.approval:
-                raise ValidationError("Please using approve or reject button")
-            if self.stage_id.opened:
-                raise ValidationError("Please Allocate or Closed Button")
-            if self.stage_id.closed:
-                raise ValidationError("Can't Move, Because Status Closed")
+        
+        if self.stage_id.approval:
+            raise ValidationError("Please using approve or reject button")
+        if self.stage_id.opened:
+            raise ValidationError("Please Click Delivery Button")
+        if self.stage_id.progress:
+            raise ValidationError("Please Click Receive Button")
+        if self.stage_id.closed:
+            raise ValidationError("Can not move, status Closed")
+        if self.stage_id.cancelled:
+            raise ValidationError("Can not move, status Cancel")
+        if self.stage_id.rejected:
+            raise ValidationError("Can not Move, status reject")
 
-=======
-            stage_obj = self.env['weha.voucher.allocate.stage'].browse([vals['stage_id']])
-            if stage_obj.unattended:
-                pass
->>>>>>> wahyu
 
             #Change To L1, Get User from Param
             # trans_approve = False
@@ -270,22 +265,7 @@ class VoucherAllocate(models.Model):
             # if stage_obj.approval:
             #     if self.stage_id.id != stage_obj.from_stage_id.id:
             #         raise ValidationError('Cannot Process Approval')
-<<<<<<< HEAD
             #     # self.send_l1_allocate_mail()
-=======
-            #     # self.send_l1_request_mail()
-
-        if vals.get('stage_id.unattended'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.unattended')))
-            self.current_stage = 'unattended'
-        if vals.get('stage_id.approval'):
-            _logger.info("stage unattended ID = " + str(vals.get('stage_id.approval')))
-            self.current_stage = 'approval'
-        if vals.get('stage_id.opened'):
-            self.current_stage = 'open'
-        if vals.get('stage_id.closed'):
-            self.current_stage = 'closed'
->>>>>>> wahyu
            
         res = super(VoucherAllocate, self).write(vals)
         return res

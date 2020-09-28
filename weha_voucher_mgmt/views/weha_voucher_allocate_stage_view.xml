@@ -50,14 +50,11 @@
                                 <field name="approval"/>
                                 <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)], 'required':[('approval','=', True)] }"/> 
                                 <field name="opened"/>
-<<<<<<< HEAD
                                 <field name="progress"/>
                                 <field name="receiving"/>
+                                <field name="closed"/>
                                 <field name="cancelled"/>
                                 <field name="rejected"/>
-=======
-                                <field name="closed"/>
->>>>>>> wahyu
                                 <field name="fold"/>
                             </group>
         

@@ -8,44 +8,9 @@
       <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_graph"/>
     </record>
 
-    <record id="act_view_operating_unit_kanban" model="ir.actions.act_window">
-      <field name="name">Operating Unit</field>
-      <field name="res_model">operating.unit</field>
-      <field name="view_mode">kanban</field>
-      <field name="view_id" ref="weha_voucher_mgmt.voucher_operating_unit_kanban_view"/>
-    </record>
+    
 
-    <!--My Dashboard-->
-    <record model="ir.ui.view" id="board_my_dash_view">
-        <field name="name">My Dashboard</field>
-        <field name="model">board.board</field>
-        <field name="arch" type="xml">
-            <form string="My Dashboard">
-                <board style="1-2">
-                    <column>
-                        <action 
-                            string="Voucher Order Statistic"
-                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_graph)d"/>
-                    </column>
-                    <column>
-                        <action 
-                            string="Operating Unit"
-                            name="%(weha_voucher_mgmt.act_view_operating_unit_kanban)d"/>
-                    </column>
-                </board>
-            </form>
-        </field>
-    </record>
-
-    <!--My Dashboard Action-->
-    <record model="ir.actions.act_window" id="open_board_my_dash_action">
-        <field name="name">My Dashboard</field>
-        <field name="res_model">board.board</field>
-        <field name="view_mode">form</field>
-        <field name="usage">menu</field>
-        <field name="view_id" ref="board_my_dash_view"/>
-    </record> 
-
+    
     <!--My Dashboard Menu base.menu_board_root-->
     <!-- <menuitem 
         id="menu_board_my_dash"
@@ -118,4 +83,46 @@
         </kanban>
       </field>
     </record>
+
+    <record id="act_view_operating_unit_kanban" model="ir.actions.act_window">
+      <field name="name">Operating Unit</field>
+      <field name="res_model">operating.unit</field>
+      <field name="view_mode">kanban</field>
+      <field name="view_id" ref="weha_voucher_mgmt.voucher_operating_unit_kanban_view"/>
+    </record>
+
+    <!--My Dashboard-->
+    <record model="ir.ui.view" id="board_my_dash_view">
+        <field name="name">My Dashboard</field>
+        <field name="model">board.board</field>
+        <field name="arch" type="xml">
+            <form string="My Dashboard">
+                <board style="1-2">
+                    <column>
+                        <action 
+                            string="Voucher Order Statistic"
+                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_graph)d" groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                    </column>
+                    <column>
+                        <action 
+                            string="Operating Unit"
+                            name="%(weha_voucher_mgmt.act_view_operating_unit_kanban)d"/>
+                    </column>
+                </board>
+            </form>
+        </field>
+    </record>
+
+    <!--My Dashboard Action-->
+    <record model="ir.actions.act_window" id="open_board_my_dash_action">
+        <field name="name">My Dashboard</field>
+        <field name="res_model">board.board</field>
+        <field name="view_mode">form</field>
+        <field name="usage">menu</field>
+        <field name="view_id" ref="board_my_dash_view"/>
+    </record> 
+
+
+    <menuitem id="weha_voucher_dashboard_menu" name="Dashboard"
+        parent="weha_voucher_mgmt_main_menu" action="weha_voucher_mgmt.open_board_my_dash_action" sequence="1"/>
 </odoo>
