@@ -188,7 +188,7 @@ class VoucherOrderLine(models.Model):
     
     #Many2one relation
     voucher_order_id = fields.Many2one(
-        string='Voucher Order',
+        string='Order id',
         comodel_name='weha.voucher.order',
         ondelete='restrict',
     )
@@ -212,9 +212,14 @@ class VoucherOrderLine(models.Model):
        comodel_name='weha.voucher.return',
        ondelete='restrict',
     )
-    voucher_order_id = fields.Many2one(
-       string='Order id',
-       comodel_name='weha.voucher.order',
+    voucher_scrap_id = fields.Many2one(
+       string='Scrap id',
+       comodel_name='weha.voucher.scrap',
+       ondelete='restrict',
+    )
+    voucher_issuing_id = fields.Many2one(
+       string='Issuing id',
+       comodel_name='weha.voucher.issuing',
        ondelete='restrict',
     )
     voucher_order_line_trans_ids = fields.One2many(
@@ -278,19 +283,6 @@ class VoucherOrderLineTrans(models.Model):
         comodel_name='weha.voucher.order.line',
         ondelete='restrict', required=True,
     )
-
-    # trans_type = fields.Selection(
-    #     string='Transaction Type', 
-    #     selection=[
-    #         ('OP', 'Open'), 
-    #         ('RV', 'Received'), 
-    #         ('ST', 'Stock Transfer'), 
-    #         ('IC', 'Issued Customer'), 
-    #         ('RT', 'Return'), 
-    #         ('AC', 'Activated'),
-    #         ('SC', 'Scrap'),
-    #         ],
-    #     default='open')
             
     trans_type = fields.Selection(string='Transaction Type', selection=[('OP', 'Open'), ('RV', 'Received'), ('DV', 'Delivery'),
         ('ST', 'Stock Transfer'), ('IC', 'Issued'), ('RT', 'Return'), ('AC','Activated'), ('SC', 'Scrap')], default='open')

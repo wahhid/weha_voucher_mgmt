@@ -75,7 +75,12 @@
                             <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_allocate_line_from_voucher_allocate)d" 
                                 groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"
                                 icon="fa-ticket">
-                                <field string="Vouchers" name="voucher_count" widget="statinfo"/>
+                                <div class="o_form_field o_stat_info">
+                                    <span class="o_stat_value">
+                                        <field name="voucher_count"/>
+                                    </span>
+                                    <span class="o_stat_text">Vouchers</span>
+                                </div>
                             </button>
                         </div>
                         <div class="oe_title">
@@ -179,8 +184,15 @@
                                     <strong class="o_kanban_record_title" style="font-weight: bold"><field name="number"/></strong>
                                     </div>
                                 </div>
-                                <div class="o_kanban_record_body">    
+                                <div class="o_kanban_record_body">
+                                    <hr width="50%" align="left"/>  
                                     <field name="operating_unit_id"/>
+                                    <br/>
+                                    <span class="o_stat_text">Voucher Code : </span>
+                                    <field name="voucher_code_id"/> 
+                                    <br/>
+                                    <span class="o_stat_text">Promo : </span>
+                                    <field name="voucher_promo_id"/>
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left"/>

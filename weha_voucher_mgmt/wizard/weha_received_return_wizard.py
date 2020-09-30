@@ -196,6 +196,7 @@ class WehaWizardReceivedReturn(models.TransientModel):
 
                 vals = {}
                 vals.update({'operating_unit_id': return_unit_to})
+                vals.update({'voucher_return_id': voucher_return_id.id})
                 vals.update({'state': 'return'})
                 voucher_return_line_id.voucher_order_line_id.sudo().write(vals)
 
@@ -243,6 +244,7 @@ class WehaWizardReceivedReturn(models.TransientModel):
 
                             vals = {}
                             vals.update({'operating_unit_id': voucher_return_id.source_operating_unit.id})
+                            vals.update({'voucher_return_id': voucher_return_id.id})
                             vals.update({'state': 'return'})
                             voucher_return_line_id.voucher_order_line_id.sudo().write(vals)
 

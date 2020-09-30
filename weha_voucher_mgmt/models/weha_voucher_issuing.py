@@ -34,6 +34,7 @@ class VoucherIssuing(models.Model):
 
             vals = {}
             vals.update({'state': 'activated'})
+            vals.update({'voucher_issuing_id': self.id})
             voucher_issuing_line_id.voucher_order_line_id.sudo().write(vals)
 
             vals = {}

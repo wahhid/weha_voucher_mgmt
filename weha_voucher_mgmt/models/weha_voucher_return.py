@@ -42,8 +42,9 @@ class VoucherReturn(models.Model):
 
     # @api.depends('voucher_return_line_ids')
     def _calculate_voucher_count(self):
-        count = self.env['weha.voucher.return.line'].search_count([('voucher_return_id','=', self.id)])
-        self.voucher_count = count
+        for row in self:
+            count = self.env['weha.voucher.return.line'].search_count([('voucher_return_id','=', row.id)])
+            self.voucher_count = count
 
     
     def send_l1_return_mail(self):

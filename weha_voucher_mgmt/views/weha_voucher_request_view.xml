@@ -1,22 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-           
-        <record id="action_voucher_request_line_from_voucher_request" model="ir.actions.act_window">
-            <field name="name">Vouchers</field>
-            <field name="res_model">weha.voucher.order.line</field>
-            <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_line_tree" />
-            <field name="context">{}</field>
-            <field name="domain">[]</field>
-        </record>
 
         <record id="action_voucher_allocate_from_request" model="ir.actions.act_window">
             <field name="name">Voucher Allocate</field>
             <field name="res_model">weha.voucher.allocate</field>
-            <field name="view_mode">form</field>
-           <!-- <field name="view_id" ref="weha_voucher_barcode.view_weha_voucher_allocate_form"/> -->
-           <field name="target">new</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('voucher_request_id','=',active_id)]</field>
+            <field name="context">{}</field>
+            <field name="target">current</field>
         </record>
 
         <!-- Tree view for voucher request -->
@@ -70,17 +62,17 @@
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
-                        <!-- <div class="oe_button_box" name="button_box">
-                            <button type="action" class="oe_stat_button" icon="fa-ticket" name="%(weha_voucher_mgmt.action_voucher_request_line_from_voucher_request)d"
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user">
+                        <div class="oe_button_box" name="button_box">
+                            <button type="action" class="oe_stat_button" icon="fa-th-list" name="%(action_voucher_allocate_from_request)d"
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_finance_manager">
                                 <div class="o_form_field o_stat_info">
                                     <span class="o_stat_value">
-                                        <field name="voucher_count"/>
+                                        <field name="voucher_allocate_count"/>
                                     </span>
-                                    <span class="o_stat_text">Voucher is available</span>
+                                    <span class="o_stat_text">Allocate</span>
                                 </div>
                             </button>
-                        </div> -->
+                        </div>
                     
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
@@ -100,7 +92,7 @@
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <!--<field name="voucher_count"/>-->
-                                <!--<field name="voucher_allocate_count"/>-->
+                                <field name="voucher_allocate_count"/>
                             </group>
                         </group>
 
@@ -159,7 +151,10 @@
                                     </div>
                                 </div>
                                 <div class="o_kanban_record_body">    
+                                    <hr width="50%" align="left"/>  
                                     <field name="operating_unit_id"/>
+                                    <br/>
+                                
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left"/>

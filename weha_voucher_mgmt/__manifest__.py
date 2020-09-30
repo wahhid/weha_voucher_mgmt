@@ -25,6 +25,7 @@
         'wizard/weha_received_return_wizard_view.xml',
         'wizard/weha_received_scrap_wizard_view.xml',
         'wizard/weha_received_issuing_wizard_view.xml',
+        'wizard/weha_import_voucher_issuing_wizard_view.xml',
         'views/weha_voucher_menu.xml',
         'views/weha_voucher_stage_view.xml',
         'views/weha_voucher_order_view.xml',

@@ -108,8 +108,10 @@ class WeheVoucherRequest(models.Model):
     #     return res
 
     # @api.depends('voucher_allocate_count')
-    # def _calculate_voucher_allocate_count(self):
-    #     return self.env['weha.voucher.allocate'].search_count([('voucher_request_id','=',self.id)])
+    def _calculate_voucher_allocate_count(self):
+        # request_from_allocate_count = 0
+        request_from_allocate_count = self.env['weha.voucher.allocate'].sudo().search_count([('voucher_request_id','=',self.id)])
+        self.voucher_allocate_count = request_from_allocate_count
 
     def trans_request_approval(self):
         stage_id = self.stage_id.next_stage_id
@@ -172,7 +174,7 @@ class WeheVoucherRequest(models.Model):
     )
 
     #Qty Voucher
-    # voucher_allocate_count = fields.Integer('Voucher Allocate Count', compute="_calculate_voucher_allocate_count", store=False)
+    voucher_allocate_count = fields.Integer('Voucher Allocate Count', compute="_calculate_voucher_allocate_count", store=False)
     # voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=False)
     # voucher_received_count = fields.Integer('Voucher Received', compute="_calculate_voucher_received", store=False)
 

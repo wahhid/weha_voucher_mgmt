@@ -194,6 +194,7 @@ class WehaWizardReceivedAllocate(models.TransientModel):
 
                 vals = {}
                 vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
+                vals.update({'voucher_allocate_id': voucher_allocate_id.id})
                 vals.update({'state': 'open'})
                 voucher_allocate_line_id.voucher_order_line_id.sudo().write(vals)
 
@@ -241,6 +242,7 @@ class WehaWizardReceivedAllocate(models.TransientModel):
 
                             vals = {}
                             vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
+                            vals.update({'voucher_allocate_id': voucher_allocate_id.id})
                             vals.update({'state': 'open'})
                             voucher_allocate_line_id.voucher_order_line_id.write(vals)
 

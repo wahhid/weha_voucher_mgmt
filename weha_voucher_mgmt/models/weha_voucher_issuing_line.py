@@ -14,6 +14,7 @@ class VoucherIssuingLine(models.Model):
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
     voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo",
                                        related="voucher_order_line_id.voucher_promo_id")
+    member_id = fields.Char(string='Member ID')
     state = fields.Selection([('open', 'Open'), ('received', 'Received'), ('scrap', 'Scrap'), ('activated', 'Activated')], 'Status', default='open')
 
     

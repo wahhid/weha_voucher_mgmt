@@ -194,6 +194,7 @@ class WehaWizardReceivedScrap(models.TransientModel):
 
                 vals = {}
                 vals.update({'operating_unit_id': voucher_scrap_id.source_operating_unit.id})
+                vals.update({'voucher_scrap_id': voucher_scrap_id.id})
                 vals.update({'state': 'open'})
                 voucher_scrap_line_id.voucher_order_line_id.sudo().write(vals)
 
@@ -241,6 +242,7 @@ class WehaWizardReceivedScrap(models.TransientModel):
 
                             vals = {}
                             vals.update({'operating_unit_id': voucher_scrap_id.source_operating_unit.id})
+                            vals.update({'voucher_scrap_id': voucher_scrap_id.id})
                             vals.update({'state': 'open'})
                             voucher_scrap_line_id.voucher_order_line_id.write(vals)
 

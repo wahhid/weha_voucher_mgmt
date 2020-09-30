@@ -6,3 +6,4 @@ from . import weha_received_allocate_wizard
 from . import weha_received_return_wizard
 from . import weha_received_scrap_wizard
 from . import weha_received_issuing_wizard
+from . import weha_import_voucher_issuing_wizard
