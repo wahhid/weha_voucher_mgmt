@@ -188,14 +188,15 @@ class WehaWizardReceivedAllocate(models.TransientModel):
                 vals.update({'state': 'received'})
                 res = voucher_allocate_line_id.write(vals)
 
+                voucher_order_line_id = voucher_allocate_line_id.voucher_order_line_id
                 vals = {}
                 vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
                 vals.update({'state': 'open'})
-                voucher_allocate_line_id.voucher_order_line_id.write(vals)
+                voucher_order_line_id.write(vals)
 
                 vals = {}
                 vals.update({'name': voucher_allocate_id.number})
-                vals.update({'voucher_order_line_id': voucher_allocate_line_id.voucher_order_line_id.id})
+                vals.update({'voucher_order_line_id': voucher_order_line_id.id})
                 vals.update({'trans_date': datetime.now()})
                 vals.update({'operating_unit_loc_fr_id': voucher_allocate_id.operating_unit_id.id})
                 vals.update({'operating_unit_loc_to_id': voucher_allocate_id.source_operating_unit.id})
@@ -203,7 +204,7 @@ class WehaWizardReceivedAllocate(models.TransientModel):
                 self.env['weha.voucher.order.line.trans'].create(vals)
             
             stage_id = voucher_allocate_id.stage_id.next_stage_id
-            voucher_allocate_id.sudo().write({'stage_id': stage_id.id})
+            voucher_allocate_id.sudo().trans_confirm_received()
 
         elif self.scan_method == 'start_end':
             if self.start_ean and self.end_ean:

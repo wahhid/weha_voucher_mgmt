@@ -146,6 +146,11 @@ class VoucherAllocate(models.Model):
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         return res
 
+    def trans_received(self):
+        tage_id = self.stage_id.next_stage_id
+        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        return res
+
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})

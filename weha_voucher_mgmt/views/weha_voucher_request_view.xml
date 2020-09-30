@@ -112,6 +112,7 @@
                         </group>
 
                         <notebook colspan="4">
+                            <!--
                             <page string="Request Lines">
 	                        	<field name="line_ids" widget="one2many_list" nolabel="0" readonly="0">
 	                            	<tree string="Request Lines" create="true" delete="true" edit="true">
@@ -119,9 +120,9 @@
                                         <field name="amount" />	                                	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
 	                        	</field>
-	                        </page>	   
+	                        </page>	  
+                            --> 
                             <page string="Vouchers">
-                                
                                 <field name="voucher_request_line_ids" widget="many2one_clickable">
                                     <tree string="Request Lines" editable="bottom">
                                         <field name="voucher_code_id" />

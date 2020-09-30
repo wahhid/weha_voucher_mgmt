@@ -66,11 +66,24 @@ class VoucherIssuing(models.Model):
     #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
     #         template.send_mail(rec.id)
 
-
+    def process_voucher_issuing_line(self):
+        for voucher_issuing_line_id in self.voucher_issuing_line_ids:
+            voucher_order_line_id = voucher_issuing_line_id.voucher_order_line_id
+            voucher_order_line_id.write({'state': 'activated'})
+            voucher_order_line_id.create_order_line_trans(self.number, 'AC')
+            voucher_issuing_line_id.write({'state': 'issued'})    
+        
     @api.depends('stage_id')
     def trans_confirm(self):
-        stage = self.stage_id.next_stage_id.id
-        self.write({'stage_id': stage.id})
+        if self.voucher_count == self.estimate_voucher_count:
+            stage = self.stage_id.next_stage_id
+            if stage:
+                self.write({'stage_id': stage.id})
+                self.process_voucher_issuing_line()
+            else:
+                raise ValidationError("Missing next stage configuration")
+        else:
+            raise ValidationError("Voucher count not match")
         
     @api.depends('voucher_issuing_line_ids')
     def _calculate_voucher_count(self):
@@ -84,12 +97,7 @@ class VoucherIssuing(models.Model):
     issuing_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
-    year_id = fields.Many2one('weha.voucher.year','Year', required=False, readonly=True)
-    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', required=False, readonly=True)
-    start_number = fields.Integer(string='Start Number', required=False, readonly=True)
-    end_number = fields.Integer(string='End Number', required=False, readonly=True)
-
+    
 
     #kanban
     stage_id = fields.Many2one(
