@@ -22,7 +22,7 @@ class VoucherTransPurchase(models.Model):
                 vals['voucher_trans_purchase_id'] = self.id
                 vals['sku'] = arr_sku[0]
                 vals['quantity'] = arr_sku[1]
-                vals['amount'] = arr_sku[2]
+                #vals['amount'] = arr_sku[2]
                 _logger.info(arr_sku)
                 domain = [
                     ('code_sku', '=', arr_sku[0]),
@@ -38,6 +38,7 @@ class VoucherTransPurchase(models.Model):
                         vals['voucher_terms_id']  = voucher_number_range_id.voucher_code_id.voucher_terms_id.id
                         vals['year_id'] =  voucher_number_range_id.year_id.id
                         vals['voucher_mapping_sku_id'] = mapping_sku_id.id
+                        vals['amount'] = int(vals['quantity']) * voucher_number_range_id.voucher_code_id.voucher_amount
                         self.env['weha.voucher.trans.purchase.sku'].create(vals)
 
         else:
@@ -46,7 +47,7 @@ class VoucherTransPurchase(models.Model):
             vals['voucher_trans_purchase_id'] = self.id
             vals['sku'] = arr_sku[0]
             vals['quantity'] = arr_sku[1]
-            vals['amount'] = arr_sku[2]
+            #vals['amount'] = arr_sku[2]
             _logger.info(arr_sku)
             domain = [
                 ('code_sku', '=', arr_sku[0]),
@@ -62,6 +63,7 @@ class VoucherTransPurchase(models.Model):
                    vals['voucher_terms_id']  = voucher_number_range_id.voucher_code_id.voucher_terms_id.id
                    vals['year_id'] =  voucher_number_range_id.year_id.id
                    vals['voucher_mapping_sku_id'] = mapping_sku_id.id
+                   vals['amount'] = int(vals['quantity']) * voucher_number_range_id.voucher_code_id.voucher_amount
                 self.env['weha.voucher.trans.purchase.sku'].create(vals)
                    
     def send_data_to_trust(self):
@@ -110,12 +112,26 @@ class VoucherTransPurchase(models.Model):
                 if not voucher_order_line_id:
                     raise ValidationError("Can't Generate voucher order line, contact administrator!")
                 voucher_order_line_id.write({'state': 'activated'})
+                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+
                 vals = {
                     'voucher_trans_purchase_id': self.id,
+                    'voucher_trans_purchase_sku_id': voucher_trans_purchase_sku_id.id,
                     'voucher_order_line_id': voucher_order_line_id.id
                 }
                 self.env['weha.voucher.trans.purchase.line'].create(vals)
-                
+
+    def get_json(self):
+        vouchers = []
+        #for voucher_trans_purchase_line_id in result.voucher_trans_purchase_line_ids:
+        #    vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
+        for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
+            lines = []
+            for  voucher_trans_purchase_line_id in voucher_trans_purchase_sku_id.voucher_trans_purchase_line_ids:
+                lines.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
+            vouchers.append({'sku': voucher_trans_purchase_sku_id.sku, 'vouchers' : lines})
+        return vouchers
+
     name = fields.Char('Name', )
     trans_type = fields.Char('Trans Type', size=10)
     trans_date = fields.Datetime("Transaction Date")
@@ -226,12 +242,15 @@ class VoucheTransPurchaseSku(models.Model):
     voucher_terms_id = fields.Many2one("weha.voucher.terms", "Voucher Terms")
     year_id = fields.Many2one("weha.voucher.year", "Year")
     voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
+    voucher_trans_purchase_line_ids = fields.One2many('weha.voucher.trans.purchase.line','voucher_trans_purchase_sku_id','Lines')
+
 
 
 class VoucherTransPurchaseLine(models.Model):
     _name = "weha.voucher.trans.purchase.line"
 
     voucher_trans_purchase_id = fields.Many2one('weha.voucher.trans.purchase', 'Purchase #')
+    voucher_trans_purchase_sku_id = fields.Many2one('weha.voucher.trans.purchase.sku', 'Purchase SKU #')
     voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher #')
     voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code", related="voucher_order_line_id.voucher_code_id")
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
@@ -291,6 +310,7 @@ class VoucherTransPayment(models.Model):
         res = super(VoucherTransPayment, self).create(vals)
         voucher_order_line_id = res.voucher_order_line_id
         voucher_order_line_id.sudo().write({'state':'reserved'})
+        voucher_order_line_id.create_order_line_trans(res.name, 'RS')
         return res
   
 class VoucheTransPaymentSku(models.Model):
@@ -375,7 +395,7 @@ class VoucherTransStatus(models.Model):
         for voucher_ean in arr_voucher_ean:
             domain = [
                 ('voucher_ean','=', voucher_ean),
-                ('state','=', 'activated')
+                #('state','=', 'activated')
             ]
             voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
             if voucher_order_line_id:
@@ -387,28 +407,16 @@ class VoucherTransStatus(models.Model):
                 if result:
                     if vals['process_type'] == 'reserved':
                         voucher_order_line_id.sudo().write({'state': 'reserved'})
-                        vals = {}
-                        vals.update({'name': res.name})
-                        vals.update({'trans_date': datetime.now()})
-                        vals.update({'voucher_order_line_id': voucher_order_line_id.id})
-                        vals.update({'trans_type': 'RS'})
-                        val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
-                    if vals['process_type'] == 'activated':
+                        voucher_order_line_id.create_order_line_trans(res.name, 'RS')
+                    elif vals['process_type'] == 'activated':
                         voucher_order_line_id.sudo().write({'state': 'activated'})
                         vals = {}
-                        vals.update({'name': res.name})
-                        vals.update({'trans_date': datetime.now()})
-                        vals.update({'voucher_order_line_id': voucher_order_line_id.id})
-                        vals.update({'trans_type': 'AC'})
-                        val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
-                    if vals['process_type'] == 'used':
+                        voucher_order_line_id.create_order_line_trans(res.name, 'AC')
+                    elif vals['process_type'] == 'used':
                         voucher_order_line_id.sudo().write({'state': 'used'})
-                        vals = {}
-                        vals.update({'name': res.name})
-                        vals.update({'trans_date': datetime.now()})
-                        vals.update({'voucher_order_line_id': voucher_order_line_id.id})
-                        vals.update({'trans_type': 'US'})
-                        val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
+                        voucher_order_line_id.create_order_line_trans(res.name, 'US')
+                    else:
+                        pass
                     
         res.sudo().write({'state': 'done'})
         return res

@@ -93,19 +93,46 @@ class VMSStatusController(http.Controller):
             for str_ean in arr_eans:
                 arr_ean  = str_ean.split('|')
                 _logger.info(arr_ean)
-                domain = [
-                    ('voucher_ean', '=', arr_ean),
-                    ('state', '=', 'activated')
-                ]
+                if process_type == 'reserved':
+                    domain = [
+                        ('voucher_ean', '=', arr_ean),
+                        ('state', '=', 'activated')
+                    ]
+                elif process_type == 'used':
+                    domain = [
+                        ('voucher_ean', '=', arr_ean),
+                        ('state', '=', 'reserved')
+                    ]
+                elif process_type == 'activated':
+                    domain = [
+                        ('voucher_ean', '=', arr_ean),
+                        ('state', '=', 'reserved')
+                    ]  
+                else:
+                    is_available = False
                 voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
                 if not voucher_order_line_id:
                     is_available = False
         else:
             arr_ean  = voucher_ean.split('|')
-            domain = [
-                ('voucher_ean', '=', arr_ean),
-                ('state', '=', 'activated')
-            ]
+            if process_type == 'reserved':
+                domain = [
+                    ('voucher_ean', '=', arr_ean),
+                    ('state', '=', 'activated')
+                ]
+            elif process_type == 'used':
+                domain = [
+                    ('voucher_ean', '=', arr_ean),
+                    ('state', '=', 'reserved')
+                ]
+            elif process_type == 'activated':
+                domain = [
+                    ('voucher_ean', '=', arr_ean),
+                    ('state', '=', 'reserved')
+                ]  
+            else:
+                is_available = False
+                
             voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
             if not voucher_order_line_id:
                 is_available = False

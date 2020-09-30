@@ -151,9 +151,8 @@ class VMSRedeemController(http.Controller):
         #result.sudo().write({'state','done'})
         
         #Prepare Voucher Order Line List
-        vouchers = []
-        for voucher_trans_purchase_line_id in result.voucher_trans_purchase_line_ids:
-            vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
+        vouchers = result.get_json()
+        
         #if validate set return_code = Y
 
         #if not validate set return_code = N

@@ -49,18 +49,18 @@ class VMSPromoController(http.Controller):
     @http.route("/api/vms/v1.0/promo", type="http", auth="none", methods=["POST"], csrf=False)
     def vspromo(self, **post):
         
-        date = post['date']
-        time = post['time']
-        receipt_number = post['receipt_number']
-        t_id = post['t_id']
-        cashier_id = post['cashier_id']
-        store_id = post['store_id']
-        tender_type = post['tender_type']
-        bank_categgory = post['bank_category']
-        bin_number = post['bin_number']
-        sku = post['sku']
+        date = post['date'] or False if 'date' in post else False
+        time = post['time'] or False if 'time' in post else False
+        receipt_number = post['receipt_number'] or False if 'receipt_number' in post else False
+        t_id = post['t_id'] or False if 't_id' in post else False
+        cashier_id = post['cashier_id'] or False if 'cashier_id' in post else False
+        store_id = post['store_id'] or False if 'store_id' in post else False
+        tender_type = post['tender_type'] or False if 'tender_type' in post else False
+        bank_categgory = post['bank_category'] or False if 'bank_category' in post else False
+        bin_number = post['bin_number'] or False if 'bin_number' in post else False
+        sku = post['sku'] or False if 'sku' in post else False
         member_id = post['member_id'] or False  if 'member_id' in post else False
-        voucher_type = post['voucher_type']
+        voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
 
         _fields_includes_in_body = all([date, 
                                         time, 
@@ -93,9 +93,11 @@ class VMSPromoController(http.Controller):
         
         skus = []
         is_available = True
+        sku_message = 'SKU not found'
         if ';' in sku:
             arr_skus = sku.split(';')
             _logger.info(arr_skus)
+            total_amount = 0
             for str_sku in arr_skus:
                 arr_sku  = str_sku.split('|')
                 _logger.info(arr_sku)
@@ -112,9 +114,12 @@ class VMSPromoController(http.Controller):
                 voucher_promo_line_id = http.request.env['weha.voucher.promo.line'].search(domain, limit=1)
                 if not voucher_promo_line_id:
                     is_available = False
+
+                total_amount =  int(arr_sku[1]) * mapping_sku_id.voucher_code_id.voucher_amount
                 
-                if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + float(arr_sku[2]):
-                    is_available = False
+            if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + total_amount:
+                message = "Quota Exceeded"
+                is_available = False
                 
         else:
             arr_sku  = sku.split('|')
@@ -133,14 +138,16 @@ class VMSPromoController(http.Controller):
             if not voucher_promo_line_id:
                 is_available = False
             
-            if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + float(arr_sku[2]):
+            total_amount =  int(arr_sku[1]) * mapping_sku_id.voucher_code_id.voucher_amount
+            if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + total_amount:
+                sku_message = "Quota Exceeded"
                 is_available = False
             
             
         if not is_available:
             response_data = {
                 "err": True,
-                "message": "SKU not found",
+                "message": sku_message,
                 "data": [
                     {'code': 'N'}
                 ]
@@ -167,25 +174,29 @@ class VMSPromoController(http.Controller):
         #Save Data
         result = voucher_trans_purchase_obj.create(values)
         
-        #Prepare Voucher Order Line List
-        vouchers = []
-        for voucher_trans_purchase_line_id in result.voucher_trans_purchase_line_ids:
-            vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
-        
-
-        if result:
-
-            data =  {
-                        "err": False,
-                        "message": "Create Successfully",
-                        "data": []
-                    }
-            return valid_response(data)
-        else:
+        if not result:
             data =  {
                         "err": True,
                         "message": "Create Failed",
                         "data": []
                     }
             return valid_response(data)
+
+        #Prepare Voucher Order Line List
+        vouchers = result.get_json()
+        
+
+        data = {
+            "err": False,
+            "message": "Create Successfully",
+            "data": [
+                {
+                    'code': 'Y',
+                    'transaction_id': result.id,
+                    'vouchers': vouchers
+                }
+            ]
+        }
+        return valid_response(data)
+            
 

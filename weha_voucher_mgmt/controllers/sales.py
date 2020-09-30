@@ -48,7 +48,7 @@ class VMSSalesController(http.Controller):
     @validate_token
     @http.route("/api/vms/v1.0/sales", type="http", auth="none", methods=["POST"], csrf=False)
     def vssales(self, **post):
-        
+        message = "Create Successfully"
         date = post['date'] or False if 'date' in post else False
         time = post['time'] or False if 'time' in post else False
         receipt_number = post['receipt_number'] or False if 'receipt_number' in post else False
@@ -151,13 +151,20 @@ class VMSSalesController(http.Controller):
         #Save Data
         result = voucher_trans_purchase_obj.create(values)
         
+        if not result:
+            data =  {
+                        "err": True,
+                        "message": "Create Failed",
+                        "data": []
+                    }
+            return valid_response(data)
+
         #Validate Data
-        #result.sudo().write({'state','done'})
+        #result.write({'state','done'})
         
         #Prepare Voucher Order Line List
-        vouchers = []
-        for voucher_trans_purchase_line_id in result.voucher_trans_purchase_line_ids:
-            vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
+        vouchers = result.get_json()
+        
         #if validate set return_code = Y
 
         #if not validate set return_code = N
@@ -168,7 +175,7 @@ class VMSSalesController(http.Controller):
     
         data = {
             "err": False,
-            "message": "Create Successfully",
+            "message": message,
             "data": [
                 {
                     'code': 'Y',

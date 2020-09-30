@@ -61,33 +61,34 @@ class VoucherOrderLine(models.Model):
         oddsum = reduce(sum_, ean[1::2])
         return (10 - ((evensum + oddsum * 3) % 10)) % 10
 
+    def calculate_expired(self):
+        self.expired_date = datetime.now() + timedelta(days=self.voucher_terms_id.number_of_days)
+
     @api.model
-    def create_order_line_trans(self, vals_):
+    def create_order_line_trans(self, name, trans_type):
         
         for row in self:
             order_line_trans_obj = self.env['weha.voucher.order.line.trans']
-
             vals = {} 
-            vals.update({'name': row.name})
+            vals.update({'name': name})
             vals.update({'trans_date': datetime.now()})
-            vals.update({'voucher_order_line_id': vals_.id})
-            vals.update({'trans_type': 'OP'})
-            val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
-            _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
-            
-            if not val_order_line_trans_obj:
+            vals.update({'voucher_order_line_id': self.id})
+            vals.update({'trans_type': trans_type})
+            result = order_line_trans_obj.sudo().create(vals)            
+            if not result:
                 raise ValidationError("Can't create voucher order line trans, contact administrator!")
 
     name = fields.Char('Name', )
     
     #Customer Code
     customer_id = fields.Many2one('res.partner', 'Customer')
-    member_id = fields.Char("Member #", size=20)
+    member_id = fields.Char("Member #", size=20, index=True)
     #Operating Unit
     operating_unit_id = fields.Many2one(
         string='Operating Unit',
         comodel_name='operating.unit',
         ondelete='restrict',
+        index=True
     )
     #Voucher Type
     voucher_type = fields.Selection(
@@ -97,18 +98,18 @@ class VoucherOrderLine(models.Model):
     )
     #P-Voucher or E-Voucher
     voucher_code = fields.Char(string='Voucher Code')
-    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID')
+    voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID', index=True)
     voucher_amount = fields.Float("Amount", related="voucher_code_id.voucher_amount", store=True)
     #Voucher Term (Expired Date)
-    voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms')
+    voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms', index=True)
     #Voucher Promo
-    voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
+    voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo', index=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type', related='voucher_promo_id.tender_type_id', store=True)
     bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category', related='voucher_promo_id.bank_category_id', store=True)
     #Check Number Voucher
     check_number = fields.Integer(string='Check Number', group_operator=False)
     #Voucher 12 Digit
-    voucher_12_digit = fields.Char('Code 12', size=12 )
+    voucher_12_digit = fields.Char('Code 12', size=12)
     #Voucher EAN
     voucher_ean = fields.Char('Code', size=13)
     #Loc Fr
@@ -117,44 +118,50 @@ class VoucherOrderLine(models.Model):
     operating_unit_loc_to_id = fields.Many2one(string='Loc.To', comodel_name='operating.unit', ondelete='restrict',)
     #Expired Date Voucher & Year
     expired_date = fields.Date(string='Expired Date')
-    year_id = fields.Many2one('weha.voucher.year',string='Year')
+    year_id = fields.Many2one('weha.voucher.year',string='Year', index=True)
     
     #Many2one relation
     voucher_order_id = fields.Many2one(
         string='Voucher Order',
         comodel_name='weha.voucher.order',
         ondelete='restrict',
+        index=True
     )
     voucher_request_id = fields.Many2one(
        string='Request id',
        comodel_name='weha.voucher.request',
        ondelete='restrict',
+       index=True
     )
     voucher_allocate_id = fields.Many2one(
        string='Allocate id',
        comodel_name='weha.voucher.allocate',
        ondelete='restrict',
+       index=True
     )
     voucher_stock_transfer_id = fields.Many2one(
        string='Stock Transfer id',
        comodel_name='weha.voucher.stock.transfer',
        ondelete='restrict',
+       index=True
     )
     voucher_return_id = fields.Many2one(
        string='Stock Transfer id',
        comodel_name='weha.voucher.return',
        ondelete='restrict',
+       index=True
     )
     voucher_order_id = fields.Many2one(
        string='Order id',
        comodel_name='weha.voucher.order',
        ondelete='restrict',
+       index=True
     )
     voucher_order_line_trans_ids = fields.One2many(
         string='Voucher Trans',
         comodel_name='weha.voucher.order.line.trans',
         inverse_name='voucher_order_line_id',
-        readonly=True
+        readonly=True,
     )
     
     #State Voucher
@@ -186,11 +193,10 @@ class VoucherOrderLine(models.Model):
         ean = voucher_12_digit + self.calc_check_digit(voucher_12_digit)
         vals['voucher_12_digit'] = voucher_12_digit
         vals['voucher_ean'] = ean
-
         vals['name'] = ean
         res = super(VoucherOrderLine, self).create(vals)
-        res.create_order_line_trans(res)
-
+        res.calculate_expired()
+        res.create_order_line_trans(res.name, 'OP')
         return res
     
 class VoucherOrderLineTrans(models.Model):
