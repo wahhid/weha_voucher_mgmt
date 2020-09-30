@@ -31,6 +31,13 @@
             <field name="padding">5</field>
         </record>
 
+        <record id="weha_voucher_scrap_sequence" model="ir.sequence">
+            <field name="name">Voucher Scrap Sequence</field>
+            <field name="code">weha.voucher.scrap.sequence</field>
+            <field name="prefix">VS/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
+
         <record id="weha_voucher_stock_transfer_sequence" model="ir.sequence">
             <field name="name">Voucher Stock Transfer Sequence</field>
             <field name="code">weha.voucher.stock.transfer.sequence</field>
@@ -79,5 +86,7 @@
             <field name="prefix">VU/%(year)s/%(month)s/%(day)s/</field>
             <field name="padding">5</field>
         </record>
+        </record>
+
     </data>
 </odoo>

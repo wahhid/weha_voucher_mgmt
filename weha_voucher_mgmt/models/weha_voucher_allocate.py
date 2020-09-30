@@ -95,6 +95,7 @@ class VoucherAllocate(models.Model):
     #             date_now = datetime.strptime(str_start_date, "%Y-%m-%d %H:%M:%S") + relativedelta(days=int(terms))
     #             exp_date = date_now - relativedelta(hours=7)
 
+    #
     #             # obj_voucher_order_line = self.env['weha.voucher.order.line']
     #             # # search_v = obj_voucher_order_line.search(['&',('operating_unit_id','=', store_voucher),('voucher_code_id','=', vcode)])
     #             # search_se = obj_voucher_order_line.search([('check_number','>=',  startnum)])
@@ -113,7 +114,7 @@ class VoucherAllocate(models.Model):
     #             #     check_number = order_line[0]
     #             #     order_id = order_line[1]
     #             #     _logger.info("check_number = " + str(check_number) + ", " + str(order_id))
-
+    #
     #             for row in voucher_order_line:
     #                 vals = {}
     #                 vals.update({'voucher_terms_id': self.voucher_terms_id.id})
@@ -163,9 +164,11 @@ class VoucherAllocate(models.Model):
         super(VoucherAllocate, self).write({'stage_id': stage_id.id})
 
     def trans_close(self):
-        if self.voucher_count == self.voucher_received_count:
-            stage_id = self.stage_id.next_stage_id
-            res = super(VoucherAllocate, self).sudo().write({'stage_id': stage_id.id})
+        if self.voucher_count != self.voucher_received_count:
+            raise ValidationError("Receiving not completed")
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        return res
         
     def trans_allocate_approval(self):    
         if len(self.voucher_allocate_line_ids) == 0:
@@ -228,6 +231,15 @@ class VoucherAllocate(models.Model):
         domain="[('state','=','received')]"
     )
 
+    voucher_allocate_line_received_ids = fields.One2many(
+        comodel_name='weha.voucher.allocate.line', 
+        inverse_name='voucher_allocate_id',
+        string='Received Lines',
+        domain="[('state','=','received')]"
+    )
+
+    voucher_request_id = fields.Many2one('weha.voucher.request', 'Voucher Request', required=False)
+    voucher_qty = fields.Char(string='Quantity Ordered From Request', size=6, required=False)
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
     voucher_received_count = fields.Integer('Voucher Received', compute="_calculate_voucher_received", store=False)
 
@@ -248,13 +260,19 @@ class VoucherAllocate(models.Model):
     
     def write(self, vals):
         if 'stage_id' in vals:
-            # stage_obj = self.env['weha.voucher.allocate.stage'].browse([vals['stage_id']])
+            # stage_obj = self.env['weha.voucher.allocate.stage'].browse([vals['stage_id']])        
             if self.stage_id.approval:
                 raise ValidationError("Please using approve or reject button")
             if self.stage_id.opened:
-                raise ValidationError("Please Allocate or Closed Button")
+                raise ValidationError("Please Click Delivery Button")
+            if self.stage_id.progress:
+                raise ValidationError("Please Click Receive Button")
             if self.stage_id.closed:
-                raise ValidationError("Can't Move, Because Status Closed")
+                raise ValidationError("Can not move, status Closed")
+            if self.stage_id.cancelled:
+                raise ValidationError("Can not move, status Cancel")
+            if self.stage_id.rejected:
+                raise ValidationError("Can not Move, status reject")
 
 
             #Change To L1, Get User from Param

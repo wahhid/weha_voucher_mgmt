@@ -67,6 +67,16 @@ class WehaVoucherRequestStage(models.Model):
         string='Level 2')
     opened = fields.Boolean(
         string='Open')
+    l1 = fields.Boolean(
+        string='Approval 1')
+    l2 = fields.Boolean(
+        string='Approval 2')
+    opened = fields.Boolean(
+        string='Open')
+    progress = fields.Boolean(
+        string='In Progress')
+    receiving = fields.Boolean(
+        string='Receiving')
     closed = fields.Boolean(
         string='Closed')
     rejected = fields.Boolean(
@@ -79,6 +89,8 @@ class WehaVoucherRequestStage(models.Model):
         help="This stage is folded in the kanban view "
              "when there are no records in that stage "
              "to display.")
+    approval_user_id_l1 = fields.Many2one('res.users', 'Approval User L1')
+    approval_user_id_l2 = fields.Many2one('res.users', 'Approval User L2')
     next_stage_id = fields.Many2one('weha.voucher.request.stage', 'Next Stage', required=False)
     mail_template_id = fields.Many2one(
         'mail.template',
@@ -280,6 +292,10 @@ class WehaVoucherScrapStage(models.Model):
         string='Approval')
     opened = fields.Boolean(
         string='Open')
+    progress = fields.Boolean(
+        string='In Progress')
+    receiving = fields.Boolean(
+        string='Receiving')
     closed = fields.Boolean(
         string='Close')
     cancelled = fields.Boolean(

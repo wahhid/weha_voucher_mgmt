@@ -151,6 +151,7 @@ class VoucherBankCategory(models.Model):
     bin_number = fields.Char('Bin', size=10, required=True)
     classfication = fields.Char('Classification', size=50, required=True)
 
+
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'
 	

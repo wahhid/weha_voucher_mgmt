@@ -21,6 +21,10 @@ class VoucherReturn(models.Model):
                 rec.current_stage = 'approval'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
+            if rec.stage_id.progress:
+                rec.current_stage = 'progress'
+            if rec.stage_id.receiving:
+                rec.current_stage = 'receiving'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
             if rec.stage_id.cancelled:
@@ -35,11 +39,12 @@ class VoucherReturn(models.Model):
     def _read_group_stage_ids(self, stages, domain, order):
         stage_ids = self.env['weha.voucher.return.stage'].search([])
         return stage_ids
-    
-    # @api.depends('line_ids')
-    # def _calculate_voucher_count(self):
-    #     for row in self:
-    #         self.voucher_count = len(self.line_ids)
+
+    # @api.depends('voucher_return_line_ids')
+    def _calculate_voucher_count(self):
+        count = self.env['weha.voucher.return.line'].search_count([('voucher_return_id','=', self.id)])
+        self.voucher_count = count
+
     
     def send_l1_return_mail(self):
         for rec in self:
@@ -98,6 +103,18 @@ class VoucherReturn(models.Model):
         res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
         return res
 
+    def trans_delivery(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        for row in self.voucher_return_line_ids:
+            row.voucher_order_line_id.write({'state':'intransit'})
+        return res
+
+    def trans_confirm_received(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        return res
+
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
         # self.send_l1_return_mail()
@@ -126,7 +143,15 @@ class VoucherReturn(models.Model):
     return_date = fields.Date('Return Date', required=False, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    source_operating_unit_id = fields.Many2one('operating.unit','Resource Store', related="user_id.default_operating_unit_id.company_id.res_company_return_operating_unit")
+
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
+    year_id = fields.Many2one('weha.voucher.year','Year', required=False, readonly=True)
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', required=False, readonly=True)
+    start_number = fields.Integer(string='Start Number', required=False, readonly=True)
+    end_number = fields.Integer(string='End Number', required=False, readonly=True)
+
+
+    #for kanban
     stage_id = fields.Many2one(
         'weha.voucher.return.stage',
         string='Stage',
@@ -134,11 +159,7 @@ class VoucherReturn(models.Model):
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
-    voucher_order_line_ids = fields.Many2many(comodel_name='weha.voucher.order.line', string='Voucher Lines')
-    
     current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
-    voucher_return_line_ids = fields.One2many(comodel_name='weha.voucher.return.line', inverse_name='voucher_return_id', string='Return Line')
-    
     priority = fields.Selection(selection=[
         ('0', _('Low')),
         ('1', _('Medium')),
@@ -147,14 +168,29 @@ class VoucherReturn(models.Model):
     ], string='Priority', default='1')
    
     color = fields.Integer(string='Color Index')
-    
     kanban_state = fields.Selection([
         ('normal', 'Default'),
         ('done', 'Ready for next stage'),
         ('blocked', 'Blocked')], string='Kanban State')
+
+    #relation
+    voucher_return_line_ids = fields.One2many(
+        comodel_name='weha.voucher.return.line',
+        inverse_name='voucher_return_id',
+        string='Return Lines',
+        domain="[('state','=','open')]"
+    )
+    voucher_return_line_received_ids = fields.One2many(
+        comodel_name='weha.voucher.return.line',
+        inverse_name='voucher_return_id',
+        string='Received Lines',
+        domain="[('state','=','received')]"
+    )
     
-    voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
-    
+    #qty voucher
+    voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=False)
+    voucher_received_count = fields.Integer('Voucher Received', compute="_calculate_voucher_received", store=False)
+
     @api.model
     def create(self, vals):
         if vals.get('number', '/') == '/':
@@ -164,29 +200,22 @@ class VoucherReturn(models.Model):
             vals['number'] = seq.next_by_code(
                 'weha.voucher.return.sequence') or '/'
         res = super(VoucherReturn, self).create(vals)
-
-        # Check if mail to the user has to be sent
-        #if vals.get('user_id') and res:
-        #    res.send_user_mail()
         return res    
     
     def write(self, vals):
-        if 'stage_id' in vals:
-            # stage_obj = self.env['weha.voucher.return.stage'].browse([vals['stage_id']])
-            if self.stage_id.approval:
-                raise ValidationError("Please using approve or reject button")
-            if self.stage_id.opened:
-                raise ValidationError("Please Return or Closed Button")
-            if self.stage_id.closed:
-                raise ValidationError("Can't Move, Because Status Closed")
-
-            #Change To L1, Get User from Param
-            # trans_approve = False
-            # trans_approve = self.trans_approve()
-            # if stage_obj.approval:
-            #     if self.stage_id.id != stage_obj.from_stage_id.id:
-            #         raise ValidationError('Cannot Process Approval')
-            #     # self.send_l1_request_mail()
+        
+        if self.stage_id.approval:
+            raise ValidationError("Please using approve or reject button")
+        if self.stage_id.opened:
+            raise ValidationError("Please Click Delivery Button")
+        if self.stage_id.progress:
+            raise ValidationError("Please Click Receive Button")
+        if self.stage_id.closed:
+            raise ValidationError("Can not move, status Closed")
+        if self.stage_id.cancelled:
+            raise ValidationError("Can not move, status Cancel")
+        if self.stage_id.rejected:
+            raise ValidationError("Can not Move, status reject")
            
         res = super(VoucherReturn, self).write(vals)
         return res

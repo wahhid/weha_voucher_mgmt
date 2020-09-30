@@ -1,6 +1,6 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import logging
 from random import randrange
 
@@ -83,6 +83,36 @@ class VoucherScrap(models.Model):
     #                 vals.update({'trans_type': 'DV'})
     #                 val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
     #                 _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
+    @api.depends('voucher_scrap_line_ids')
+    def _calculate_voucher_count(self):
+        self.voucher_count = len(self.voucher_scrap_line_ids)
+    
+    # def send_l1_request_mail(self):
+    #     for rec in self:
+    #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
+    #         template.send_mail(rec.id)
+
+    def trans_voucher_scrap(self):
+        
+        for voucher_scrap_line_id in self.voucher_scrap_line_ids:
+            vals = {}
+            vals.update({'state': 'scrap'})
+            res = voucher_scrap_line_id.sudo().write(vals)
+
+            vals = {}
+            vals.update({'state': 'scrap'})
+            voucher_scrap_line_id.voucher_order_line_id.sudo().write(vals)
+
+            vals = {}
+            vals.update({'name': self.number})
+            vals.update({'voucher_order_line_id': voucher_scrap_line_id.voucher_order_line_id.id})
+            vals.update({'trans_date': datetime.now()})
+            vals.update({'trans_type': 'SC'})
+            self.env['weha.voucher.order.line.trans'].sudo().create(vals)
+
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
+        return res
         
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
@@ -122,9 +152,18 @@ class VoucherScrap(models.Model):
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         super(VoucherScrap, self).write({'stage_id': stage_id.id})
-    
-    def trans_close(self):
+    def trans_scrap_approval(self):
         stage_id = self.stage_id.next_stage_id
+        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
+        return res
+
+    def trans_approval(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
+        return res
+    
+    def trans_reject(self):
+        stage_id = self.stage_id.from_stage_id
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
         
@@ -137,6 +176,8 @@ class VoucherScrap(models.Model):
     def trans_scrap_approval(self):    
         if len(self.voucher_scrap_line_ids) == 0:
             raise ValidationError("No Voucher Scrap Lines")
+        
+    def trans_cancel(self):    
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
@@ -148,7 +189,6 @@ class VoucherScrap(models.Model):
     scrap_date = fields.Date('Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-
     stage_id = fields.Many2one(
         'weha.voucher.scrap.stage',
         string='Stage',
@@ -156,25 +196,34 @@ class VoucherScrap(models.Model):
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
-
     current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
-    voucher_scrap_line_ids = fields.One2many(comodel_name='weha.voucher.scrap.line', inverse_name='voucher_scrap_id', string='Scrap Line')
-    
     priority = fields.Selection(selection=[
         ('0', _('Low')),
         ('1', _('Medium')),
         ('2', _('High')),
         ('3', _('Very High')),
     ], string='Priority', default='1')
-   
     color = fields.Integer(string='Color Index')
-    
     kanban_state = fields.Selection([
         ('normal', 'Default'),
         ('done', 'Ready for next stage'),
         ('blocked', 'Blocked')], string='Kanban State')
+
+    #relation
+    voucher_scrap_line_ids = fields.One2many(
+        comodel_name='weha.voucher.scrap.line',
+        inverse_name='voucher_scrap_id',
+        string='Scrap Lines',
+        domain="[('state','=','open')]"
+    )
+    voucher_scrap_line_received_ids = fields.One2many(
+        comodel_name='weha.voucher.scrap.line',
+        inverse_name='voucher_scrap_id',
+        string='Received Lines',
+        domain="[('state','=','received')]"
+    )
     
-    voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
+    voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=False)
     
     @api.model
     def create(self, vals):

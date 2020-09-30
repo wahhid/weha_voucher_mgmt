@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <odoo>
-    <record id="view_wizard_scan_voucer_allocate" model="ir.ui.view">
-        <field name="name">wizard.scan.voucer.allocate.form.view</field>
-        <field name="model">weha.wizard.scan.voucher.allocate</field>
+    <record id="view_wizard_scan_voucer_scrap" model="ir.ui.view">
+        <field name="name">wizard.scan.voucer.scrap.form.view</field>
+        <field name="model">weha.wizard.scan.voucher.scrap</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <form string="Scan Voucher Allocate">
+            <form string="Scan Voucher Scrap">
                 <group>
                     <group>
                         <field name="start_number"/>
@@ -29,40 +29,40 @@
         </field>
     </record>
 
-    <record id="act_open_scan_voucher_allocate_view_form" model="ir.actions.act_window">
-        <field name="name">Scan Voucher Allocate</field>
-        <field name="res_model">weha.wizard.scan.voucher.allocate</field>
+    <record id="act_open_scan_voucher_scrap_view_form" model="ir.actions.act_window">
+        <field name="name">Scan Voucher Scrap</field>
+        <field name="res_model">weha.wizard.scan.voucher.scrap</field>
         <field name="type">ir.actions.act_window</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
 
-    <record id="view_wizard_received_allocate" model="ir.ui.view">
-        <field name="name">weha.wizard.received.allocate</field>
-        <field name="model">weha.wizard.received.allocate</field>
+    <record id="view_wizard_received_scrap" model="ir.ui.view">
+        <field name="name">weha.wizard.received.scrap</field>
+        <field name="model">weha.wizard.received.scrap</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <form string="Received Voucher Allocate">
+            <form string="Received Voucher Scrap">
                 <group>
                     <field name="scan_method" widget="radio"/>
                 </group>
                 <group>
                     <group>
                         <h1>
-                            <field name="code_ean" placeholder="Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
-                            <field name="start_ean" placeholder="Start Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
+                            <field name="code_ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
+                            <field name="start_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
                         </h1>
                     </group>
                     <group>
                         <h1>
-                            <field name="end_ean" placeholder="End Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
+                            <field name="end_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
                         </h1>
                     </group>
                 </group>
                 <notebook>
-                    <page string="Allocate Move" attrs="{'invisible':[('scan_method','=', 'all')]}"> 
-                        <field name="allocate_line_wizard_ids" readonly="1">
-                            <tree string="Allocate Move">
+                    <page string="Scrap Move" attrs="{'invisible':[('scan_method','=', 'all')]}"> 
+                        <field name="scrap_line_wizard_ids" readonly="1">
+                            <tree string="Scrap Move">
                                 <field name="name" />
                                 <field name="date" />
                                 <field name="voucher_order_line_id"/>  	                                                                                                                                                                                                                                   
@@ -78,9 +78,9 @@
         </field>
     </record>
 
-    <record id="act_open_received_allocate_view_form" model="ir.actions.act_window">
-        <field name="name">Received Allocate</field>
-        <field name="res_model">weha.wizard.received.allocate</field>
+    <record id="act_open_received_scrap_view_form" model="ir.actions.act_window">
+        <field name="name">Received Scrap</field>
+        <field name="res_model">weha.wizard.received.scrap</field>
         <field name="type">ir.actions.act_window</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>

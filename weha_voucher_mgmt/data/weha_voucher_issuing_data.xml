@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <data noupdate="1">
 
+        <!-- Voucher Issuing Stage -->
 
-        <!-- Voucher Issuing Stages -->
+        <record id="voucher_issuing_stage_cancelled" model="weha.voucher.issuing.stage">
+            <field name="sequence">4</field>
+            <field name="name">Cancelled</field>
+            <field name="cancelled">True</field>
+            <field name="fold">True</field>
+        </record>
 
         <record id="voucher_issuing_stage_done" model="weha.voucher.issuing.stage">
-            <field name="sequence">4</field>
-            <field name="name">Issued</field>
+            <field name="sequence">3</field>
+            <field name="name">Issuing</field>
             <field name="closed">True</field>
             <field name="fold">True</field>
         </record>
@@ -59,5 +66,14 @@
         -->
 
 
+        <record id="voucher_issuing_stage_issuing" model="weha.voucher.issuing.stage">
+            <field name="sequence">1</field>
+            <field name="name">Draft</field>
+            <field name="unattended">True</field>
+            <field name="from_stage_id" ref="voucher_issuing_stage_cancelled"/>
+            <field name="next_stage_id" ref="voucher_issuing_stage_open"/>
+        </record>
+
+       
     </data>
 </odoo>

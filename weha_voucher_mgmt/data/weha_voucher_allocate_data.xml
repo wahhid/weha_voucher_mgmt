@@ -26,6 +26,7 @@
             <field name="fold">True</field>
         </record>
         
+
         <record id="voucher_allocate_stage_receiving" model="weha.voucher.allocate.stage">
             <field name="sequence">5</field>
             <field name="name">Receiving</field>
@@ -47,15 +48,30 @@
             <field name="next_stage_id" ref="voucher_allocate_stage_in_transit"/>
         </record>
 
+        <record id="voucher_allocate_stage_approval" model="weha.voucher.allocate.stage">
+            <field name="sequence">2</field>
+            <field name="name">Approve</field>
+            <field name="approval">True</field>
+            <field name="fold">True</field>
+            <field name="next_stage_id" ref="voucher_allocate_stage_open"/>
+        </record>
+
+        <record id="voucher_allocate_stage_request" model="weha.voucher.allocate.stage">
+            <field name="sequence">1</field>
+            <field name="name">Request</field>
+            <field name="unattended">True</field>
+            <field name="next_stage_id" ref="voucher_allocate_stage_approval"/>
+        </record>
+
         <record id="voucher_allocate_stage_cancelled" model="weha.voucher.allocate.stage">
-            <field name="sequence">6</field>
+            <field name="sequence">7</field>
             <field name="name">Cancelled</field>
             <field name="cancelled">True</field>
             <field name="fold">True</field>
         </record>
 
         <record id="voucher_allocate_stage_rejected" model="weha.voucher.allocate.stage">
-            <field name="sequence">7</field>
+            <field name="sequence">8</field>
             <field name="name">Rejected</field>
             <field name="rejected">True</field>
             <field name="fold">True</field>

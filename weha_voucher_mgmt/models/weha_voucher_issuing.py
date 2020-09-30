@@ -1,5 +1,6 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
+from datetime import datetime, timedelta, date
 import logging
 from random import randrange
 
@@ -23,6 +24,29 @@ class VoucherIssuing(models.Model):
                 rec.current_stage = 'closed'
             if rec.stage_id.cancelled:
                 rec.current_stage = 'cancelled'
+
+    def action_issuing_voucher(self):
+        
+        for voucher_issuing_line_id in self.voucher_issuing_line_ids:
+            vals = {}
+            vals.update({'state': 'activated'})
+            res = voucher_issuing_line_id.sudo().write(vals)
+
+            vals = {}
+            vals.update({'state': 'activated'})
+            voucher_issuing_line_id.voucher_order_line_id.sudo().write(vals)
+
+            vals = {}
+            vals.update({'name': self.number})
+            vals.update({'voucher_order_line_id': voucher_issuing_line_id.voucher_order_line_id.id})
+            vals.update({'trans_date': datetime.now()})
+            vals.update({'trans_type': 'AC'})
+            self.env['weha.voucher.order.line.trans'].sudo().create(vals)
+
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherIssuing, self).write({'stage_id': stage_id.id})
+        return res
+
             
     def _get_default_stage_id(self):
         return self.env['weha.voucher.issuing.stage'].search([], limit=1).id
@@ -47,20 +71,27 @@ class VoucherIssuing(models.Model):
     def trans_confirm(self):
         stage = self.stage_id.next_stage_id.id
         self.write({'stage_id': stage.id})
+        
+    @api.depends('voucher_issuing_line_ids')
+    def _calculate_voucher_count(self):
+        for row in self:
+            self.voucher_count = len(self.voucher_issuing_line_ids)
 
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
-    request_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
+    issuing_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    voucher_type = fields.Selection(
-        string='Voucher Type',
-        selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
-        default='physical'
-    )
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
+    year_id = fields.Many2one('weha.voucher.year','Year', required=False, readonly=True)
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', required=False, readonly=True)
+    start_number = fields.Integer(string='Start Number', required=False, readonly=True)
+    end_number = fields.Integer(string='End Number', required=False, readonly=True)
+
+
+    #kanban
     stage_id = fields.Many2one(
         'weha.voucher.issuing.stage',
         string='Stage',
@@ -68,18 +99,14 @@ class VoucherIssuing(models.Model):
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
-    
     current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
-
     priority = fields.Selection(selection=[
         ('0', _('Low')),
         ('1', _('Medium')),
         ('2', _('High')),
         ('3', _('Very High')),
     ], string='Priority', default='1')
-   
     color = fields.Integer(string='Color Index')
-    
     kanban_state = fields.Selection([
         ('normal', 'Default'),
         ('done', 'Ready for next stage'),
@@ -104,10 +131,6 @@ class VoucherIssuing(models.Model):
             vals['number'] = seq.next_by_code(
                 'weha.voucher.issuing.sequence') or '/'
         res = super(VoucherIssuing, self).create(vals)
-
-        # Check if mail to the user has to be sent
-        #if vals.get('user_id') and res:
-        #    res.send_user_mail()
         return res    
     
     def write(self, vals):
@@ -115,5 +138,12 @@ class VoucherIssuing(models.Model):
             stage_obj = self.env['weha.voucher.issuing.stage'].browse([vals['stage_id']])
             if stage_obj.unattended:
                 pass
+            if self.stage_id.opened:
+                raise ValidationError("Please Click Button Ready to Issuing")
+            if self.stage_id.closed:
+                raise ValidationError("Can not move, status Close")
+            if self.stage_id.cancelled:
+                raise ValidationError("Can not move, status Cancel")
+           
         res = super(VoucherIssuing, self).write(vals)
         return res

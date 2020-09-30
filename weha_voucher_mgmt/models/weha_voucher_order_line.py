@@ -7,6 +7,9 @@ from functools import reduce
 
 _logger = logging.getLogger(__name__)
 
+import math
+import re
+
 
 class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
@@ -43,23 +46,92 @@ class VoucherOrderLine(models.Model):
         _logger.info("CODE 12 = " + str(code12))
         
         return code12
+    
+    # def generate_12_numbers(self, voucher_type, voucher_code_id, year_id, voucher_promo_id, check_number):
 
-    def calculate_checksum(self, ean):
-        """
-        Calculates the checksum for an EAN13
-        @param list ean: List of 12 numbers for first part of EAN13
-        :returns: The checksum for `ean`.
-        :rtype: Integer
-        
-        numbers = generate_12_random_numbers()
-        numbers.append(calculate_checksum(numbers))
-        print ''.join(map(str, numbers))
-        """
-        assert len(ean) == 5, "EAN must be a list of 12 numbers"
-        sum_ = lambda x, y: int(x) + int(y)
-        evensum = reduce(sum_, ean[::2])
-        oddsum = reduce(sum_, ean[1::2])
-        return (10 - ((evensum + oddsum * 3) % 10)) % 10
+    #     c_code = str(self.env.user.default_operating_unit_id.company_id.res_company_code)
+
+    #     if voucher_type == 'physical':
+    #         classifi = '1'
+    #     else:
+    #         classifi = '2'
+
+    #     voucher_code = self.env['weha.voucher.code'].browse(voucher_code_id)
+    #     v_code = voucher_code.code
+
+    #     number = str(check_number).zfill(6)
+
+    #     year = self.env['weha.voucher.year'].browse(year_id)
+    #     year_code = str(year.year)
+
+    #     # company_code,type,year,classification,number
+    #     #code12 = [c_code ,v_code,year,classifi,number]
+
+    #     code12 = c_code + v_code + year_code + classifi + number
+    #     _logger.info("CODE 12 = " + str(code12))
+
+    #     return code12
+    
+    # def calculate_checksum(self, ean):
+    #     """
+    #     Calculates the checksum for an EAN13
+    #     @param list ean: List of 12 numbers for first part of EAN13
+    #     :returns: The checksum for `ean`.
+    #     :rtype: Integer
+    
+    #     numbers = generate_12_random_numbers()
+    #     numbers.append(calculate_checksum(numbers))
+    #     print ''.join(map(str, numbers))
+    #     """
+    #     assert len(ean) == 5, "EAN must be a list of 12 numbers"
+    #     sum_ = lambda x, y: int(x) + int(y)
+    #     evensum = reduce(sum_, ean[::2])
+    #     oddsum = reduce(sum_, ean[1::2])
+    #     return (10 - ((evensum + oddsum * 3) % 10)) % 10
+
+    def ean_checksum(self, eancode):
+        """returns the checksum of an ean string of length 13, returns -1 if
+        the string has the wrong length"""
+        if len(eancode) != 13:
+            return -1
+        oddsum = 0
+        evensum = 0
+        eanvalue = eancode
+        reversevalue = eanvalue[::-1]
+        finalean = reversevalue[1:]
+
+        for i in range(len(finalean)):
+            if i % 2 == 0:
+                oddsum += int(finalean[i])
+            else:
+                evensum += int(finalean[i])
+        total = (oddsum * 3) + evensum
+
+        check = int(10 - math.ceil(total % 10.0)) % 10
+        return check
+
+    def check_ean(self, eancode):
+        """returns True if eancode is a valid ean13 string, or null"""
+        if not eancode:
+            return True
+        if len(eancode) != 13:
+            return False
+        try:
+            int(eancode)
+        except:
+            return False
+        return self.ean_checksum(eancode) == int(eancode[-1])
+
+    def generate_ean(self, ean):
+        """Creates and returns a valid ean13 from an invalid one"""
+        if not ean:
+            return "0000000000000"
+        ean = re.sub("[A-Za-z]", "0", ean)
+        ean = re.sub("[^0-9]", "", ean)
+        ean = ean[:13]
+        if len(ean) < 13:
+            ean = ean + '0' * (13 - len(ean))
+        return ean[:-1] + str(self.ean_checksum(ean))
 
     def calculate_expired(self):
         self.expired_date = datetime.now() + timedelta(days=self.voucher_terms_id.number_of_days)
@@ -186,7 +258,6 @@ class VoucherOrderLine(models.Model):
 
     @api.model
     def create(self, vals):
-
         #Generate 12 Digit
         voucher_12_digit = self.generate_12_numbers(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year_id'), vals.get('voucher_promo_id'), vals.get('check_number'))
         #Check Digit and Generate EAN 13

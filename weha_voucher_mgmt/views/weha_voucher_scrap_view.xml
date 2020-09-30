@@ -34,6 +34,15 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_scrap_approval" string="Request Approval" 
                             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}" 
+                            class="btn btn-primary" name="trans_voucher_scrap_activate" string="Activated from Allocate" 
+                            groups="weha_voucher_mgmt.group_voucher_user"/>
+
+                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                            class="btn btn-primary" name="trans_scrap_approval" string="Request Approval" 
+                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+
                         <button 
                             type="action" 
                             attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
@@ -59,9 +68,9 @@
                     <sheet>
                         <div name="button_box" class="oe_button_box">
                             <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_request_line_from_voucher_request)d" 
-                                groups="weha_voucher_mgmt.group_voucher_user"
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"
                                 icon="fa-ticket">
-                                <!-- <field string="Vouchers" name="voucher_count" widget="statinfo"/> -->
+                                <field string="Vouchers" name="voucher_count" widget="statinfo"/>
                             </button>
                         </div>
                         <div class="oe_title">
@@ -94,7 +103,7 @@
                                         <field name="state"/>                         	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
 	                        	</field>
-	                        </page>	   
+	                        </page>	 	   
                         </notebook>
                     </sheet>
                     <div class="oe_chatter">
@@ -184,9 +193,9 @@
             <field name="search_view_id" ref="view_weha_voucher_scrap_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
-                    Click to add for request new voucher order
+                    Click to add for scrap voucher
                 </p><p>
-                    Voucher Order
+                    Voucher Scrap
                 </p>
             </field>
         </record>

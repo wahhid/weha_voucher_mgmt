@@ -3,8 +3,7 @@
 
     <data noupdate="1">
 
-        <!-- Voucher Order Stages -->
-
+        <!-- Voucher scrap Stage -->
         <record id="voucher_scrap_stage_done" model="weha.voucher.scrap.stage">
             <field name="sequence">4</field>
             <field name="name">Scrap</field>
@@ -27,7 +26,7 @@
             <field name="next_stage_id" ref="voucher_scrap_stage_open"/>
         </record>
 
-        <record id="voucher_scrap_stage_request" model="weha.voucher.scrap.stage">
+        <record id="voucher_scrap_stage_scrap" model="weha.voucher.scrap.stage">
             <field name="sequence">1</field>
             <field name="name">Draft</field>
             <field name="unattended">True</field>
@@ -48,5 +47,6 @@
             <field name="fold">True</field>
         </record>
 
+       
     </data>
 </odoo>

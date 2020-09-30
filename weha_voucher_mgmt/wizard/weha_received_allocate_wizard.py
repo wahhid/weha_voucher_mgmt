@@ -39,6 +39,8 @@ class WizardScanVoucherAllocate(models.TransientModel):
 
     @api.onchange('start_number', 'end_number')
     def _onchange_voucher(self):     
+
+
         if self.start_number:     
             voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)],limit=1)
             if not voucher_id:
