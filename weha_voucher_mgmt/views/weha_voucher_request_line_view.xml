@@ -35,18 +35,6 @@
                             <field name="voucher_code_id" domain="[('voucher_type','=','physical')]"/>
                             <field name="amount" />
                         </group>
-                        <!--
-                        <notebook colspan="4">
-                            <page string="Range Voucher">
-	                        	<field name="number_ranges_ids" widget="one2many_list" nolabel="0" readonly="0">
-	                            	<tree string="Range Voucher" create="true" delete="true" edit="true">
-	                            	    <field name="start_num" />
-                                        <field name="end_num" />	                                	                                                                                                                                                                                                                                   
-	                            	</tree>                                        	                            	
-	                        	</field>
-	                        </page>	   
-                        </notebook>
-                        -->
                     </sheet>
                 </form>
             </field>

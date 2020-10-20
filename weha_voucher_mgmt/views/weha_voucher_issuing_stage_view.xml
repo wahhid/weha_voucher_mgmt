@@ -43,13 +43,19 @@
                                 <!-- <field name="company_id"/> -->
                                 <field name="from_stage_id"/>
                                 <field name="next_stage_id"/>
+                                <field name="sequence"/>
                                 <!-- <field name="mail_template_id"/> -->
                             </group>
                             <group>
                                 <field name="unattended"/>
+                                <field name="approval"/>
+                                <!--
+                                <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)]}"/> 
+                                -->
                                 <field name="opened"/>
                                 <field name="closed"/>
                                 <field name="cancelled"/>
+                                <field name="rejected"/>
                                 <field name="fold"/>
                             </group>
         

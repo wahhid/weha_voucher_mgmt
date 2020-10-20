@@ -60,10 +60,6 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                             class="btn btn-primary" name="trans_reject" string="Reject" 
                             groups="weha_voucher_mgmt.group_voucher_finance_manager" confirm="Are you sure you want to Approve?"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
-                            class="btn btn-primary" name="trans_create_activity" string="Create Activity" 
-                            confirm="Are you sure you want to create activity?" groups="weha_voucher_mgmt.group_voucher_finance_user" />
-                        
                         <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
                     <sheet>
@@ -92,7 +88,7 @@
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 <field name="voucher_type" widget="radio" options="{'horizontal': true}" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
-                                <field name="voucher_code_id" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_code_id" domain="[('voucher_type','=', voucher_type)]" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="voucher_promo_id" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="current_stage" invisible="1"/>
                             </group>
@@ -176,18 +172,6 @@
             </field>
         </record>
         
-        <record id="view_weha_voucher_order_graph" model="ir.ui.view">
-            <field name="name">view.weha.voucher.order.graph</field>
-            <field name="model">weha.voucher.order</field>
-            <field name="arch" type="xml">
-                <graph string="Voucher Order Statistic">
-                    <field name="voucher_code_id" type="row"/>
-                    <field name="voucher_count" type="measure"/>
-                </graph>
-            </field>
-        </record>
-
-
         <!-- Search view for voucher order -->
         <record id="view_weha_voucher_order_search" model="ir.ui.view">
             <field name="name">view.weha.voucher.order.search</field>
@@ -222,7 +206,7 @@
             <field name="res_model">weha.voucher.order</field>
             <field name="view_mode">kanban,tree,form,graph</field>
             <field name="domain">[]</field>
-            <field name="context">\{}</field>
+            <field name="context">{}</field>
             <field name="search_view_id" ref="view_weha_voucher_order_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">

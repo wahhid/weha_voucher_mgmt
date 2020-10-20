@@ -6,8 +6,6 @@ from datetime import datetime
 import logging
 _logger = logging.getLogger(__name__)
 
-
-
 class WizStockBarcodesRead(models.AbstractModel):
     _name = "wiz.stock.barcodes.read"
     _inherit = "barcodes.barcode_events_mixin"
@@ -20,7 +18,10 @@ class WizStockBarcodesRead(models.AbstractModel):
     res_id = fields.Integer(index=True)
     received_process = fields.Selection(
         [
-            ('allocate', 'Allocate')
+            ('allocate', 'Allocate'),
+            ('issuing', 'Issuing'),
+            ('return', 'Return'),
+            ('scrap', 'Scrap'),
         ],
         'Process'
     )
@@ -55,87 +56,264 @@ class WizStockBarcodesRead(models.AbstractModel):
             self.message = "%s" % message
 
     def process_barcode(self, barcode):
+        _logger.info("Process Barcode")
         self._set_messagge_info("success", _("Barcode read correctly"))
         domain = self._barcode_domain(barcode)
+        _logger.info(self.received_process)
         if self.received_process == 'allocate':
+            _logger.info("Process Voucher Allocate")
             active_id = self.env.context.get('active_id') or False
             if active_id:
                 voucher_allocate_id = self.env['weha.voucher.allocate'].browse(active_id)
-                domain = [
-                    ('voucher_ean', '=', barcode),
-                    #('state', '=', 'intransit')
-                ]
-                voucher_line_order_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
-                if voucher_line_order_id:
+                if voucher_allocate_id.current_stage == 'unattended':
+                    _logger.info('Allocate Unattended')
                     domain = [
-                        ('voucher_order_line_id','=',voucher_line_order_id.id),
+                        ('voucher_ean', '=', barcode),
+                        ('operating_unit_id', '=', voucher_return_id.operating_unit_id.id)
                         ('state', '=', 'open')
                     ]
-                    voucher_allocate_line_id = self.env['weha.voucher.allocate.line'].sudo().search(domain, limit=1)
-                    _logger.info(voucher_allocate_line_id)
-                    
-                    if not voucher_allocate_line_id:
-                        raise ValidationError("No Voucher Allocation found or already received")
-
-                    vals = {}
-                    vals.update({'state': 'received'})
-                    res = voucher_allocate_line_id.write(vals)
-
-                    vals = {}
-                    vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
-                    vals.update({'state': 'open'})
-                    voucher_allocate_line_id.voucher_order_line_id.write(vals)
-
-                    vals = {}
-                    vals.update({'name': voucher_allocate_id.number})
-                    vals.update({'voucher_order_line_id': voucher_allocate_line_id.voucher_order_line_id.id})
-                    vals.update({'trans_date': datetime.now()})
-                    vals.update({'operating_unit_loc_fr_id': voucher_allocate_id.operating_unit_id.id})
-                    vals.update({'operating_unit_loc_to_id': voucher_allocate_id.source_operating_unit.id})
-                    vals.update({'trans_type': 'RV'})
-                    self.env['weha.voucher.order.line.trans'].create(vals)
-                    self._set_messagge_info("success", _("Voucher Received"))
+                elif voucher_allocate_id.current_stage == 'progress' or voucher_allocate_id.current_stage == 'receiving':
+                    _logger.info('Allocate Intrasit or Received')
+                    domain = [
+                        ('voucher_ean', '=', barcode),
+                        ('operating_unit_id', '=', voucher_return_id.operating_unit_id.id)
+                        ('state', '=', 'intransit')
+                    ]
                 else:
-                    self._set_messagge_info("not_found", _("Scan Voucher Process Error"))   
+                    _logger.info("Stage Pass")
+                    pass
+
+                voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
+                if voucher_order_line_id:
+                    self._set_messagge_info("info", _("Barcode found"))
+                    domain = [
+                        ('voucher_allocate_id', '=', active_id),
+                        ('voucher_order_line_id', '=', voucher_order_line_id.id),
+                        ('state', '=', 'open') 
+                    ]
+                    voucher_allocate_line_id = self.env['weha.voucher.allocate.line'].search(domain,limit=1)
+                    if voucher_allocate_line_id:
+                        if voucher_allocate_line_id.state == 'open':
+                            if voucher_allocate_id.current_stage == 'unattended':
+                                self._set_messagge_info("info", _("Allocate Line already exist"))
+                            elif voucher_allocate_id.current_stage == 'progress' or voucher_allocate_id.current_stage == 'receiving':
+                                vals = {}
+                                vals.update({'state': 'received'})
+                                res = voucher_allocate_line_id.write(vals)
+
+                                vals = {}
+                                vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
+                                vals.update({'state': 'open'})
+                                voucher_allocate_line_id.voucher_order_line_id.write(vals)
+
+                                vals = {}
+                                vals.update({'name': voucher_allocate_id.number})
+                                vals.update({'voucher_order_line_id': voucher_allocate_line_id.voucher_order_line_id.id})
+                                vals.update({'trans_date': datetime.now()})
+                                vals.update({'operating_unit_loc_fr_id': voucher_allocate_id.operating_unit_id.id})
+                                vals.update({'operating_unit_loc_to_id': voucher_allocate_id.source_operating_unit.id})
+                                vals.update({'trans_type': 'RV'})
+                                self.env['weha.voucher.order.line.trans'].create(vals)
+
+                                if voucher_allocate_id.voucher_count == voucher_allocate_id.voucher_received_count:
+                                    voucher_allocate_id.sudo().trans_received()    
+                            else:
+                                pass
+                    else:
+                        if voucher_allocate_line_id.state == 'open':
+                            vals = {
+                                'voucher_allocate_id': active_id,
+                                'voucher_order_line_id': voucher_order_line_id.id
+                            }
+                            self.env['weha.voucher.allocate.line'].create(vals)
+                            self._set_messagge_info("success", _("Allocate Line Create Successfully"))
+                            
+                            vals = {
+                                'name': self.barcode,
+                                'res_model_id': self.res_model_id.id,
+                                'res_id': self.res_id,
+                                'voucher_allocate_id': self.res_id,
+                                'voucher_order_line_id' : voucher_order_line_id.id 
+                            }
+                            self._add_read_log(vals)
+                        else:
+                            self._set_messagge_info("not_found", _("Barcode not found"))
+                else:
+                    self._set_messagge_info("not_found", _("Barcode not found"))
+
+        if self.received_process == 'issuing':
+            _logger.info("Process Voucher Issuing")
+            active_id = self.env.context.get('active_id') or False
+            if active_id:
+                voucher_issuing_id = self.env['weha.voucher.issuing'].browse(active_id)
+                if voucher_issuing_id.current_stage == 'unattended':
+                    _logger.info('Issuing Unattended')
+                    domain = [
+                        ('voucher_ean', '=', barcode),
+                        ('operating_unit_id', '=', voucher_issuing_id.operating_unit_id.id),
+                        ('state', '=', 'open')
+                    ]
+                else:
+                    _logger.info("Stage Pass")
+                    pass
+
+                voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
+                if voucher_order_line_id:
+                    self._set_messagge_info("info", _("Barcode found"))
+                    domain = [
+                        ('voucher_issuing_id', '=', voucher_issuing_id.id),
+                        ('voucher_order_line_id', '=', voucher_order_line_id.id),
+                        ('state', '=', 'open') 
+                    ]
+                    voucher_issuing_line_id = self.env['weha.voucher.issuing.line'].search(domain,limit=1)
+                    if voucher_issuing_line_id:
+                        self._set_messagge_info("info", _("Issuing Line already exist"))                               
+                    else:
+                        vals = {
+                            'voucher_issuing_id': active_id,
+                            'voucher_order_line_id': voucher_order_line_id.id
+                        }
+                        self.env['weha.voucher.issuing.line'].create(vals)
+                        self._set_messagge_info("success", _("Issuing Line Create Successfully"))
+                        
+                        vals = {
+                            'name': self.barcode,
+                            'res_model_id': self.res_model_id.id,
+                            'res_id': self.res_id,
+                            'voucher_issuing_id': self.res_id,
+                            'voucher_order_line_id' : voucher_order_line_id.id 
+                        }
+                        self._add_read_log(vals)
+                else:
+                    self._set_messagge_info("not_found", _("Barcode not found"))
+
+        if self.received_process == 'return':
+            _logger.info("Process Voucher Return")
+            active_id = self.env.context.get('active_id') or False
+            if active_id:
+                voucher_return_id = self.env['weha.voucher.return'].browse(active_id)
+                if voucher_return_id.current_stage == 'unattended':
+                    _logger.info('Return Unattended')
+                    domain = [
+                        ('voucher_ean', '=', barcode),
+                        ('operating_unit_id', '=', voucher_return_id.operating_unit_id.id),
+                        ('state', '=', 'open')
+                    ]
+                    voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
+                    if voucher_order_line_id:
+                        self._set_messagge_info("info", _("Barcode found"))
+                        domain = [
+                            ('voucher_return_id', '=', voucher_return_id.id),
+                            ('voucher_order_line_id', '=', voucher_order_line_id.id),
+                            ('state', '=', 'open') 
+                        ]
+                        voucher_return_line_id = self.env['weha.voucher.return.line'].search(domain,limit=1)
+                        if voucher_return_line_id:
+                            self._set_messagge_info("info", _("Issuing Line already exist"))                               
+                        else:
+                            vals = {
+                                'voucher_return_id': active_id,
+                                'voucher_order_line_id': voucher_order_line_id.id
+                            }
+                            self.env['weha.voucher.return.line'].create(vals)
+                            self._set_messagge_info("success", _("Return Line Create Successfully"))
+                            
+                            vals = {
+                                'name': self.barcode,
+                                'res_model_id': self.res_model_id.id,
+                                'res_id': self.res_id,
+                                'voucher_return_id': self.res_id,
+                                'voucher_order_line_id' : voucher_order_line_id.id 
+                            }
+                            self._add_read_log(vals)
+                    else:
+                        _logger.info("Stage Pass")
+                elif voucher_return_id.current_stage == 'progress' or voucher_return_id.current_stage == 'receiving':
+                    domain = [
+                        ('voucher_ean', '=', barcode),
+                        ('operating_unit_id', '=', voucher_return_id.operating_unit_id.id),
+                        ('state', '=', 'intransit')
+                    ]
+                    voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
+                    if voucher_order_line_id:
+                        self._set_messagge_info("info", _("Barcode found"))
+                        domain = [
+                            ('voucher_return_id', '=', voucher_return_id.id),
+                            ('voucher_order_line_id', '=', voucher_order_line_id.id),
+                            ('state', '=', 'open') 
+                        ]
+                        voucher_return_line_id = self.env['weha.voucher.return.line'].search(domain,limit=1)
+                        if voucher_return_line_id:
+                            vals = {}
+                            vals.update({'state': 'received'})
+                            res = voucher_return_line_id.write(vals)
+
+                            company_id = self.env.user.company_id
+                            vals = {}
+                            vals.update({'operating_unit_id': company_id.res_company_return_operating_unit.id})
+                            vals.update({'state': 'open'})
+                            voucher_return_line_id.voucher_order_line_id.sudo().write(vals)
+                            
+                            vals = {}
+                            vals.update({'name': voucher_return_id.number})
+                            vals.update({'voucher_order_line_id': voucher_return_line_id.voucher_order_line_id.id})
+                            vals.update({'trans_date': datetime.now()})
+                            vals.update({'operating_unit_loc_fr_id': voucher_return_id.operating_unit_id.id})
+                            vals.update({'operating_unit_loc_to_id': company_id.res_company_return_operating_unit.id})
+                            vals.update({'trans_type': 'RV'})
+                            self.env['weha.voucher.order.line.trans'].create(vals)
+                            voucher_return_id.sudo().trans_received() 
+                        else:
+                            self._set_messagge_info("not_found", _("Voucher already received"))  
+                    else:
+                        self._set_messagge_info("not_found", _("Barcode not found or already received"))  
+                else:
+                    self._set_messagge_info("not_found", _("Barcode not found"))
+
+        if self.received_process == 'scrap':
+            _logger.info("Process Voucher Scrap")
+            active_id = self.env.context.get('active_id') or False
+            if active_id:
+                voucher_scrap_id = self.env['weha.voucher.scrap'].browse(active_id)
+                if voucher_scrap_id:
+                    domain = [
+                        ('voucher_ean', '=', barcode),
+                        ('operating_unit_id', '=', voucher_scrap_id.operating_unit_id.id),
+                        ('state', '=', 'open')
+                    ]
+                    voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
+                    if voucher_order_line_id:
+                        self._set_messagge_info("info", _("Barcode found"))
+                        domain = [
+                            ('voucher_scrap_id', '=', voucher_scrap_id.id),
+                            ('voucher_order_line_id', '=', voucher_order_line_id.id),
+                            ('state', '=', 'open') 
+                        ]
+                        voucher_scrap_line_id = self.env['weha.voucher.scrap.line'].search(domain,limit=1)
+                        if voucher_scrap_line_id:
+                            self._set_messagge_info("info", _("Scrap Line already exist"))                               
+                        else:
+                            vals = {
+                                'voucher_scrap_id': active_id,
+                                'voucher_order_line_id': voucher_order_line_id.id
+                            }
+                            self.env['weha.voucher.scrap.line'].create(vals)
+                            self._set_messagge_info("success", _("Scrap Line Create Successfully"))
+                            
+                            vals = {
+                                'name': self.barcode,
+                                'res_model_id': self.res_model_id.id,
+                                'res_id': self.res_id,
+                                'voucher_scrap_id': self.res_id,
+                                'voucher_order_line_id' : voucher_order_line_id.id 
+                            }
+                            self._add_read_log(vals)
+                    else:
+                        self._set_messagge_info("not_found", _("Barcode not found"))
+                else:
+                    self._set_messagge_info("not_found", _("Voucher Scrap not found"))
             else:
-                self._set_messagge_info("not_found", _("Voucher not found"))
-        else:
-             self._set_messagge_info("not_found", _("Missing process information"))
-
-
-        # voucher_line = self.env["weha.voucher.order.line"].search(domain)
-        # if voucher_line:
-        #     if len(voucher_line) > 1:
-        #         self._set_messagge_info("more_match", _("More than one product found"))
-        #         return
-        #     else:
-        #         # update state received
-        #         vals = {}
-        #         vals.update({'state': 'received'})
-        #         res = voucher_line.write(vals)
-		        
-        #         _logger.info('Voucher Line Write : '+ str(res))
-        #         # if not res:
-		# 		# 	raise ValidationError("Can't write received Voucher!")
-				
-        #         # obj_order_line_trans = self.env['weha.voucher.order.line.trans']
-
-        #         # vals = {}
-        #         # vals.update({'name': obj_request.number})
-        #         # vals.update({'voucher_order_line_id': voucher_line.id})
-        #         # vals.update({'trans_date': datetime.now()})
-        #         # vals.update({'trans_type': 'RV'})
-        #         # row = obj_order_line_trans.create(vals)
-				
-		# 		# if not row:
-		# 		# 	raise ValidationError("Can't create Voucher Line Trans!")
-				
-                
-        #         #self.action_product_scaned_post(product)
-        #         self.action_done()
-        #         return
-        # _logger.info('Voucher Line Not found')
-        #self._set_messagge_info("not_found", _("Barcode not found"))
+                self._set_messagge_info("not_found", _("Barcode not found"))
 
     def _barcode_domain(self, barcode):
         return [("voucher_ean", "=", barcode)]
@@ -156,7 +334,7 @@ class WizStockBarcodesRead(models.AbstractModel):
     def action_done(self):
         if not self.check_done_conditions():
             return False
-        self._add_read_log()
+        #self._add_read_log()
         return True
 
     def action_cancel(self):
@@ -201,10 +379,8 @@ class WizStockBarcodesRead(models.AbstractModel):
     #         "res_id": self.res_id,
     #     }
 
-    # def _add_read_log(self, log_detail=False):
-    #     if self.product_qty:
-    #         vals = self._prepare_scan_log_values(log_detail)
-    #         self.env["stock.barcodes.read.log"].create(vals)
+    def _add_read_log(self, vals):
+        self.env["voucher.barcodes.read.log"].create(vals)
 
     #@api.depends("voucher_line_id")
     def _compute_scan_log_ids(self):

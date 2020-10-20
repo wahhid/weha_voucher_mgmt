@@ -15,6 +15,11 @@
         "views/voucher_scrap_view.xml",
         "views/voucher_issuing_view.xml",
         "wizards/stock_barcodes_read_views.xml",
+        "wizards/stock_barcodes_read_voucher_allocate_views.xml",
+        "wizards/stock_barcodes_read_voucher_issuing_views.xml",
+        "wizards/stock_barcodes_read_voucher_return_views.xml",
+        "wizards/stock_barcodes_read_voucher_scrap_views.xml",
+
     ],
     "installable": True,
 }

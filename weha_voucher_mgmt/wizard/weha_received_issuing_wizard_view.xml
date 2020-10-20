@@ -48,15 +48,11 @@
                 </group>
                 <group>
                     <group>
-                        <h1>
-                            <field name="code_ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
-                            <field name="start_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
-                        </h1>
+                        <field name="code_ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
+                        <field name="start_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
+                        <field name="end_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
                     </group>
                     <group>
-                        <h1>
-                            <field name="end_ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
-                        </h1>
                     </group>
                 </group>
                 <notebook>

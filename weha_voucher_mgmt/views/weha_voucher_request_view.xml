@@ -47,29 +47,45 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-                    
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" name="trans_request_approval" string="Request Approval" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+            
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                class="btn btn-primary" 
+                                name="trans_request_approval" 
+                                string="Request Approval" 
+                                groups="weha_voucher_mgmt.group_voucher_user"/>
 
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=','approve_1')]}"
-                            class="btn btn-primary" name="trans_approve1" string="Approve" 
-                            confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approve_1')]}"
-                            class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=','approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_approve" 
+                                string="Approve" 
+                                confirm="Are you sure you want to Approve?" 
+                                groups="weha_voucher_mgmt.group_voucher_manager" />
+                        
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_reject" 
+                                string="Reject"
+                                groups="weha_voucher_mgmt.group_voucher_manager"/>
 
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=','approve_2')]}"
-                            class="btn btn-primary" name="trans_approve2" string="Approve" 
-                            confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_manager" />
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approve_2')]}"
-                            class="btn btn-primary" name="trans_reject" string="Reject" groups="weha_voucher_mgmt.group_voucher_manager"/>
-                        <button name="%(weha_voucher_mgmt.act_open_received_request_view_form)d" type="action" string="Received Voucher"
-                            class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=','approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_approve_finance" 
+                                string="Approve" 
+                                confirm="Are you sure you want to Approve?" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_manager" />
+                        
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_reject" 
+                                string="Reject"
+                                groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
 
-                        <button name="action_voucher_allocate_from_request" type="object" string="Create Allocation Form"
-                            class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'open')]}" groups="weha_voucher_mgmt.group_voucher_finance_user"/>
-
-                        <field name="stage_id" widget="statusbar" clickable="True" />
+                        <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
                     <sheet>
                         <!-- <div class="oe_button_box" name="button_box">
@@ -96,41 +112,34 @@
                                 <field name="date_request" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="voucher_terms_id"/>
-                            </group>
-                            <group>
-                                <field name="voucher_count"/>
-
-                                <!-- <field name="source_operating_unit"/> -->
-                                <field name="current_stage" invisible="1"/>
                             </group>
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
-                                <!--<field name="voucher_count"/>-->
-                                <!--<field name="voucher_allocate_count"/>-->
+                                <field name="voucher_count"/>
+                                <field name="current_stage" invisible="1"/>
                             </group>
                         </group>
 
                         <notebook colspan="4">
-                            <!--
-                            <page string="Request Lines">
-	                        	<field name="line_ids" widget="one2many_list" nolabel="0" readonly="0">
-	                            	<tree string="Request Lines" create="true" delete="true" edit="true">
-	                            	    <field name="voucher_code_id" />
-                                        <field name="amount" />	                                	                                                                                                                                                                                                                                   
-	                            	</tree>                    	                            	
-	                        	</field>
-	                        </page>	  
-                            --> 
                             <page string="Vouchers">
                                 <field name="voucher_request_line_ids" widget="many2one_clickable">
                                     <tree string="Request Lines" editable="bottom">
-                                        <field name="voucher_code_id" />
-                                        <field name="voucher_terms_id"/>
+                                        <field name="voucher_code_id"  domain="[('voucher_type', '=', 'physical')]"/>
                                         <field name="voucher_qty"/>
                                     </tree>
                                 </field>
                             </page>
+                            <page string="Request Allocate Lines">
+	                        	<field name="voucher_request_allocate_line_ids" widget="one2many_list" nolabel="0" readonly="1">
+	                            	<tree string="Allocate Lines">
+	                            	    <field name="voucher_order_line_id" /> 
+                                        <field name="voucher_code_id"/>
+                                        <field name="year_id"/>
+                                        <field name="voucher_promo_id"/>       
+                                        <field name="state"/>                   	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page> 
                         </notebook>
                     </sheet>
 
@@ -215,7 +224,9 @@
             <field name="arch" type="xml">
                 <graph string="Voucher Request Statistic" type="pie">
                     <field name="operating_unit_id" type="row"/>
+                    <!--
                     <field name="voucher_code_id" type="measure"/>
+                    -->
                 </graph>
             </field>
         </record>

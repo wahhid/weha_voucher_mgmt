@@ -30,29 +30,62 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
+                        <button type="action"
+                                name="%(weha_voucher_mgmt.action_issuing_import_voucher_line_wizard)d"
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}"
+                                groups="weha_voucher_mgmt.group_voucher_hrd_user"
+                                string="Add Lines"/>
                         <button type="object" 
-                            attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary"
-                            name="trans_confirm" 
-                            string="Confirm" 
-                            confirm="Are you sure to continue ?"
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
-                        <button type="object" attrs="{'invisible': ['|', ('current_stage', '!=', 'unattended'),('current_stage', '!=', 'open')]}"
-                            class="btn btn-light" name="trans_cancelled" string="Cancel Order" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>                     
-                        <button 
-                            type="action" 
-                            attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" 
-                            name="%(weha_voucher_mgmt.act_open_scan_voucher_issuing_view_form)d" 
-                            string="Scan Voucher" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
-
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-primary" name="action_issuing_voucher" string="Ready to Issuing" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
-
-                        <field name="stage_id" widget="statusbar" clickable="True" />
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                class="btn btn-primary" 
+                                name="trans_issuing_approval" 
+                                string="Request Approval" 
+                                groups="weha_voucher_mgmt.group_voucher_hrd_user"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                class="btn btn-primary"
+                                name="trans_confirm" 
+                                string="Confirm" 
+                                confirm="Are you sure to continue ?"
+                                groups="weha_voucher_mgmt.group_voucher_manager"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_approve" 
+                                string="Approve" 
+                                groups="weha_voucher_mgmt.group_voucher_hrd_manager" 
+                                confirm="Are you sure you want to Approve?"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
+                                class="btn btn-primary" 
+                                name="trans_reject" 
+                                string="Reject" 
+                                groups="weha_voucher_mgmt.group_voucher_hrd_manager"/>
+                        <button type="object" 
+                                attrs="{'invisible': ['|', ('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
+                                class="btn btn-light" 
+                                name="trans_cancelled" 
+                                string="Cancel Order" 
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_hrd_user"/>                     
+                        <button type="action" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                class="btn btn-primary" 
+                                name="%(weha_voucher_mgmt.act_open_scan_voucher_issuing_view_form)d" 
+                                string="Scan Voucher" 
+                                groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}"
+                                class="btn btn-primary" 
+                                name="action_issuing_voucher" 
+                                string="Ready to Issuing" 
+                                groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                                class="btn btn-primary" 
+                                name="action_issuing_voucher" 
+                                string="Ready to Issuing" 
+                                groups="weha_voucher_mgmt.group_voucher_hrd_user"/>
+                        <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
                     <sheet>
                         <div name="button_box" class="oe_button_box">
@@ -74,6 +107,7 @@
                                 <field name="issuing_date" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
+                                <field name="is_employee" invisible="0"/>
                             </group>
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
@@ -83,17 +117,28 @@
                             </group>
                         </group>
                          <notebook colspan="4">
-                            <page string="Issued Lines">
-	                        	<field name="voucher_issuing_line_ids" widget="one2many_list" nolabel="0" readonly="1">
+                            <page string="Issued Lines" attrs="{'invisible':[('is_employee','=', True)]}">
+	                        	<field name="voucher_issuing_line_ids" widget="one2many_list" nolabel="0" attrs="{'readonly':[('current_stage','!=', 'unattended')]}">
 	                            	<tree string="Issued Lines">
 	                            	    <field name="voucher_order_line_id" /> 
                                         <field name="voucher_code_id"/>
                                         <field name="year_id"/>
-                                        <field name="voucher_promo_id"/>       
+                                        <field name="voucher_promo_id"/>      
+                                        <field name="member_id"/> 
                                         <field name="state"/>                   	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>
+                            <page string="Employee Lines" attrs="{'invisible':[('is_employee','=', False)]}">
+                                <field name="voucher_issuing_employee_line_ids" widget="one2many_list" nolabel="0" attrs="{'readonly':[('current_stage','!=', 'unattended')]}">
+                                    <tree string="Employee Lines">
+                                        <field name="member_id"/>
+                                        <field name="sku"/>
+                                        <field name="quantity"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </page>
                         </notebook>
                     </sheet>
                     <div class="oe_chatter">
@@ -178,8 +223,25 @@
             <field name="name">Voucher Issuing</field>
             <field name="res_model">weha.voucher.issuing</field>
             <field name="view_mode">kanban,tree,form</field>
-            <field name="domain">[]</field>
-            <field name="context">\{}</field>
+            <field name="domain">[('is_employee','=',False)]</field>
+            <field name="context">{'default_is_employee': False}</field>
+            <field name="search_view_id" ref="view_weha_voucher_issuing_search" />
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add for new voucher issuing
+                </p><p>
+                    Voucher Issuing
+                </p>
+            </field>
+        </record>
+
+        <record id="action_weha_voucher_issuing_employee" model="ir.actions.act_window">
+            <field name="type">ir.actions.act_window</field>
+            <field name="name">Voucher Issuing</field>
+            <field name="res_model">weha.voucher.issuing</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[('is_employee','=',True)]</field>
+            <field name="context">{'default_is_employee': True}</field>
             <field name="search_view_id" ref="view_weha_voucher_issuing_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
@@ -194,7 +256,15 @@
             id="weha_voucher_issuing_menu" 
             name="Issuing" 
             parent="weha_transaction_main_menu"
-            action="action_weha_voucher_issuing_act_window" sequence="23"/>
+            action="action_weha_voucher_issuing_act_window" sequence="23"
+            groups="weha_voucher_mgmt.group_voucher_user"/>
+        
+        <menuitem 
+            id="weha_voucher_issuing_employee_menu" 
+            name="Issuing" 
+            parent="weha_transaction_main_menu"
+            action="action_weha_voucher_issuing_employee" sequence="24"
+            groups="weha_voucher_mgmt.group_voucher_hrd_user"/>
         
 
         

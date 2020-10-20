@@ -166,7 +166,8 @@ class VoucherOrderLine(models.Model):
     voucher_type = fields.Selection(
         string='Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
-        default='physical'
+        default='physical',
+        index=True
     )
     #P-Voucher or E-Voucher
     voucher_code = fields.Char(string='Voucher Code')
@@ -177,7 +178,9 @@ class VoucherOrderLine(models.Model):
     #Voucher Promo
     voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo', index=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type', related='voucher_promo_id.tender_type_id', store=True)
+    tender_type = fields.Char('Tender Type', size=20)
     bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category', related='voucher_promo_id.bank_category_id', store=True)
+    bank_category = fields.Char('Bank Category', size=20)
     #Check Number Voucher
     check_number = fields.Integer(string='Check Number', group_operator=False)
     #Voucher 12 Digit
@@ -253,7 +256,8 @@ class VoucherOrderLine(models.Model):
             ('done','Close'),
             ('scrap','Scrap')
         ],
-        default='open'
+        default='open',
+        index=True
     )
 
     @api.model
@@ -295,9 +299,9 @@ class VoucherOrderLineTrans(models.Model):
             ('ST', 'Stock Transfer'), 
             ('IC', 'Issued Customer'), 
             ('RT', 'Return'), 
-            ('AC','Activated'), 
-            ('RS','Reserved'), 
-            ('US','Used'), 
+            ('AC', 'Activated'), 
+            ('RS', 'Reserved'), 
+            ('US', 'Used'), 
             ('DM', 'Damage')],
         default='OP'
     )

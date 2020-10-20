@@ -48,8 +48,12 @@
                             <group>
                                 <field name="unattended"/>
                                 <field name="approval"/>
-                                <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)], 'required':[('approval','=', True)] }"/> 
+                                <!--
+                                <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)]}"/> 
+                                -->
                                 <field name="opened"/>
+                                <field name="progress"/>
+                                <field name="receiving"/>
                                 <field name="closed"/>
                                 <field name="cancelled"/>
                                 <field name="rejected"/>

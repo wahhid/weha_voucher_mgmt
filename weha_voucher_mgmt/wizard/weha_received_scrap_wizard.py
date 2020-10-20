@@ -12,35 +12,9 @@ class WizardScanVoucherScrap(models.TransientModel):
     _name = "weha.wizard.scan.voucher.scrap"
 
 
-    # @api.model
-    # def default_get(self, fields):
-    #     res = super(WizardScanVoucherscrap, self).default_get(fields)
-    #     active_id = self.env.context.get('active_id') or False
-    #     if active_id:
-    #         voucher_scrap_id = self.env['weha.voucher.scrap'].browse(active_id)
-    #         if voucher_scrap_id.voucher_promo_id:
-    #             domain = [
-    #                 ('voucher_code_id','=', voucher_scrap_id.voucher_code_id.id),
-    #                 ('year_id','=', voucher_scrap_id.year_id.id),
-    #                 ('voucher_promo_id', '=', voucher_scrap_id.voucher_promo_id.id)
-    #             ]
-    #         else:
-    #             domain = [
-    #                 ('voucher_code_id','=', voucher_scrap_id.voucher_code_id.id),
-    #                 ('year_id','=', voucher_scrap_id.year_id.id),
-    #             ]
-    #         voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
-
-    #         res.update({'voucher_code_id':  voucher_scrap_id.voucher_code_id.id})
-    #         res.update({'year_id':  voucher_scrap_id.year_id.id})
-    #         res.update({'voucher_promo_id':  voucher_scrap_id.voucher_promo_id.id})
-    #         res.update({'estimate_total': len(voucher_order_line_ids)})
-    #     return res
 
     @api.onchange('start_number', 'end_number')
     def _onchange_voucher(self):     
-
-
         if self.start_number:     
             voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)],limit=1)
             if not voucher_id:

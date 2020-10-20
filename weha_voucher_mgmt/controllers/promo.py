@@ -56,7 +56,7 @@ class VMSPromoController(http.Controller):
         cashier_id = post['cashier_id'] or False if 'cashier_id' in post else False
         store_id = post['store_id'] or False if 'store_id' in post else False
         tender_type = post['tender_type'] or False if 'tender_type' in post else False
-        bank_categgory = post['bank_category'] or False if 'bank_category' in post else False
+        bank_category = post['bank_category'] or False if 'bank_category' in post else False
         bin_number = post['bin_number'] or False if 'bin_number' in post else False
         sku = post['sku'] or False if 'sku' in post else False
         member_id = post['member_id'] or False  if 'member_id' in post else False
@@ -69,7 +69,7 @@ class VMSPromoController(http.Controller):
                                         cashier_id, 
                                         store_id,
                                         tender_type,
-                                        bank_categgory,
+                                        bank_category,
                                         bin_number,
                                         sku,
                                         voucher_type])
@@ -166,13 +166,13 @@ class VMSPromoController(http.Controller):
         values.update({'store_id': store_id})
         values.update({'member_id': member_id})
         values.update({'sku': sku})
-        #values.update({'quantity': quantity})
-        #values.update({'amount': amount})
+        values.update({'tender_type': tender_type})
+        values.update({'bank_category': bank_category})
         values.update({'voucher_type': voucher_type})
         #values.update({'voucher_code_id': mapping_sku_id.voucher_code_id.id})
 
         #Save Data
-        result = voucher_trans_purchase_obj.create(values)
+        result = voucher_trans_purchase_obj.sudo().create(values)
         
         if not result:
             data =  {

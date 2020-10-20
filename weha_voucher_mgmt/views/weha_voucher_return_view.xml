@@ -53,24 +53,41 @@
                             string="Scan Return Voucher" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
 
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
-                            class="btn btn-light" name="trans_close" string="Closed Return Voucher" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
+                                class="btn btn-light" 
+                                name="trans_close" 
+                                string="Closed Return" 
+                                groups="weha_voucher_mgmt.group_voucher_user"/>
 
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-light" name="trans_delivery" string="Delivery" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                                class="btn btn-primary" 
+                                name="trans_delivery" 
+                                string="Delivery" 
+                                groups="weha_voucher_mgmt.group_voucher_user"/>
 
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
-                            class="btn btn-primary" name="trans_approve" string="Approve" 
-                            groups="weha_voucher_mgmt.group_voucher_manager" confirm="Are you sure you want to Approve?"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_approve"
+                                string="Approve" 
+                                groups="weha_voucher_mgmt.group_voucher_manager" 
+                                confirm="Are you sure you want to Approve?"/>
                         
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
-                            class="btn btn-primary" name="trans_reject" string="Reject" 
-                            groups="weha_voucher_mgmt.group_voucher_manager"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
+                                class="btn btn-primary" 
+                                name="trans_reject" 
+                                string="Reject" 
+                                groups="weha_voucher_mgmt.group_voucher_manager"/>
 
-                        <button name="%(weha_voucher_mgmt.act_open_received_return_view_form)d" type="action" string="Received Voucher"
-                            class="oe_highlight" attrs="{'invisible': [('current_stage', '!=', 'progress')]}" groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                        <button name="%(weha_voucher_mgmt.act_open_received_return_view_form)d" 
+                                type="action" 
+                                string="Received Voucher"
+                                class="oe_highlight" 
+                                attrs="{'invisible': [('current_stage', '!=', 'progress')]}" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
 
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
@@ -93,7 +110,7 @@
                                 <field name="return_date" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="current_stage" invisible="1"/>
+                                <field name="current_stage" invisible="0"/>
                             </group>
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
@@ -102,8 +119,8 @@
                         </group>
                         <notebook colspan="4">
                             <page string="Return Lines">
-	                        	<field name="voucher_return_line_ids" widget="one2many_list" nolabel="0" readonly="1">
-	                            	<tree string="Return Lines">
+	                        	<field name="voucher_return_line_ids" widget="one2many_list" nolabel="0" attrs="{'readonly': [('current_stage','!=','unattended')]}">
+	                            	<tree string="Return Lines" create="0" edit="0">
 	                            	    <field name="voucher_order_line_id" /> 
                                         <field name="voucher_code_id"/>
                                         <field name="year_id"/>
@@ -112,17 +129,6 @@
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>
-                            <page string="Recevied Lines">
-	                        	<field name="voucher_return_line_received_ids" widget="one2many_list" nolabel="0" readonly="1">
-	                            	<tree string="Recevied Lines">
-	                            	    <field name="voucher_order_line_id" /> 
-                                        <field name="voucher_code_id"/>
-                                        <field name="year_id"/>
-                                        <field name="voucher_promo_id"/>       
-                                        <field name="state"/>                   	                                                                                                                                                                                                                                   
-	                            	</tree>                    	                            	
-	                        	</field>
-	                        </page>	 	   
                         </notebook>
                     </sheet>
                     <div class="oe_chatter">

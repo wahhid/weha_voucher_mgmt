@@ -11,38 +11,16 @@ _logger = logging.getLogger(__name__)
 class WizardScanVoucherAllocate(models.TransientModel):
     _name = "weha.wizard.scan.voucher.allocate"
 
-
-    # @api.model
-    # def default_get(self, fields):
-    #     res = super(WizardScanVoucherAllocate, self).default_get(fields)
-    #     active_id = self.env.context.get('active_id') or False
-    #     if active_id:
-    #         voucher_allocate_id = self.env['weha.voucher.allocate'].browse(active_id)
-    #         if voucher_allocate_id.voucher_promo_id:
-    #             domain = [
-    #                 ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
-    #                 ('year_id','=', voucher_allocate_id.year_id.id),
-    #                 ('voucher_promo_id', '=', voucher_allocate_id.voucher_promo_id.id)
-    #             ]
-    #         else:
-    #             domain = [
-    #                 ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
-    #                 ('year_id','=', voucher_allocate_id.year_id.id),
-    #             ]
-    #         voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
-
-    #         res.update({'voucher_code_id':  voucher_allocate_id.voucher_code_id.id})
-    #         res.update({'year_id':  voucher_allocate_id.year_id.id})
-    #         res.update({'voucher_promo_id':  voucher_allocate_id.voucher_promo_id.id})
-    #         res.update({'estimate_total': len(voucher_order_line_ids)})
-    #     return res
-
     @api.onchange('start_number', 'end_number')
     def _onchange_voucher(self):     
-
-
+        voucher_allocate_id = self.env['weha.voucher.allocate'].browse(self.env.context.get('active_id'))
         if self.start_number:     
-            voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)],limit=1)
+            domain = [
+                ('voucher_ean','=', self.start_number),
+                ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
+                ('state','=', 'open'),
+            ]
+            voucher_id  = self.env['weha.voucher.order.line'].search(domain,limit=1)
             if not voucher_id:
                 self.start_number = False
                 raise Warning('Voucher in start number not found')
@@ -106,7 +84,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
 
         #Clear Voucher Allocate Line
         for voucher_allocate_line_id in voucher_allocate_id.voucher_allocate_line_ids:
-            voucher_allocate_line_id.unlink()
+           voucher_allocate_line_id.unlink()
             
         #Get Voucher Check Number
         voucher_order_line_start_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)], limit=1)
@@ -135,6 +113,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('voucher_promo_id', '=', voucher_order_line_start_id.voucher_promo_id.id),
+                ('state', '=', 'open'),
                 ('check_number', 'in', tuple(voucher_ranges))
             ]
         else:
@@ -142,6 +121,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
+                ('state', '=', 'open'),
                 ('check_number', 'in', tuple(voucher_ranges))
             ]
         _logger.info(domain)
@@ -156,23 +136,9 @@ class WizardScanVoucherAllocate(models.TransientModel):
             }
             self.env['weha.voucher.allocate.line'].create(vals)
            
-        
 class WehaWizardReceivedAllocate(models.TransientModel):
     _name = 'weha.wizard.received.allocate'
     _description = 'Wizard form for received voucher'
-
-    # @api.onchange('code_ean')
-    # def code_ean_scanning(self):
-    #     match = False
-    #     voucher_order_line_obj = self.env['weha.voucher.order.line']
-    #     voucher_order_line_id = voucher_order_line_obj.search([('voucher_ean','=', self.code_ean)])
-    #     if self.code_ean and not voucher_order_line_id:
-    #         raise Warning('No voucher is available for this code')
-        
-        # if self.code_ean and not match:
-        #     if voucher_order_line_id:
-        #         raise Warning('This product is not available in the order.'
-        #                       'You can add this product by clicking the "Add an item" and scan')
 
     def trans_received(self):
 
@@ -182,31 +148,31 @@ class WehaWizardReceivedAllocate(models.TransientModel):
         active_id = self.env.context.get('active_id') or False
         voucher_allocate_id = self.env['weha.voucher.allocate'].browse(active_id)
 
-        if self.scan_method == 'all':
-            for voucher_allocate_line_id in voucher_allocate_id.voucher_allocate_line_ids:
-                vals = {}
-                vals.update({'state': 'received'})
-                res = voucher_allocate_line_id.write(vals)
+        # if self.scan_method == 'all':
+        #     for voucher_allocate_line_id in voucher_allocate_id.voucher_allocate_line_ids:
+        #         vals = {}
+        #         vals.update({'state': 'received'})
+        #         res = voucher_allocate_line_id.write(vals)
 
-                voucher_order_line_id = voucher_allocate_line_id.voucher_order_line_id
-                vals = {}
-                vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
-                vals.update({'state': 'open'})
-                voucher_order_line_id.write(vals)
+        #         voucher_order_line_id = voucher_allocate_line_id.voucher_order_line_id
+        #         vals = {}
+        #         vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
+        #         vals.update({'state': 'open'})
+        #         voucher_order_line_id.write(vals)
 
-                vals = {}
-                vals.update({'name': voucher_allocate_id.number})
-                vals.update({'voucher_order_line_id': voucher_order_line_id.id})
-                vals.update({'trans_date': datetime.now()})
-                vals.update({'operating_unit_loc_fr_id': voucher_allocate_id.operating_unit_id.id})
-                vals.update({'operating_unit_loc_to_id': voucher_allocate_id.source_operating_unit.id})
-                vals.update({'trans_type': 'RV'})
-                self.env['weha.voucher.order.line.trans'].create(vals)
+        #         vals = {}
+        #         vals.update({'name': voucher_allocate_id.number})
+        #         vals.update({'voucher_order_line_id': voucher_order_line_id.id})
+        #         vals.update({'trans_date': datetime.now()})
+        #         vals.update({'operating_unit_loc_fr_id': voucher_allocate_id.operating_unit_id.id})
+        #         vals.update({'operating_unit_loc_to_id': voucher_allocate_id.source_operating_unit.id})
+        #         vals.update({'trans_type': 'RV'})
+        #         self.env['weha.voucher.order.line.trans'].create(vals)
             
-            stage_id = voucher_allocate_id.stage_id.next_stage_id
-            voucher_allocate_id.sudo().trans_confirm_received()
+        #     stage_id = voucher_allocate_id.stage_id.next_stage_id
+        #     voucher_allocate_id.sudo().trans_confirm_received()
 
-        elif self.scan_method == 'start_end':
+        if self.scan_method == 'start_end':
             if self.start_ean and self.end_ean:
                 _logger.info(self.start_ean)
                 _logger.info(self.end_ean)
@@ -223,6 +189,7 @@ class WehaWizardReceivedAllocate(models.TransientModel):
                     ('voucher_ean', '=',  self.end_ean),
                     ('state', '=', 'intransit')
                 ]
+
                 _logger.info(domain)
                 end_voucher = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
                 _logger.info(end_voucher)
@@ -236,6 +203,7 @@ class WehaWizardReceivedAllocate(models.TransientModel):
                     if start_voucher.voucher_promo_id:
                         domain = [
                             ('voucher_code_id', '=', start_voucher.voucher_code_id.id),
+                            ('operating_unit_id', '=', )
                             ('year_id', '=', start_voucher.year_id.id),
                             ('voucher_promo_id', '=', start_voucher.voucher_promo_id.id),
                             ('state', '=', 'intransit'),
@@ -281,19 +249,22 @@ class WehaWizardReceivedAllocate(models.TransientModel):
                 else:
                     raise ValidationError("Start Voucher and End Voucher not match!")
                 
-                stage_id = voucher_allocate_id.stage_id.next_stage_id
-                voucher_allocate_id.sudo().write({'stage_id': stage_id.id})
+                if voucher_allocate_id.voucher_count == voucher_allocate_id.voucher_received_count:
+                    voucher_allocate_id.sudo().trans_received()
 
         else:
             _logger.info('Manual Input')
-            
-            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search([('voucher_ean','=', self.code_ean),('state','=','intransit')],limit=1)
+            domain = [
+                ('voucher_ean','=', self.code_ean),
+                ('state','=','intransit')
+            ]
+            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
             if not voucher_order_line_id:
                 raise ValidationError("Voucher not found")
             
             domain = [
                 ('voucher_order_line_id', '=', voucher_order_line_id.id),
-                #('state', '=', 'open')
+                ('state', '=', 'open')
             ]
 
             voucher_allocate_line_id = self.env['weha.voucher.allocate.line'].search(domain, limit=1)
@@ -318,8 +289,8 @@ class WehaWizardReceivedAllocate(models.TransientModel):
             vals.update({'trans_type': 'RV'})
             self.env['weha.voucher.order.line.trans'].create(vals)
 
-            
-
+            if voucher_allocate_id.voucher_count == voucher_allocate_id.voucher_received_count:
+                voucher_allocate_id.sudo().trans_received()
 
     # def trans_received_all(self):
 
@@ -367,12 +338,11 @@ class WehaWizardReceivedAllocate(models.TransientModel):
     end_ean = fields.Char(string="End Ean")
     scan_method = fields.Selection(
         [
-            ('all','Receive All'),
             ('start_end','Scan Start and End Voucher'),
             ('one','Scan Each Voucher'),
         ],
         "Scan Method",
-        default='all'
+        default='start_end'
     )
 
     allocate_line_wizard_ids = fields.One2many(comodel_name='weha.wizard.received.allocate.line', inverse_name='wizard_allocate_id', string='Wizard Allocate Line')

@@ -34,6 +34,7 @@ class WehaVoucherOrderStage(models.Model):
     from_stage_id = fields.Many2one('weha.voucher.order.stage', 'From Stage', required=False)
     next_stage_id = fields.Many2one('weha.voucher.order.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
+    approval_user_ids = fields.Many2many('res.users', string='Approval Users')
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',
@@ -45,7 +46,6 @@ class WehaVoucherOrderStage(models.Model):
         default=lambda self: self.env['res.company']._company_default_get(
             'weha.voucher.order')
     )
-
 
 class WehaVoucherRequestStage(models.Model):
     _name = 'weha.voucher.request.stage'
@@ -61,16 +61,7 @@ class WehaVoucherRequestStage(models.Model):
     approval = fields.Boolean(
         string='Approve'
     )
-    l1 = fields.Boolean(
-        string='Level 1')
-    l2 = fields.Boolean(
-        string='Level 2')
-    opened = fields.Boolean(
-        string='Open')
-    l1 = fields.Boolean(
-        string='Approval 1')
-    l2 = fields.Boolean(
-        string='Approval 2')
+    approval_user_id = fields.Many2one('res.users','Approval User')
     opened = fields.Boolean(
         string='Open')
     progress = fields.Boolean(
@@ -136,7 +127,7 @@ class WehaVoucherReturnStage(models.Model):
              "to display.")
     from_stage_id = fields.Many2one('weha.voucher.return.stage', 'From Stage', required=False)
     next_stage_id = fields.Many2one('weha.voucher.return.stage', 'Next Stage', required=False)
-    approval_user_id = fields.Many2one('res.users', 'Approval User')
+    approval_user_id = fields.Many2one('res.users', 'Approval User', required=False)
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',
@@ -193,7 +184,6 @@ class WehaVoucherStockTransferStage(models.Model):
         default=lambda self: self.env['res.company']._company_default_get(
             'weha.voucher.order')
     )
-
 
 class WehaVoucherAllocateStage(models.Model):
     _name = 'weha.voucher.allocate.stage'

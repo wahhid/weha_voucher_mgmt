@@ -2,6 +2,7 @@ from odoo import models, fields, api,  _
 from odoo.exceptions import UserError, ValidationError
 import logging
 from random import randrange
+from datetime import datetime, timedelta
 
 _logger = logging.getLogger(__name__)
 
@@ -39,15 +40,9 @@ class VoucherOrder(models.Model):
         stage_ids = self.env['weha.voucher.order.stage'].search([])
         return stage_ids
     
-    @api.depends('line_ids')
-    def _calculate_voucher_count(self):
-        for row in self:
-            self.voucher_count = len(self.line_ids)
-    
-    def send_l1_request_mail(self):
-        for rec in self:
-            template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
-            template.send_mail(rec.id)
+
+    def send_notification(self, data):
+        self.env['mail.activity'].create(data).action_feedback()
 
     # Generate Voucher
     def trans_generate_voucher(self):
@@ -163,12 +158,25 @@ class VoucherOrder(models.Model):
             raise ValidationError('Overlap Voucher Number')
 
     def trans_approve(self):
+        #Approve Voucher Order
         stage_id = self.stage_id.next_stage_id
-
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
         
-        #Send Notification
+        #Create Schedule Activity
+        operating_unit_id = self.operating_unit_id
+        for requester_user_id in operating_unit_id.requester_user_ids:
+            _logger.info(requester_user_id.name)
+            self.env['mail.activity'].create({
+                'activity_type_id': 4,
+                'note': 'Voucher Order was approved',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_order').id,
+                'user_id': requester_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Order was approved'
+            }).action_feedback()
 
+        #Send Notification
         #template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
         #template = self.env['mail.template'].browse(template_id)
         #template.email_to = self.user_id.partner_id.email
@@ -179,6 +187,18 @@ class VoucherOrder(models.Model):
         if not stage_id:
             raise ValidationError('Stage Rejected not found')
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
+
+        #Create Schedule Activity
+        self.env['mail.activity'].create({
+            'activity_type_id': 4,
+            'note': 'Voucher Order was rejected',
+            'res_id': self.id,
+            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_order').id,
+            'user_id': self.user_id.id,
+            'date_deadline': datetime.now() + timedelta(days=2),
+            'summary': 'Voucher Order was rejected'
+        }).action_feedback()
+
         #Send Notification
         #template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
         #template = self.env['mail.template'].browse(template_id)
@@ -195,21 +215,24 @@ class VoucherOrder(models.Model):
         return res
         
     def trans_request_approval(self):    
-    
-        next_stage_id =  self.stage_id.next_stage_id
-        vals = { 'stage_id': next_stage_id.id}
+        _logger.info('Trans Request Approval Process')
+        stage_id =  self.stage_id.next_stage_id
+        vals = { 'stage_id': stage_id.id}
         #self.write(vals)
         super(VoucherOrder,self).write(vals)
 
         #Create Schedule Activity
-        activity = self.env['mail.activity'].create({
+        data = {
             'activity_type_id': 4,
             'note': 'Voucher Order Approval',
             'res_id': self.id,
             'res_model_id': self.env.ref('model_weha_voucher_order').id,
-            'user_id': next_stage_id.approval_user_id.id
-        })
-
+            'user_id': stage_id.approval_user_id.id,
+            'date_deadline': datetime.now() + timedelta(days=2),
+            'summary': 'Voucher Order Approval'
+        }
+        self.send_notification(data)
+        
         #template_id = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template').id 
         #template = self.env['mail.template'].browse(template_id)
         #_logger.info(next_stage_id.approval_user_id)
@@ -218,24 +241,27 @@ class VoucherOrder(models.Model):
         
     def trans_order_approval(self):    
         stage_id = self.stage_id.next_stage_id
-        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
-        return res
-
+        super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        operating_unit_id = self.operating_unit_id
+        for approval_user_id in operating_unit_id.approval_user_ids:
+            data = {
+                    'activity_type_id': 4,
+                    'note': 'Voucher Order Approval',
+                    'res_id': self.id,
+                    'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_order').id,
+                    'user_id': approval_user_id.id,
+                    'date_deadline': datetime.now() + timedelta(days=2),
+                    'summary': 'Voucher Order Approval'
+            }
+            self.send_notification(data)
+            
+    
     def trans_cancelled(self):
         stage_id = self.env['weha.voucher.order.stage'].search([('cancelled','=', True)], limit=1)
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
 
-
-    def trans_create_activity(self):
-        activity = self.env['mail.activity'].create({
-            'activity_type_id': 4,
-            'note': 'Voucher Order Approval',
-            'res_id': self.id,
-            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_order').id,
-            'user_id': self.stage_id.approval_user_id.id
-        })
 
 
     company_id = fields.Many2one('res.company', 'Company')

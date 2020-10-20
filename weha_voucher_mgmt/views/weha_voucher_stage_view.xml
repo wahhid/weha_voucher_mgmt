@@ -49,7 +49,9 @@
                             <group>
                                 <field name="unattended"/>
                                 <field name="approval"/>
-                                <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)], 'required':[('approval','=', True)] }"/> 
+                                <!--
+                                <field name="approval_user_ids" widget="many2many_tags" attrs="{'invisible':[('approval','=', False)], 'required':[('approval','=', True)] }"/>
+                                -->
                                 <field name="opened"/>
                                 <field name="closed"/>
                                 <field name="rejected"/>
@@ -142,13 +144,14 @@
                                 <field name="company_id"/>
                                 <field name="next_stage_id"/>
                                 <field name="mail_template_id"/>
+                                <field name="sequence"/>
                             </group>
                             <group>
                                 <field name="unattended"/>
-                                <field name="l1"/>
-                                <field name="approval_user_id_l1" attrs="{'invisible':[('l1','=', False)], 'required':[('l1','=', True)] }"/>
-                                <field name="l2"/>
-                                <field name="approval_user_id_l2" attrs="{'invisible':[('l2','=', False)], 'required':[('l2','=', True)] }"/>
+                                <field name="approval"/>
+                                <!--
+                                <field name="approval_user_id"/>
+                                -->
                                 <field name="opened"/>
                                 <field name="closed"/>
                                 <field name="cancelled"/>

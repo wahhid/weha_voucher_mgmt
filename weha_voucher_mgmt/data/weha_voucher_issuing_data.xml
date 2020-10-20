@@ -6,19 +6,33 @@
         <!-- Voucher Issuing Stage -->
 
         <record id="voucher_issuing_stage_done" model="weha.voucher.issuing.stage">
-            <field name="sequence">3</field>
+            <field name="sequence">4</field>
             <field name="name">Issuing</field>
             <field name="closed">True</field>
             <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_issuing_stage_open" model="weha.voucher.issuing.stage">
+            <field name="sequence">3</field>
+            <field name="name">Ready to issued</field>
+            <field name="open">True</field>
+            <field name="next_stage_id" ref="voucher_issuing_stage_done"/>
+        </record>
+
+        <record id="voucher_issuing_stage_approval" model="weha.voucher.issuing.stage">
+            <field name="sequence">2</field>
+            <field name="name">Pending Approval</field>
+            <field name="approval">True</field>
+            <field name="next_stage_id" ref="voucher_issuing_stage_open"/>
         </record>
 
         <record id="voucher_issuing_stage_request" model="weha.voucher.issuing.stage">
             <field name="sequence">1</field>
             <field name="name">Draft</field>
             <field name="unattended">True</field>
-            <field name="next_stage_id" ref="voucher_issuing_stage_done"/>
+            <field name="next_stage_id" ref="voucher_issuing_stage_approval"/>
         </record>
-
+        
         <record id="voucher_issuing_stage_cancelled" model="weha.voucher.issuing.stage">
             <field name="sequence">5</field>
             <field name="name">Cancelled</field>
@@ -34,13 +48,12 @@
         </record>
 
 
-
-        <!--
+        <!-- Issuing Employe Scheduler -->
         <record forcecreate="True" id="ir_cron_scheduler_action" model="ir.cron">
             <field name="name">Issuing: Employee Voucher</field>
             <field name="model_id" ref="model_weha_voucher_issuing"/>
             <field name="state">code</field>
-            <field name="code">model.run_issuing()</field>
+            <field name="code">model.process_voucher_issuing()</field>
             <field eval="True" name="active"/>
             <field name="user_id" ref="base.user_root"/>
             <field name="interval_number">1</field>
@@ -49,16 +62,7 @@
             <field eval="False" name="doall"/>
         </record>
 
-        -->
 
-
-        <record id="voucher_issuing_stage_issuing" model="weha.voucher.issuing.stage">
-            <field name="sequence">1</field>
-            <field name="name">Draft</field>
-            <field name="unattended">True</field>
-            <field name="from_stage_id" ref="voucher_issuing_stage_cancelled"/>
-            <field name="next_stage_id" ref="voucher_issuing_stage_open"/>
-        </record>
 
        
     </data>

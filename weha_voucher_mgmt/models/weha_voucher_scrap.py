@@ -36,53 +36,12 @@ class VoucherScrap(models.Model):
     def _read_group_stage_ids(self, stages, domain, order):
         stage_ids = self.env['weha.voucher.scrap.stage'].search([])
         return stage_ids
+
     
-
-    # def trans_voucher_scrap(self):
-    #     line = len(self.voucher_return_line_ids)
-    #     _logger.info("Allocate line = " + str(line))
-
-    #     for i in range(line):
-    #         number_range = len(self.voucher_return_line_ids.number_ranges_ids)
-    #         _logger.info("Number Range = " + str(number_range))
-
-    #         for rec in range(number_range):
-
-    #             startnum = self.voucher_return_line_ids.number_ranges_ids.start_num
-    #             endnum = self.voucher_return_line_ids.number_ranges_ids.end_num
-    #             vcode = self.voucher_return_line_ids.voucher_code_id.id
-    #             store_voucher = self.operating_unit_id.id
-    #             sourch_voucher = self.source_operating_unit_id.id
-    #             terms = self.voucher_terms_id.code
-                
-
-    #             strSQL = """SELECT """ \
-    #                  """id,check_number """ \
-    #                  """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='activated' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
-
-    #             self.env.cr.execute(strSQL)
-    #             voucher_order_line = self.env.cr.fetchall()
-    #             _logger.info("fetch = " + str(voucher_order_line))
+    def send_notification(self, data):
+        self.env['mail.activity'].create(data).action_feedback()
 
 
-    #             for row in voucher_order_line:
-    #                 vals = {}
-    #                 # vals.update({'voucher_terms_id': self.voucher_terms_id.id})
-    #                 # vals.update({'expired_date': exp_date})
-    #                 vals.update({'operating_unit_id': sourch_voucher})
-    #                 vals.update({'state': 'delivery'})
-    #                 vals.update({'voucher_return_id': self.id}) 
-    #                 obj_voucher_order_line_ids = search_se.write(vals)
-
-    #                 order_line_trans_obj = self.env['weha.voucher.order.line.trans']
-
-    #                 vals = {}
-    #                 vals.update({'name': self.number})
-    #                 vals.update({'trans_date': datetime.now()})
-    #                 vals.update({'voucher_order_line_id': row[0]})
-    #                 vals.update({'trans_type': 'DV'})
-    #                 val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
-    #                 _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
     @api.depends('voucher_scrap_line_ids')
     def _calculate_voucher_count(self):
         self.voucher_count = len(self.voucher_scrap_line_ids)
@@ -92,8 +51,13 @@ class VoucherScrap(models.Model):
     #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
     #         template.send_mail(rec.id)
 
+    @api.onchange('voucher_type')
+    def _voucher_code_onchange(self):
+        res = {}
+        res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
+        return res
+
     def trans_voucher_scrap(self):
-        
         for voucher_scrap_line_id in self.voucher_scrap_line_ids:
             vals = {}
             vals.update({'state': 'scrap'})
@@ -114,13 +78,9 @@ class VoucherScrap(models.Model):
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
         
-    @api.onchange('voucher_type')
-    def _voucher_code_onchange(self):
-        res = {}
-        res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
-        return res
-
     def trans_approve(self):
+        #Voucher Scrap Approve
+
         #stage_id = self.stage_id.next_stage_id
         #res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
 
@@ -146,43 +106,53 @@ class VoucherScrap(models.Model):
         stage_id = self.stage_id.next_stage_id
         super(VoucherScrap, self).write({'stage_id': stage_id.id})
 
-
     def trans_reject(self):
+        #Voucher Scrap Rejected
         stage_id = self.env['weha.voucher.scrap.stage'].search([('rejected','=', True)], limit=1)
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         super(VoucherScrap, self).write({'stage_id': stage_id.id})
+        data = {
+            'activity_type_id': 4,
+            'note': 'Voucher Scrap was rejected',
+            'res_id': self.id,
+            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_scrap').id,
+            'user_id': self.user_id.id,
+            'date_deadline': datetime.now() + timedelta(days=2),
+            'summary': 'Voucher Scrap was rejected'
+        }
+        self.send_notification(data)
+
     def trans_scrap_approval(self):
+        #Voucher Scrap Request For Approval
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
-        return res
+        data = {
+            'activity_type_id': 4,
+            'note': 'Voucher Scrap request for approval',
+            'res_id': self.id,
+            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_scrap').id,
+            'user_id': stage_id.approval_user_id.id,
+            'date_deadline': datetime.now() + timedelta(days=2),
+            'summary': 'Voucher Scrap request for approval'
+        }
+        self.send_notification(data)
 
     def trans_approval(self):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
         return res
     
-    def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
+    def trans_close(self):
+        stage_id = self.stage_id.next_stage_id
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
-        return res
-        
+    
     def trans_cancelled(self):
         stage_id = self.env['weha.voucher.scrap.stage'].search([('cancelled','=', True)], limit=1)
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         super(VoucherScrap, self).write({'stage_id': stage_id.id})
-
-    def trans_scrap_approval(self):    
-        if len(self.voucher_scrap_line_ids) == 0:
-            raise ValidationError("No Voucher Scrap Lines")
         
-    def trans_cancel(self):    
-        stage_id = self.stage_id.next_stage_id
-        res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
-        return res
-        
-
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)

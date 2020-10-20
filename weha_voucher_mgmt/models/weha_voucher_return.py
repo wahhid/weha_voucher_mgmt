@@ -2,6 +2,7 @@ from odoo import models, fields, api,  _
 from odoo.exceptions import UserError, ValidationError
 import logging
 from random import randrange
+from datetime import datetime, timedelta
 
 _logger = logging.getLogger(__name__)
 
@@ -40,63 +41,13 @@ class VoucherReturn(models.Model):
         stage_ids = self.env['weha.voucher.return.stage'].search([])
         return stage_ids
 
-    # @api.depends('voucher_return_line_ids')
+    def send_notification(self, data):
+        self.env['mail.activity'].create(data).action_feedback()
+
     def _calculate_voucher_count(self):
         count = self.env['weha.voucher.return.line'].search_count([('voucher_return_id','=', self.id)])
         self.voucher_count = count
 
-    
-    def send_l1_return_mail(self):
-        for rec in self:
-            template = self.env.ref('weha_voucher_mgmt.voucher_return_l1_approval_notification_template', raise_if_not_found=False)
-            template.send_mail(rec.id)
-
-    # def trans_voucher_return_activate(self):
-    #     line = len(self.voucher_return_line_ids)
-    #     _logger.info("Allocate line = " + str(line))
-
-    #     for i in range(line):
-    #         number_range = len(self.voucher_return_line_ids.number_ranges_ids)
-    #         _logger.info("Number Range = " + str(number_range))
-
-    #         for rec in range(number_range):
-
-    #             startnum = self.voucher_return_line_ids.number_ranges_ids.start_num
-    #             endnum = self.voucher_return_line_ids.number_ranges_ids.end_num
-    #             vcode = self.voucher_return_line_ids.voucher_code_id.id
-    #             store_voucher = self.operating_unit_id.id
-    #             sourch_voucher = self.source_operating_unit_id.id
-    #             terms = self.voucher_terms_id.code
-                
-
-    #             strSQL = """SELECT """ \
-    #                  """id,check_number """ \
-    #                  """FROM weha_voucher_order_line WHERE operating_unit_id='{}' AND voucher_code_id='{}' AND state='activated' AND check_number BETWEEN '{}' AND '{}'""".format(store_voucher, vcode, startnum, endnum)
-
-    #             self.env.cr.execute(strSQL)
-    #             voucher_order_line = self.env.cr.fetchall()
-    #             _logger.info("fetch = " + str(voucher_order_line))
-
-
-    #             for row in voucher_order_line:
-    #                 vals = {}
-    #                 # vals.update({'voucher_terms_id': self.voucher_terms_id.id})
-    #                 # vals.update({'expired_date': exp_date})
-    #                 vals.update({'operating_unit_id': sourch_voucher})
-    #                 vals.update({'state': 'delivery'})
-    #                 vals.update({'voucher_return_id': self.id}) 
-    #                 obj_voucher_order_line_ids = search_se.write(vals)
-
-    #                 order_line_trans_obj = self.env['weha.voucher.order.line.trans']
-
-    #                 vals = {}
-    #                 vals.update({'name': self.number})
-    #                 vals.update({'trans_date': datetime.now()})
-    #                 vals.update({'voucher_order_line_id': row[0]})
-    #                 vals.update({'trans_type': 'DV'})
-    #                 val_order_line_trans_obj = order_line_trans_obj.sudo().create(vals)
-    #                 _logger.info("str_ean ID = " + str(val_order_line_trans_obj))
-        
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
         res = {}
@@ -104,43 +55,100 @@ class VoucherReturn(models.Model):
         return res
 
     def trans_delivery(self):
+        company_id = self.env.user.company_id
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
         for row in self.voucher_return_line_ids:
             row.voucher_order_line_id.write({'state':'intransit'})
-        return res
+        # data = {
+        #         'activity_type_id': 4,
+        #         'note': 'Voucher Return on delivery',
+        #         'res_id': self.id,
+        #         'res_model_id': self.env.ref('model_weha_voucher_return').id,
+        #         'user_id': user_id.id,
+        #         'date_deadline': datetime.now() + timedelta(days=2),
+        #         'summary': 'Voucher Return on delivery'
+        #     }
+        # self.send_notification(data)
 
     def trans_confirm_received(self):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
-        return res
-
+        
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
         # self.send_l1_return_mail()
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
-        return res
+        data = {
+                'activity_type_id': 4,
+                'note': 'Voucher Return was approved',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_return').id,
+                'user_id': self.user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Return was approved'
+            }
+        self.send_notification(data)
     
+    def trans_received(self):
+        stage_id = self.stage_id.next_stage_id
+        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        data =  {
+            'activity_type_id': 4,
+            'note': 'Voucher Return was received',
+            'res_id': self.id,
+            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_return').id,
+            'user_id': self.user_id.id,
+            'date_deadline': datetime.now() + timedelta(days=2),
+            'summary': 'Voucher Return was received'
+        }
+        self.send_notification(data)
+
     def trans_reject(self):
         stage_id = self.stage_id.from_stage_id
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
-        return res
-    
+        data = {
+                'activity_type_id': 4,
+                'note': 'Voucher Return was rejected',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('model_weha_voucher_return').id,
+                'user_id': user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Return was rejected'
+            }
+        self.send_notification(data)
+  
     def trans_close(self):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
-        return res
-        
+
     def trans_return_approval(self):    
+        if self.voucher_count == 0:
+            raise ValidationError("Return Lines Empty")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
-        return res
+        if not stage_id.approval_user_id:
+            manager_id = self.operating_unit_id.manager_id
+            data = {
+                'activity_type_id': 4,
+                'note': 'Voucher Return Approval',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('model_weha_voucher_return').id,
+                'user_id': manager_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Return Approval'
+            }
+            self.send_notification(data)
+
+            
+        
+
         
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Return number', default="/",readonly=True)
-    ref = fields.Char(string='Source Document', required=False)
-    return_date = fields.Date('Return Date', required=False, default=lambda self: fields.date.today())
+    ref = fields.Char(string='Source Document', required=True)
+    return_date = fields.Date('Return Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
 
@@ -203,7 +211,6 @@ class VoucherReturn(models.Model):
         return res    
     
     def write(self, vals):
-        
         if self.stage_id.approval:
             raise ValidationError("Please using approve or reject button")
         if self.stage_id.opened:

@@ -3,11 +3,12 @@ import ast
 import functools
 import logging
 import json
+from datetime import datetime, date
 import werkzeug.wrappers
 from odoo.exceptions import AccessError
 from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response
-
 from odoo import http
+
 
 from odoo.addons.weha_voucher_mgmt.common import (
     extract_arguments,
@@ -49,20 +50,17 @@ class VMSPaymentController(http.Controller):
     @http.route("/api/vms/v1.0/payment", type="http", auth="none", methods=["POST"], csrf=False)
     def vssales(self, **post):
         
-        date = post['date'] or False if 'date' in post else False
+        current_date = post['date'] or False if 'date' in post else False
         time = post['time'] or False if 'time' in post else False
         receipt_number = post['receipt_number'] or False if 'receipt_number' in post else False
         t_id = post['t_id'] or False if 't_id' in post else False
         cashier_id = post['cashier_id'] or False  if 'cashier_id' in post else False
         store_id = post['store_id'] or False  if 'store_id' in post else False
         member_id = post['member_id'] or False  if 'member_id' in post else False
-        #sku = post['sku'] or False  if 'sku' in post else False
-        #quantity = post['quantity'] or False  if 'quantity' in post else False
-        #amount = post['amount'] or False  if 'amount' in post else False
         voucher_ean = post['voucher_ean'] or False if 'voucher_ean' in post else False
         #voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
 
-        _fields_includes_in_body = all([date, 
+        _fields_includes_in_body = all([current_date, 
                                         time, 
                                         receipt_number, 
                                         t_id, 
@@ -100,12 +98,22 @@ class VMSPaymentController(http.Controller):
             }
             return valid_response(response_data)
 
-        
+
+        if voucher_order_line_id.expired_date <= date.today():
+            response_data = {
+                "err": True,
+                "message": "Voucher expired",
+                "data": [
+                    {'code': 'N'}
+                ]
+            }
+            return valid_response(response_data)
+
         values = {}
             
         # #Save Voucher Purchase Transaction
         voucher_trans_payment_obj = http.request.env['weha.voucher.trans.payment']
-        trans_date = date  +  " "  + time + ":00"
+        trans_date = current_date  +  " "  + time + ":00"
         values.update({'trans_date': trans_date})
         values.update({'receipt_number': receipt_number})
         values.update({'t_id': t_id})
@@ -121,7 +129,7 @@ class VMSPaymentController(http.Controller):
         
 
         #Save Data
-        result = voucher_trans_payment_obj.create(values)
+        result = voucher_trans_payment_obj.sudo().create(values)
         
         #Validate Data
         #result.sudo().write({'state','done'})

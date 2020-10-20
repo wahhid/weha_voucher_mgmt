@@ -5,41 +5,25 @@
 
         <!-- Voucher Request Stage -->
 
-        <record id="voucher_request_stage_approval" model="weha.voucher.request.stage">
+        <record id="voucher_request_stage_approval_1" model="weha.voucher.request.stage">
             <field name="sequence">2</field>
-            <field name="name">Approve</field>
+            <field name="name">Pending Approve 1</field>
             <field name="approval">True</field>
             <field name="fold">True</field>
         </record>
 
-
-        <record id="voucher_request_stage_request" model="weha.voucher.request.stage">
-            <field name="sequence">1</field>
-            <field name="name">Request</field>
-            <field name="unattended">True</field>
-            <field name="next_stage_id" ref="voucher_request_stage_approval"/>
-        </record>
-
-        <record id="voucher_request_stage_approval2" model="weha.voucher.request.stage">
+         <record id="voucher_request_stage_approval_2" model="weha.voucher.request.stage">
             <field name="sequence">3</field>
-            <field name="name">Pending Approval 2</field>
-            <field name="l2">True</field>
+            <field name="name">Pending Approve 2</field>
+            <field name="approval">True</field>
             <field name="fold">True</field>
-        </record>
-
-        <record id="voucher_request_stage_approval1" model="weha.voucher.request.stage">
-            <field name="sequence">2</field>
-            <field name="name">Pending Approval 1</field>
-            <field name="l1">True</field>
-            <field name="fold">True</field>
-            <field name="next_stage_id" ref="voucher_request_stage_approval2"/>
         </record>
 
         <record id="voucher_request_stage_request" model="weha.voucher.request.stage">
             <field name="sequence">1</field>
             <field name="name">Draft</field>
             <field name="unattended">True</field>
-            <field name="next_stage_id" ref="voucher_request_stage_approval1"/>
+            <field name="next_stage_id" ref="voucher_request_stage_approval_1"/>
         </record>
 
         <record id="voucher_request_stage_done" model="weha.voucher.request.stage">

@@ -142,14 +142,10 @@ class VMSSalesController(http.Controller):
         values.update({'store_id': store_id})
         values.update({'member_id': member_id})
         values.update({'sku': sku})
-        #values.update({'quantity': quantity})
-        #values.update({'amount': amount})
-        values.update({'voucher_type': voucher_type})
-        #values.update({'voucher_code_id': mapping_sku_id.voucher_code_id.id})
-        
+        values.update({'voucher_type': voucher_type})        
 
         #Save Data
-        result = voucher_trans_purchase_obj.create(values)
+        result = voucher_trans_purchase_obj.sudo().create(values)
         
         if not result:
             data =  {

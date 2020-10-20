@@ -3,7 +3,9 @@
 from odoo import _, fields, models
 from odoo.exceptions import ValidationError
 from odoo.fields import first
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class WizStockBarcodesReadVoucherAllocate(models.TransientModel):
     _name = "wiz.stock.barcodes.read.voucher.allocate"
@@ -12,3 +14,5 @@ class WizStockBarcodesReadVoucherAllocate(models.TransientModel):
 
     voucher_allocate_id = fields.Many2one(comodel_name="weha.voucher.allocate", readonly=True)
     voucher_order_id = fields.Many2one(comodel_name="weha.voucher.order.line", readonly=True)
+
+    

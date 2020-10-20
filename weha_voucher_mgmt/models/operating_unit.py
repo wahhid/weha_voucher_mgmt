@@ -16,6 +16,7 @@ class OperatingUnit(models.Model):
             record.voucher_count = len(record.voucher_ids)
 
     color = fields.Integer(string='Color Index')
+    manager_id = fields.Many2one('res.users', 'Manager')
 
     voucher_ids = fields.One2many(
         'weha.voucher.order.line',
@@ -25,5 +26,13 @@ class OperatingUnit(models.Model):
     voucher_count = fields.Integer(
         string="Number of Vouchers",
         compute='_compute_voucher_count')
-    
-    
+
+    approval_user_ids = fields.Many2many(
+          'res.users', 'approval_user_ids_operating_unit_rel',
+          'user_id', 'ooperating_unit_id',
+          string='Approval Users')
+          
+    requester_user_ids = fields.Many2many(
+          'res.users', 'requester_user_ids_operating_unit_rel',
+          'user_id', 'ooperating_unit_id',
+          string='Requester Users')

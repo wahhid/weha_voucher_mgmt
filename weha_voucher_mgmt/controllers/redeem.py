@@ -145,7 +145,7 @@ class VMSRedeemController(http.Controller):
         
 
         #Save Data
-        result = voucher_trans_purchase_obj.create(values)
+        result = voucher_trans_purchase_obj.sudo().create(values)
         
         #Validate Data
         #result.sudo().write({'state','done'})

@@ -12,11 +12,18 @@ class VoucherBarcodesReadLog(models.Model):
     res_model_id = fields.Many2one(comodel_name="ir.model", index=True)
     res_id = fields.Integer(index=True)
     voucher_order_id = fields.Many2one('weha.voucher.order', 'Voucher Order #')
+    voucher_allocate_id = fields.Many2one('weha.voucher.allocate', 'Voucher Allocate #')
+    voucher_issuing_id = fields.Many2one('weha.voucher.issuing', 'Voucher Issuing #')
+    voucher_return_id = fields.Many2one('weha.voucher.return', 'Voucher Return #')
+    voucher_scrap_id = fields.Many2one('weha.voucher.scrap', 'Voucher Scrap #')
     
+    
+
     manual_entry = fields.Boolean(string="Manual entry")
-    voucher_line_id = fields.Many2one(
+    voucher_order_line_id = fields.Many2one(
         comodel_name="weha.voucher.order.line", string="Voucher Line", readonly=True
     )
+
     log_line_ids = fields.One2many(
         comodel_name="voucher.barcodes.read.log.line",
         inverse_name="read_log_id",
@@ -42,6 +49,7 @@ class VoucherBarcodesReadLogLine(models.Model):
         readonly=True,
     )
     
-    voucher_line_id = fields.Many2one(
+
+    voucher_order_line_id = fields.Many2one(
         comodel_name="weha.voucher.order.line", string="Voucher Line", readonly=True
     )

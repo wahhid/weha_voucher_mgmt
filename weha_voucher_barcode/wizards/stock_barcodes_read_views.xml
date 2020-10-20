@@ -35,15 +35,6 @@
                             <field name="message" />
                         </div>
                     </div>
-                     <!--
-                    <div>
-                        <label for="manual_entry">
-                            Manual entry data
-                        </label>
-                       
-                        <field name="manual_entry" widget="barcode_boolean_toggle" />
-                    </div>
-                    -->
                     <group>
                         <field name="message_type" invisible="1" />
                         <field name="barcode" invisible="1" force_save="1"/>
@@ -57,30 +48,8 @@
                         />
                     </group>
                     <group />
-                    <!--
-                    <group>
-                        <button
-                            name="action_manual_entry"
-                            type="object"
-                            string="Manual entry"
-                            icon="fa-plus"
-                            attrs="{'invisible': [('manual_entry', '=', False)]}"
-                            class="btn-primary"
-                        />
-                    </group>
-                    -->
                     <group />
                     <group string="Current voucher scanning log">
-                        <!--
-                        <group>
-                            <button
-                                name="action_undo_last_scan"
-                                type="object"
-                                string="Remove last yours"
-                                icon="fa-trash"
-                            />
-                        </group>
-                        -->
                         <field
                             name="scan_log_ids"
                             options="{'no_open': True}"
@@ -88,12 +57,8 @@
                             mode="tree,kanban"
                         >
                             <tree string="Current product scanning log">
-                                <!--
-                                <field name="create_date" />
-                                <field name="create_uid" />
-                                -->
                                 <field name="name" />
-                                <field name="voucher_line_id" />
+                                <field name="voucher_order_line_id" />
                             </tree>
                         </field>
                     </group>

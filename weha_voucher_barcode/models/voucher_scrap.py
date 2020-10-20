@@ -1,8 +1,8 @@
 from odoo import models
 
 
-class VoucherReturn(models.Model):
-    _inherit = "weha.voucher.return"
+class VoucherScrap(models.Model):
+    _inherit = "weha.voucher.scrap"
 
     def action_barcode_scan(self):
         action = self.env.ref("weha_voucher_barcode.action_stock_barcodes_read_voucher_scrap").read()[0]

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <odoo>
-    <record id="view_wizard_scan_voucer_allocate" model="ir.ui.view">
-        <field name="name">wizard.scan.voucer.allocate.form.view</field>
+    <record id="view_wizard_scan_voucher_allocate" model="ir.ui.view">
+        <field name="name">wizard.scan.voucher.allocate.form.view</field>
         <field name="model">weha.wizard.scan.voucher.allocate</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
@@ -48,15 +48,11 @@
                 </group>
                 <group>
                     <group>
-                        <h1>
-                            <field name="code_ean" placeholder="Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
-                            <field name="start_ean" placeholder="Start Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
-                        </h1>
+                        <field name="code_ean" placeholder="Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
+                        <field name="start_ean" placeholder="Start Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
+                        <field name="end_ean" placeholder="End Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
                     </group>
                     <group>
-                        <h1>
-                            <field name="end_ean" placeholder="End Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
-                        </h1>
                     </group>
                 </group>
                 <notebook>

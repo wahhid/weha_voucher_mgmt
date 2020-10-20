@@ -48,7 +48,9 @@
                             <group>
                                 <field name="unattended"/>
                                 <field name="approval"/>
+                                <!--
                                 <field name="approval_user_id" attrs="{'invisible':[('approval','=', False)], 'required':[('approval','=', True)] }"/> 
+                                -->
                                 <field name="opened"/>
                                 <field name="closed"/>
                                 <field name="cancelled"/>

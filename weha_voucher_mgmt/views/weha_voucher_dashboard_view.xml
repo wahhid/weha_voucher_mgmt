@@ -1,15 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="act_view_weha_voucher_order_graph" model="ir.actions.act_window">
-      <field name="name">Voucher Order Statistic</field>
-      <field name="res_model">weha.voucher.order</field>
+    <record id="act_view_weha_voucher_order_line_physical_graph" model="ir.actions.act_window">
+      <field name="name">Voucher Order (Physical)</field>
+      <field name="res_model">weha.voucher.order.line</field>
       <field name="view_mode">graph</field>
-      <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_graph"/>
+      <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_line_graph"/>
+      <field name="domain">[('voucher_type','=','physical')]</field>
+      <field name="context">{'search_default_operating_unit': 1}</field>
     </record>
 
-    
+    <record id="act_view_weha_voucher_order_line_electronic_graph" model="ir.actions.act_window">
+      <field name="name">Voucher Order (Electronic)</field>
+      <field name="res_model">weha.voucher.order.line</field>
+      <field name="view_mode">graph</field>
+      <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_line_graph"/>
+      <field name="domain">[('voucher_type','=','electronic')]</field>
+      <field name="context">{'search_default_state': 1}</field>
+    </record>    
 
+    <record id="act_view_weha_voucher_order_line_operating_unit_graph" model="ir.actions.act_window">
+      <field name="name">Voucher Order (Operating Unit)</field>
+      <field name="res_model">weha.voucher.order.line</field>
+      <field name="view_mode">graph</field>
+      <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_line_graph"/>
+      <field name="domain">[('voucher_type','=','physical')]</field>
+      <field name="context">{'search_default_operating_unit': 1}</field>
+    </record>
+
+
+    
     
     <!--My Dashboard Menu base.menu_board_root-->
     <!-- <menuitem 
@@ -98,10 +118,20 @@
         <field name="arch" type="xml">
             <form string="My Dashboard">
                 <board style="1-2">
+
                     <column>
+
                         <action 
                             string="Voucher Order Statistic"
-                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_graph)d"/>
+                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_line_physical_graph)d"/>
+
+                        <action 
+                            string="Voucher Order Statistic"
+                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_line_electronic_graph)d"/>
+
+                            <action 
+                            string="Voucher Order Statistic"
+                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_line_operating_unit_graph)d"/>
                     </column>
                     <column>
                         <action 
@@ -123,6 +153,10 @@
     </record> 
 
 
-    <menuitem id="weha_voucher_dashboard_menu" name="Dashboard"
-        parent="weha_voucher_mgmt_main_menu" action="weha_voucher_mgmt.open_board_my_dash_action" sequence="1"/>
+    <menuitem id="weha_voucher_dashboard_menu" 
+              name="Dashboard"
+              parent="weha_voucher_mgmt_main_menu" 
+              action="weha_voucher_mgmt.open_board_my_dash_action" 
+              sequence="1"
+              groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user"/>
 </odoo>

@@ -11,6 +11,12 @@ _logger = logging.getLogger(__name__)
 class VoucherTransPurchase(models.Model):
     _name = "weha.voucher.trans.purchase"
 
+    def trans_error(self):
+        super(VoucherTransPurchase, self).write({'state': 'error'})
+
+    def trans_close(self):
+        super(VoucherTransPurchase, self).write({'state': 'done'})
+
     def complete_sku(self):
         mapping_sku = []
         if ';' in self.sku:
@@ -54,6 +60,8 @@ class VoucherTransPurchase(models.Model):
             ]
             mapping_sku_id = self.env['weha.voucher.mapping.sku'].search(domain, limit=1)
             if mapping_sku_id:
+                voucher_mapping_pos_id = mapping_sku_id.voucher_mapping_pos_id
+                #if voucher_mapping_pos_id.pos_trx_type == 'Promo':
                 voucher_number_range_id = self.env['weha.voucher.number.ranges'].sudo().search([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id)], limit=1)
                 _logger.info(voucher_number_range_id)
                 _logger.info(voucher_number_range_id.sequence_id)
@@ -67,7 +75,7 @@ class VoucherTransPurchase(models.Model):
                 self.env['weha.voucher.trans.purchase.sku'].create(vals)
                    
     def send_data_to_trust(self):
-        #headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://localhost:5000'
         try:
             vouchers = []
@@ -103,8 +111,11 @@ class VoucherTransPurchase(models.Model):
                 vals.update({'voucher_type': 'electronic'})
                 vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
                 vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
+                vals.update({'tender_type': self.tender_type})
+                vals.update({'bank_category': self.bank_category})
                 if voucher_trans_purchase_sku_id.voucher_promo_id:
                     vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
+                
                 vals.update({'year_id': voucher_trans_purchase_sku_id.year_id.id})
                 check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
                 vals.update({'check_number': check_number})
@@ -155,7 +166,8 @@ class VoucherTransPurchase(models.Model):
             ('3', 'Redeem'),
             ('4', 'Employee'),
         ],
-        'Voucher Type'
+        'Voucher Type',
+        index=True
     )
     voucher_trans_purchase_line_ids = fields.One2many('weha.voucher.trans.purchase.line','voucher_trans_purchase_id','Lines')
     voucher_trans_purchase_sku_ids = fields.One2many('weha.voucher.trans.purchase.sku','voucher_trans_purchase_id','Skus')
@@ -167,7 +179,8 @@ class VoucherTransPurchase(models.Model):
             ('error', 'Error')
         ],
         'Status',
-        default='open'
+        default='open',
+        index=True
     )
     state_remark = fields.Char('Remark', size=250)
 
@@ -180,36 +193,9 @@ class VoucherTransPurchase(models.Model):
         vals['name'] = seq.next_by_code('weha.voucher.trans.purchase.sequence') or '/'
         
         if vals.get('voucher_type') == '1' or vals.get('voucher_type') == '3':
-            #domain = [
-            #    ('code_sku','=', vals.get('sku')),
-            #]
-            #mapping_sku_id = self.env['weha.voucher.mapping.sku'].search(domain, limit=1)
-            #vals['voucher_code_id'] = mapping_sku_id.voucher_code_id.id
-            #Find Active Year by Voucher Code
-
-            #voucher_number_range_id = self.env['weha.voucher.number.ranges'].sudo().search([('voucher_code_id','=',vals['voucher_code_id'])], limit=1)
-            #_logger.info(voucher_number_range_id)
-            #_logger.info(voucher_number_range_id.sequence_id)
-            #if voucher_number_range_id:
-            #    vals['voucher_number_range_id'] = voucher_number_range_id.id
-            #    vals['year_id'] =  voucher_number_range_id.year_id.id
-
-            
-        
             pass     
 
         if vals.get('voucher_type') == '2':
-            # tender_type_id = self.env['weha.voucher.tender.type'].search([('code', '=', vals['tender_type'])], limit=1)
-            # bank_category_id = self.env['weha.voucher.bank.category'].search([('bin_number', '=', vals['bin_number'])], limit=1)
-
-            # domain = [
-            #     ('tender_type_id','=', tender_type_id.id),
-            #     ('bank_category_id', '=', bank_category_id.id),
-            #     ('state', '=', 'open')
-            # ]
-
-            #voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
-            #vals['voucher_code_id'] = voucher_order_line_id.voucher_code_id.id
             pass
 
 
@@ -225,6 +211,7 @@ class VoucherTransPurchase(models.Model):
         #Update CRM
         res.send_data_to_trust()
         
+        res.trans_close()
 
         return res    
     
@@ -243,8 +230,16 @@ class VoucheTransPurchaseSku(models.Model):
     year_id = fields.Many2one("weha.voucher.year", "Year")
     voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
     voucher_trans_purchase_line_ids = fields.One2many('weha.voucher.trans.purchase.line','voucher_trans_purchase_sku_id','Lines')
-
-
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )
 
 class VoucherTransPurchaseLine(models.Model):
     _name = "weha.voucher.trans.purchase.line"
@@ -255,10 +250,26 @@ class VoucherTransPurchaseLine(models.Model):
     voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code", related="voucher_order_line_id.voucher_code_id")
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
     voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo", related="voucher_order_line_id.voucher_promo_id")
-
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )
 
 class VoucherTransPayment(models.Model):
     _name = "weha.voucher.trans.payment"
+
+
+    def trans_error(self):
+        super(VoucherTransPayment, self).sudo().write({'state': 'error'})
+
+    def trans_close(self):
+        super(VoucherTransPayment, self).sudo().write({'state': 'done'})
 
     name = fields.Char('Name', )
     trans_date = fields.Datetime("Transaction Date")
@@ -272,22 +283,6 @@ class VoucherTransPayment(models.Model):
     voucher_code_id = fields.Many2one("weha.voucher.code", "Voucher Code")
     year_id = fields.Many2one("weha.voucher.year", "Year")
     voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
-    
-    #tender_type = fields.Char('Tender Type')
-    #bank_category = fields.Char('Bank Category')
-    #bin_number = fields.Char("BIN", size=8)
-    #quantity = fields.Integer('Qty')
-    #amount = fields.Float('Amount', default="0.0")
-    # voucher_type = fields.Selection(
-    #     [
-    #         ('1', 'Sales'),
-    #         ('2', 'Bank Promo'),
-    #         ('3', 'Redeem'),
-    #         ('4', 'Promo'),
-    #     ],
-    #     'Voucher Type'
-    # )
-    #voucher_trans_payment_line_ids = fields.One2many('weha.voucher.trans.payment.line','voucher_trans_payment_id','Lines')
     state = fields.Selection(
         [  
             ('open', 'Open'),
@@ -295,7 +290,8 @@ class VoucherTransPayment(models.Model):
             ('error', 'Error')
         ],
         'Status',
-        default='open'
+        default='open',
+        index=True
     )
     state_remark = fields.Char('Remark', size=250)
 
@@ -311,6 +307,7 @@ class VoucherTransPayment(models.Model):
         voucher_order_line_id = res.voucher_order_line_id
         voucher_order_line_id.sudo().write({'state':'reserved'})
         voucher_order_line_id.create_order_line_trans(res.name, 'RS')
+        res.trans_close()
         return res
   
 class VoucheTransPaymentSku(models.Model):
@@ -325,12 +322,44 @@ class VoucheTransPaymentSku(models.Model):
     voucher_terms_id = fields.Many2one("weha.voucher.terms", "Voucher Terms")
     year_id = fields.Many2one("weha.voucher.year", "Year")
     voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
-
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )
 
 class VoucherTransStatus(models.Model):
     _name = "weha.voucher.trans.status"
 
-   
+    def trans_error(self):
+        super(VoucherTransStatus, self).sudo().write({'state': 'error'})
+
+    def trans_close(self):
+        super(VoucherTransStatus, self).sudo().write({'state': 'done'})
+
+    def get_json(self):
+        data = {}
+        if self.process_type == 'reserved':
+            voucher_trans_status_line_id = self.voucher_trans_status_line_ids and self.voucher_trans_status_line_ids[0] or False
+            if voucher_trans_status_line_id:
+                voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
+                data.update({'amount': voucher_order_line_id.voucher_code_id.voucher_amount})
+                voucher_mapping_sku_id  = self.env['weha.voucher.mapping.sku'].search([('voucher_code_id','=', voucher_order_line_id.voucher_code_id.id)],limit=1)
+                if voucher_mapping_sku_id:    
+                    voucher_mapping_pos_id = voucher_mapping_sku_id.voucher_mapping_pos_id
+                    if voucher_mapping_pos_id.pos_trx_type == 'Promo':
+                        data.update({'tender_type': voucher_order_line_id.tender_type})
+                        data.update({'bank_category': voucher_order_line_id.bank_category})
+                    else:
+                        data.update({'tender_type': ''})
+                        data.update({'bank_category': ''})
+        return data 
+                
     name = fields.Char('Name', )
     trans_date = fields.Datetime("Transaction Date")
     receipt_number = fields.Char("Receipt #", size=5)
@@ -343,20 +372,6 @@ class VoucherTransStatus(models.Model):
     year_id = fields.Many2one("weha.voucher.year", "Year")
     voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
     voucher_ean = fields.Char('Vouchers', size=250)
-    #tender_type = fields.Char('Tender Type')
-    #bank_category = fields.Char('Bank Category')
-    #bin_number = fields.Char("BIN", size=8)
-    #quantity = fields.Integer('Qty')
-    #amount = fields.Float('Amount', default="0.0")
-    # voucher_type = fields.Selection(
-    #     [
-    #         ('1', 'Sales'),
-    #         ('2', 'Bank Promo'),
-    #         ('3', 'Redeem'),
-    #         ('4', 'Promo'),
-    #     ],
-    #     'Voucher Type'
-    # )
     voucher_trans_status_line_ids = fields.One2many('weha.voucher.trans.status.line','voucher_trans_status_id','Lines')
     state = fields.Selection(
         [  
@@ -365,7 +380,8 @@ class VoucherTransStatus(models.Model):
             ('error', 'Error')
         ],
         'Status',
-        default='open'
+        default='open',
+        index=True
     )
     state_remark = fields.Char('Remark', size=250)
     process_type = fields.Selection(
@@ -376,6 +392,7 @@ class VoucherTransStatus(models.Model):
             
         ],
         'Process Type',
+        index=True
     )
 
     @api.model 
@@ -390,35 +407,36 @@ class VoucherTransStatus(models.Model):
         res = super(VoucherTransStatus, self).create(vals)
         order_line_trans_obj = self.env['weha.voucher.order.line.trans']
 
-        arr_voucher_ean = vals['voucher_ean'].split("|")
-        voucher_ean_ids = []
-        for voucher_ean in arr_voucher_ean:
-            domain = [
-                ('voucher_ean','=', voucher_ean),
-                #('state','=', 'activated')
-            ]
-            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
-            if voucher_order_line_id:
-                data = {
-                    'voucher_trans_status_id': res.id,
-                    'voucher_order_line_id': voucher_order_line_id.id,   
-                }
-                result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
-                if result:
-                    if vals['process_type'] == 'reserved':
-                        voucher_order_line_id.sudo().write({'state': 'reserved'})
-                        voucher_order_line_id.create_order_line_trans(res.name, 'RS')
-                    elif vals['process_type'] == 'activated':
-                        voucher_order_line_id.sudo().write({'state': 'activated'})
-                        vals = {}
-                        voucher_order_line_id.create_order_line_trans(res.name, 'AC')
-                    elif vals['process_type'] == 'used':
-                        voucher_order_line_id.sudo().write({'state': 'used'})
-                        voucher_order_line_id.create_order_line_trans(res.name, 'US')
-                    else:
-                        pass
+        # arr_voucher_ean = vals['voucher_ean'].split("|")
+        # voucher_ean_ids = []
+        # for voucher_ean in arr_voucher_ean:
+        domain = [
+            ('voucher_ean','=', vals['voucher_ean']),
+            ('state','=', 'activated')
+        ]
+        voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+        _logger.info(voucher_order_line_id)
+        if voucher_order_line_id:
+            data = {
+                'voucher_trans_status_id': res.id,
+                'voucher_order_line_id': voucher_order_line_id.id,   
+            }
+            result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
+            if result:
+                if vals['process_type'] == 'reserved':
+                    voucher_order_line_id.sudo().write({'state': 'reserved'})
+                    voucher_order_line_id.create_order_line_trans(res.name, 'RS')
+                elif vals['process_type'] == 'activated':
+                    voucher_order_line_id.sudo().write({'state': 'activated'})
+                    vals = {}
+                    voucher_order_line_id.create_order_line_trans(res.name, 'AC')
+                elif vals['process_type'] == 'used':
+                    voucher_order_line_id.sudo().write({'state': 'used'})
+                    voucher_order_line_id.create_order_line_trans(res.name, 'US')
+                else:
+                    pass
                     
-        res.sudo().write({'state': 'done'})
+        res.trans_close()
         return res
   
 class VoucheTransStatusLine(models.Model):
@@ -431,3 +449,13 @@ class VoucheTransStatusLine(models.Model):
     year_id = fields.Many2one("weha.voucher.year", "Year")
     voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
     amount = fields.Float('Amount', default="0.0")
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )

@@ -12,31 +12,6 @@ class WizardScanVoucherIssuing(models.TransientModel):
     _name = "weha.wizard.scan.voucher.issuing"
 
 
-    # @api.model
-    # def default_get(self, fields):
-    #     res = super(WizardScanVoucherissuing, self).default_get(fields)
-    #     active_id = self.env.context.get('active_id') or False
-    #     if active_id:
-    #         voucher_issuing_id = self.env['weha.voucher.issuing'].browse(active_id)
-    #         if voucher_issuing_id.voucher_promo_id:
-    #             domain = [
-    #                 ('voucher_code_id','=', voucher_issuing_id.voucher_code_id.id),
-    #                 ('year_id','=', voucher_issuing_id.year_id.id),
-    #                 ('voucher_promo_id', '=', voucher_issuing_id.voucher_promo_id.id)
-    #             ]
-    #         else:
-    #             domain = [
-    #                 ('voucher_code_id','=', voucher_issuing_id.voucher_code_id.id),
-    #                 ('year_id','=', voucher_issuing_id.year_id.id),
-    #             ]
-    #         voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
-
-    #         res.update({'voucher_code_id':  voucher_issuing_id.voucher_code_id.id})
-    #         res.update({'year_id':  voucher_issuing_id.year_id.id})
-    #         res.update({'voucher_promo_id':  voucher_issuing_id.voucher_promo_id.id})
-    #         res.update({'estimate_total': len(voucher_order_line_ids)})
-    #     return res
-
     @api.onchange('start_number', 'end_number')
     def _onchange_voucher(self):     
 
@@ -85,10 +60,6 @@ class WizardScanVoucherIssuing(models.TransientModel):
 
             
             
-
-        #if self.start_number and self.end_number:
-        #    voucher_range
-        
         
     operating_unit_id = fields.Many2one('operating.unit', 'Operating Unit', required=False, readonly=True)
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
@@ -100,6 +71,8 @@ class WizardScanVoucherIssuing(models.TransientModel):
     estimate_count = fields.Integer("Estimate Count", readonly=True)
     estimate_total = fields.Integer("Current Stock", readonly=True)
 
+    
+
     def process(self):
         
         #Get Current Voucher Order issuing
@@ -107,8 +80,8 @@ class WizardScanVoucherIssuing(models.TransientModel):
         voucher_issuing_id = self.env['weha.voucher.issuing'].browse(active_id)
 
         #Clear Voucher issuing Line
-        for voucher_issuing_line_id in voucher_issuing_id.voucher_issuing_line_ids:
-            voucher_issuing_line_id.unlink()
+        #for voucher_issuing_line_id in voucher_issuing_id.voucher_issuing_line_ids:
+        #    voucher_issuing_line_id.unlink()
             
         #Get Voucher Check Number
         voucher_order_line_start_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)], limit=1)
@@ -166,19 +139,6 @@ class WehaWizardReceivedIssuing(models.TransientModel):
     _name = 'weha.wizard.received.issuing'
     _description = 'Wizard form for received voucher'
 
-    # @api.onchange('code_ean')
-    # def code_ean_scanning(self):
-    #     match = False
-    #     voucher_order_line_obj = self.env['weha.voucher.order.line']
-    #     voucher_order_line_id = voucher_order_line_obj.search([('voucher_ean','=', self.code_ean)])
-    #     if self.code_ean and not voucher_order_line_id:
-    #         raise Warning('No voucher is available for this code')
-        
-        # if self.code_ean and not match:
-        #     if voucher_order_line_id:
-        #         raise Warning('This product is not available in the order.'
-        #                       'You can add this product by clicking the "Add an item" and scan')
-
     def trans_received(self):
 
      
@@ -191,27 +151,7 @@ class WehaWizardReceivedIssuing(models.TransientModel):
         stage_id = voucher_issuing_id.stage_id.next_stage_id
         voucher_issuing_id.sudo().write({'stage_id': stage_id.id})
         
-
-        if self.scan_method == 'all':
-            for voucher_issuing_line_id in voucher_issuing_id.voucher_issuing_line_ids:
-                vals = {}
-                vals.update({'state': 'received'})
-                res = voucher_issuing_line_id.sudo().write(vals)
-
-                vals = {}
-                vals.update({'operating_unit_id': voucher_issuing_id.source_operating_unit.id})
-                vals.update({'state': 'open'})
-                voucher_issuing_line_id.voucher_order_line_id.sudo().write(vals)
-
-                vals = {}
-                vals.update({'name': voucher_issuing_id.number})
-                vals.update({'voucher_order_line_id': voucher_issuing_line_id.voucher_order_line_id.id})
-                vals.update({'trans_date': datetime.now()})
-                vals.update({'operating_unit_loc_fr_id': voucher_issuing_id.operating_unit_id.id})
-                vals.update({'operating_unit_loc_to_id': voucher_issuing_id.source_operating_unit.id})
-                vals.update({'trans_type': 'RV'})
-                self.env['weha.voucher.order.line.trans'].sudo().create(vals)
-        elif self.scan_method == 'start_end':
+        if self.scan_method == 'start_end':
             if self.start_ean and self.end_ean:
                 start_voucher = self.env['weha.voucher.order.line'].search[('voucher_ean','=', self.start_ean)]
                 end_voucher = self.env['weha.voucher.order.line'].search[('voucher_ean','=', self.end_ean)]
@@ -308,12 +248,11 @@ class WehaWizardReceivedIssuing(models.TransientModel):
     end_ean = fields.Char(string="End Ean")
     scan_method = fields.Selection(
         [
-            ('all','Receive All'),
             ('start_end','Scan Start and End Voucher'),
             ('one','Scan Each Voucher'),
         ],
         "Scan Method",
-        default='all'
+        default='start_end'
     )
 
     issuing_line_wizard_ids = fields.One2many(comodel_name='weha.wizard.received.issuing.line', inverse_name='wizard_issuing_id', string='Wizard issuing Line')

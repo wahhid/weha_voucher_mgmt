@@ -31,18 +31,19 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" name="trans_scrap_approval" string="Request Approval" 
-                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                class="btn btn-primary" 
+                                name="trans_scrap_approval" 
+                                string="Request Approval" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
 
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}" 
-                            class="btn btn-primary" name="trans_voucher_scrap_activate" string="Activated from Allocate" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
-
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" name="trans_scrap_approval" string="Request Approval" 
-                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
-
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'open')]}" 
+                                class="btn btn-primary" 
+                                name="trans_voucher_scrap_activate" 
+                                string="Activated from Allocate" 
+                                groups="weha_voucher_mgmt.group_voucher_user"/>
                         <button 
                             type="action" 
                             attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
@@ -50,20 +51,32 @@
                             name="%(weha_voucher_mgmt.act_open_scan_voucher_scrap_view_form)d" 
                             string="Scan Scrap Voucher" 
                             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
-                       
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
-                            class="btn btn-light" name="trans_close" string="Closed Scrap Voucher" 
-                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
-                            class="btn btn-primary" name="trans_approve" string="Approve" 
-                            groups="weha_voucher_mgmt.group_voucher_finance_manager" confirm="Are you sure you want to Approve?"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
-                            class="btn btn-primary" name="trans_reject" string="Reject" 
-                            groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                                class="btn btn-light" 
+                                name="trans_close" 
+                                string="Closed Scrap Voucher" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_approve" 
+                                string="Approve" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_manager" 
+                                confirm="Are you sure you want to Approve?"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
+                                class="btn btn-primary" 
+                                name="trans_reject" 
+                                string="Reject" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
+                                class="btn btn-light" 
+                                name="trans_cancelled" 
+                                string="Cancel Voucher Scrap" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
                         <field name="stage_id" widget="statusbar" clickable="False" />
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
-                            class="btn btn-light" name="trans_cancelled" string="Cancel Voucher Scrap" 
-                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
                     </header>
                     <sheet>
                         <div name="button_box" class="oe_button_box">
@@ -94,8 +107,8 @@
                         </group>
                         <notebook colspan="4">
                             <page string="Scrap Lines">
-	                        	<field name="voucher_scrap_line_ids" widget="one2many_list" nolabel="0" readonly="1">
-	                            	<tree string="scrap Lines" create="true" delete="true" edit="true">
+	                        	<field name="voucher_scrap_line_ids" widget="one2many_list" nolabel="0" attrs="{'readonly': [('current_stage','!=', 'unattended')]}">
+	                            	<tree string="scrap Lines" create="false" edit="false" >
 	                            	    <field name="voucher_order_line_id" /> 
                                         <field name="voucher_code_id"/>
                                         <field name="year_id"/>
