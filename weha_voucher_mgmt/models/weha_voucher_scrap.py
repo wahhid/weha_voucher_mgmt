@@ -46,11 +46,6 @@ class VoucherScrap(models.Model):
     def _calculate_voucher_count(self):
         self.voucher_count = len(self.voucher_scrap_line_ids)
     
-    # def send_l1_request_mail(self):
-    #     for rec in self:
-    #         template = self.env.ref('weha_voucher_mgmt.voucher_order_l1_approval_notification_template', raise_if_not_found=False)
-    #         template.send_mail(rec.id)
-
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
         res = {}
@@ -81,9 +76,6 @@ class VoucherScrap(models.Model):
     def trans_approve(self):
         #Voucher Scrap Approve
 
-        #stage_id = self.stage_id.next_stage_id
-        #res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
-
         for voucher_scrap_line_id in self.voucher_scrap_line_ids:
             vals = {}
             vals.update({'state': 'damaged'})
@@ -105,6 +97,18 @@ class VoucherScrap(models.Model):
             
         stage_id = self.stage_id.next_stage_id
         super(VoucherScrap, self).write({'stage_id': stage_id.id})
+        for requester_user_id in  self.operating_unit_id.requester_user_ids:
+            _logger.info(requester_user_id.name)
+            data =  {
+                'activity_type_id': 4,
+                'note': 'Request Voucher Scrap was Approved',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_scrap').id,
+                'user_id': requester_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Request Voucher Scrap was Approved'
+            }
+            self.send_notification(data)
 
     def trans_reject(self):
         #Voucher Scrap Rejected
@@ -112,31 +116,35 @@ class VoucherScrap(models.Model):
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         super(VoucherScrap, self).write({'stage_id': stage_id.id})
-        data = {
-            'activity_type_id': 4,
-            'note': 'Voucher Scrap was rejected',
-            'res_id': self.id,
-            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_scrap').id,
-            'user_id': self.user_id.id,
-            'date_deadline': datetime.now() + timedelta(days=2),
-            'summary': 'Voucher Scrap was rejected'
-        }
-        self.send_notification(data)
+        for requester_user_id in  self.operating_unit_id.requester_user_ids:
+            _logger.info(requester_user_id.name)
+            data =  {
+                'activity_type_id': 4,
+                'note': 'Request Voucher Scrap was rejected',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_scrap').id,
+                'user_id': requester_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Request Voucher Scrap was rejected'
+            }
+            self.send_notification(data)
 
     def trans_scrap_approval(self):
         #Voucher Scrap Request For Approval
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherScrap, self).write({'stage_id': stage_id.id})
-        data = {
-            'activity_type_id': 4,
-            'note': 'Voucher Scrap request for approval',
-            'res_id': self.id,
-            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_scrap').id,
-            'user_id': stage_id.approval_user_id.id,
-            'date_deadline': datetime.now() + timedelta(days=2),
-            'summary': 'Voucher Scrap request for approval'
-        }
-        self.send_notification(data)
+        for approval_user_id in  self.operating_unit_id.approval_user_ids:
+            _logger.info(approval_user_id.name)
+            data =  {
+                'activity_type_id': 4,
+                'note': 'Request Voucher Scrap for Approval',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_scrap').id,
+                'user_id': approval_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Request Voucher Scrap for Approval'
+            }
+            self.send_notification(data)
 
     def trans_approval(self):
         stage_id = self.stage_id.next_stage_id
