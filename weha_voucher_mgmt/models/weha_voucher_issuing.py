@@ -57,7 +57,6 @@ class VoucherIssuing(models.Model):
             }
             self.send_notification(data)
         
-
     def action_issuing_voucher(self):
         #if self.voucher_count != self.estimate_voucher_count:
         #    raise ValidationError("Voucher count not match")

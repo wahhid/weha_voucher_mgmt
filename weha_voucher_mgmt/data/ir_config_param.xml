@@ -5,5 +5,17 @@
             <field name="key">access_token_expires_in</field>
             <field name="value">31536000</field>
         </record>
+        <record id="crm_api_url" model="ir.config_parameter">
+            <field name="key">crm_api_url</field>
+            <field name="value">http://localhost:5000</field>
+        </record>
+        <record id="crm_api_username" model="ir.config_parameter">
+            <field name="key">crm_api_username</field>
+            <field name="value">crm</field>
+        </record>
+        <record id="crm_api_password" model="ir.config_parameter">
+            <field name="key">crm_api_password</field>
+            <field name="value">crm</field>
+        </record>
     </data>
 </odoo>

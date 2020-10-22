@@ -7,21 +7,21 @@
 
         <record id="voucher_order_stage_done" model="weha.voucher.order.stage">
             <field name="sequence">4</field>
-            <field name="name">Close</field>
+            <field name="name">Generate</field>
             <field name="closed">True</field>
             <field name="fold">True</field>
         </record>
 
         <record id="voucher_order_stage_open" model="weha.voucher.order.stage">
             <field name="sequence">3</field>
-            <field name="name">Open</field>
+            <field name="name">Ready To Generate</field>
             <field name="opened">True</field>
             <field name="next_stage_id" ref="voucher_order_stage_done"/>
         </record>
 
         <record id="voucher_order_stage_approval" model="weha.voucher.order.stage">
             <field name="sequence">2</field>
-            <field name="name">Approve</field>
+            <field name="name">Pending to Approval</field>
             <field name="approval">True</field>
             <field name="fold">True</field>
             <field name="next_stage_id" ref="voucher_order_stage_open"/>
@@ -29,23 +29,9 @@
 
         <record id="voucher_order_stage_request" model="weha.voucher.order.stage">
             <field name="sequence">1</field>
-            <field name="name">Request</field>
+            <field name="name">Draft</field>
             <field name="unattended">True</field>
             <field name="next_stage_id" ref="voucher_order_stage_approval"/>
-        </record>
-
-        <record id="voucher_order_stage_done" model="weha.voucher.order.stage">
-            <field name="sequence">4</field>
-            <field name="name">Close</field>
-            <field name="closed">True</field>
-            <field name="fold">True</field>
-        </record>
-        
-        <record id="voucher_order_stage_open" model="weha.voucher.order.stage">
-            <field name="sequence">3</field>
-            <field name="name">Open</field>
-            <field name="opened">True</field>
-            <field name="next_stage_id" ref="voucher_order_stage_done"/>
         </record>
 
         <record id="voucher_order_stage_cancelled" model="weha.voucher.order.stage">

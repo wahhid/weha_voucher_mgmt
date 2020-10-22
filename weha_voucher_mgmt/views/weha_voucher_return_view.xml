@@ -115,6 +115,7 @@
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="voucher_count"/>
+                                <field name="voucher_received_count"/>
                             </group>
                         </group>
                         <notebook colspan="4">

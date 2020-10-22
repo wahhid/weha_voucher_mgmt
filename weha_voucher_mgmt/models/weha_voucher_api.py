@@ -214,8 +214,7 @@ class VoucherTransPurchase(models.Model):
         res.trans_close()
 
         return res    
-    
-    
+      
 class VoucheTransPurchaseSku(models.Model):
     _name = "weha.voucher.trans.purchase.sku"
 
@@ -260,6 +259,7 @@ class VoucherTransPurchaseLine(models.Model):
         default='open',
         index=True
     )
+
 
 class VoucherTransPayment(models.Model):
     _name = "weha.voucher.trans.payment"
@@ -333,6 +333,7 @@ class VoucheTransPaymentSku(models.Model):
         index=True
     )
 
+
 class VoucherTransStatus(models.Model):
     _name = "weha.voucher.trans.status"
 
@@ -355,9 +356,8 @@ class VoucherTransStatus(models.Model):
                     if voucher_mapping_pos_id.pos_trx_type == 'Promo':
                         data.update({'tender_type': voucher_order_line_id.tender_type})
                         data.update({'bank_category': voucher_order_line_id.bank_category})
-                    else:
-                        data.update({'tender_type': ''})
-                        data.update({'bank_category': ''})
+                data.update({'tender_type': ''})
+                data.update({'bank_category': ''})        
         return data 
                 
     name = fields.Char('Name', )
@@ -410,10 +410,25 @@ class VoucherTransStatus(models.Model):
         # arr_voucher_ean = vals['voucher_ean'].split("|")
         # voucher_ean_ids = []
         # for voucher_ean in arr_voucher_ean:
-        domain = [
-            ('voucher_ean','=', vals['voucher_ean']),
-            ('state','=', 'activated')
-        ]
+
+        if vals['process_type'] == 'reserved':
+            domain = [
+                ('voucher_ean', '=', vals['voucher_ean']),
+                ('state', '=', 'activated')
+            ]
+        elif vals['process_type'] == 'used':
+            domain = [
+                ('voucher_ean', '=', vals['voucher_ean']),
+                ('state', '=', 'reserved')
+            ]
+        elif vals['process_type'] == 'activated':
+            domain = [
+                ('voucher_ean', '=', vals['voucher_ean']),
+                ('state', '=', 'reserved')
+            ]
+        else:
+            raise ValidationError("Process Type not valid")
+
         voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
         _logger.info(voucher_order_line_id)
         if voucher_order_line_id:

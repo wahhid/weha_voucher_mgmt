@@ -48,6 +48,13 @@ class VoucherReturn(models.Model):
         count = self.env['weha.voucher.return.line'].search_count([('voucher_return_id','=', self.id)])
         self.voucher_count = count
 
+    def _calculate_voucher_received(self):
+        count = 0
+        for voucher_return_line_id in self.voucher_return_line_ids:
+            if voucher_return_line_id.state == 'received':
+                count += 1
+        self.voucher_received_count = count
+
     @api.onchange('voucher_type')
     def _voucher_code_onchange(self):
         res = {}

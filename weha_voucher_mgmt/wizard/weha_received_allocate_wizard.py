@@ -291,46 +291,6 @@ class WehaWizardReceivedAllocate(models.TransientModel):
 
             if voucher_allocate_id.voucher_count == voucher_allocate_id.voucher_received_count:
                 voucher_allocate_id.sudo().trans_received()
-
-    # def trans_received_all(self):
-
-    #     obj_allocate = self.env['weha.voucher.allocate'].browse(self.env.context.get('active_id'))
-    #     obj_order_line = self.env['weha.voucher.order.line'].search([('voucher_allocate_id','=', res.id)])
-        
-    #     for rec in obj_order_line:
-    #         vals = {}
-    #         vals.update({'state': 'received'})
-    #         res = obj_order_line.write(vals)
-
-    #         obj_order_line_trans = self.env['weha.voucher.order.line.trans']
-
-    #         vals = {}
-    #         vals.update({'name': obj_allocate.number})
-    #         vals.update({'voucher_order_line_id': rec.id})
-    #         vals.update({'trans_date': datetime.now()})
-    #         vals.update({'trans_type': 'RV'})
-    #         obj_order_line_trans.create(vals)
-    
-    # @api.onchange('code_ean')
-    # def _onchange_barcode_scan(self):
-    #     voucher_rec = self.env['weha.voucher.order.line']
-    #     if self.code_ean:
-    #         code_ean = self.code_ean
-    #         self.code_ean = False
-    #         voucher = voucher_rec.search([('voucher_ean','=', self.code_ean)])
-            
-    #         wizard_allocate_line_obj = self.env['weha.wizard.received.allocate.line']
-    #         _logger.info("wizard = " + str(voucher))
-    #         _logger.info("wizard = " + str(voucher.name))
-
-    #         if voucher.id:
-    #             vals = {}
-    #             vals.update({'name': voucher.name})
-    #             vals.update({'wizard_allocate_id': self.id})
-    #             vals.update({'voucher_order_line_id': voucher.id})
-    #             wizard_allocate_line_obj.write(vals)
-    #         else:
-    #             raise Warning('No voucher is available for this code')
             
     
     code_ean = fields.Char(string="Scan Code")

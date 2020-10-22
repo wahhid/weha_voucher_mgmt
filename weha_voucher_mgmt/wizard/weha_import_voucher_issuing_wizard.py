@@ -76,9 +76,8 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
         active_id = self.env.context.get('active_id') or False
         voucher_issuing_id = self.env['weha.voucher.issuing'].browse(active_id)
             
-
         if self.file_opt == 'csv':
-            keys = ['sku','quantity','member_id']                    
+            keys = ['employee_nik', 'employee_name','sku','member_id','quantity']                    
             data = base64.b64decode(self.file)
             file_input = io.StringIO(data.decode("utf-8"))
             file_input.seek(0)
@@ -106,7 +105,7 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
             values = {}
             workbook = xlrd.open_workbook(fp.name)
             sheet = workbook.sheet_by_index(0)
-            for row_no in range(sheet.nrows):
+            for row_no in range(1, sheet.nrows):
                 #if row_no <= 0:
                 #    fields = list(map(lambda row:row.value.encode('utf-8'), sheet.row(row_no)))
                 #else:
@@ -114,9 +113,11 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
                 line = sheet.row(row_no)
                 values.update( {
                                 'voucher_issuing_id': active_id,
-                                'sku': line[0].value,
-                                'quantity': int(float(line[1].value)),
-                                'member_id': line[2].value,
+                                'employee_nik': line[0].value,
+                                'employee_name': line[1].value,
+                                'sku': line[2].value,
+                                'quantity': int(float(line[4].value)),
+                                'member_id': line[3].value,
                                 })
                 res = self.env['weha.voucher.issuing.employee.line'].create(values)
         else:

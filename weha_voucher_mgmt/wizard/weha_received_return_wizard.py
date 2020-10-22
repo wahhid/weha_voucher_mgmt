@@ -149,8 +149,8 @@ class WehaWizardReceivedReturn(models.TransientModel):
         
         if self.scan_method == 'start_end':
             if self.start_ean and self.end_ean:
-                start_voucher = self.env['weha.voucher.order.line'].search[('voucher_ean','=', self.start_ean)]
-                end_voucher = self.env['weha.voucher.order.line'].search[('voucher_ean','=', self.end_ean)]
+                start_voucher = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_ean)], limit=1)
+                end_voucher = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.end_ean)], limit=1)
                 
                 if start_voucher.voucher_code_id.id == end_voucher.voucher_code_id.id and \
                     start_voucher.year_id.id == end_voucher.year_id.id and \
@@ -159,31 +159,37 @@ class WehaWizardReceivedReturn(models.TransientModel):
                     voucher_range = tuple(range(start_voucher.check_number, end_voucher.check_number + 1))
                     if start_voucher.voucher_promo_id:
                         domain = [
-                            ('voucher_order_id', '=', start_voucher.voucher_code_id.id),
+                            ('voucher_code_id', '=', start_voucher.voucher_code_id.id),
                             ('year_id', '=', start_voucher.year_id.id),
                             ('voucher_promo_id', '=', start_voucher.voucher_promo_id.id),
+                            ('state','=','intransit'),
                             ('check_number','in', voucher_range)
                         ]
                     else:
                         domain = [
-                            ('voucher_order_id', '=', start_voucher.voucher_code_id.id),
+                            ('voucher_code_id', '=', start_voucher.voucher_code_id.id),
                             ('year_id', '=', start_voucher.year_id.id),
+                            ('state','=','intransit'),
                             ('check_number','in', voucher_range)
                         ]
                     voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
-                    
+                    _logger.info("voucher_order_line_ids")
+                    _logger.info(voucher_order_line_ids)
                     for voucher_order_line_id in voucher_order_line_ids:
-                        
-                        voucher_return_line_id = self.env['weha.voucher.return.line'].search(['voucher_order_line_id','=', voucher_order_line_id.id], limit=1)
+                        _logger.info(voucher_order_line_id.voucher_ean)
+                        voucher_return_line_id = self.env['weha.voucher.return.line'].search([('voucher_order_line_id','=', voucher_order_line_id.id)], limit=1)
                         
                         if voucher_return_line_id:
+                            _logger.info(voucher_return_line_id.voucher_order_line_id.voucher_ean)
                             vals = {}
                             vals.update({'state': 'received'})
                             res = voucher_return_line_id.sudo().write(vals)
 
+                            company_id = self.env.user.company_id
+
                             vals = {}
-                            vals.update({'operating_unit_id': voucher_return_id.source_operating_unit.id})
-                            vals.update({'state': 'return'})
+                            vals.update({'operating_unit_id': company_id.res_company_return_operating_unit.id})
+                            vals.update({'state': 'open'})
                             voucher_return_line_id.voucher_order_line_id.sudo().write(vals)
 
                             vals = {}
@@ -191,11 +197,54 @@ class WehaWizardReceivedReturn(models.TransientModel):
                             vals.update({'voucher_order_line_id': voucher_return_line_id.voucher_order_line_id.id})
                             vals.update({'trans_date': datetime.now()})
                             vals.update({'operating_unit_loc_fr_id': voucher_return_id.operating_unit_id.id})
-                            vals.update({'operating_unit_loc_to_id': return_unit_to})
+                            vals.update({'operating_unit_loc_to_id': company_id.res_company_return_operating_unit.id})
                             vals.update({'trans_type': 'RT'})
                             self.env['weha.voucher.order.line.trans'].sudo().create(vals)
+                    
+                            if voucher_return_line_id.voucher_return_id.voucher_count == voucher_return_line_id.voucher_return_id.voucher_received_count:
+                                voucher_return_line_id.voucher_return_id.sudo().trans_received()
+            
         else:
-            pass
+            _logger.info('Manual Input')
+            domain = [
+                ('voucher_ean','=', self.code_ean),
+                ('state','=','intransit')
+            ]
+            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
+            if not voucher_order_line_id:
+                raise ValidationError("Voucher not found")
+            
+            domain = [
+                ('voucher_order_line_id', '=', voucher_order_line_id.id),
+                ('state', '=', 'open')
+            ]
+
+            voucher_return_line_id = self.env['weha.voucher.return.line'].search(domain, limit=1)
+            if not voucher_return_line_id:
+                raise ValidationError("No Voucher Return found or already received")
+
+            vals = {}
+            vals.update({'state': 'received'})
+            res = voucher_return_line_id.write(vals)
+
+            company_id = self.env.user.company_id
+
+            vals = {}   
+            vals.update({'operating_unit_id': company_id.res_company_return_operating_unit.id})
+            vals.update({'state': 'open'})
+            voucher_return_line_id.voucher_order_line_id.write(vals)
+
+            vals = {}
+            vals.update({'name': voucher_return_line_id.number})
+            vals.update({'voucher_order_line_id': voucher_return_line_id.voucher_order_line_id.id})
+            vals.update({'trans_date': datetime.now()})
+            vals.update({'operating_unit_loc_fr_id': voucher_return_line_id.operating_unit_id.id})
+            vals.update({'operating_unit_loc_to_id': company_id.res_company_return_operating_unit.id})
+            vals.update({'trans_type': 'RV'})
+            self.env['weha.voucher.order.line.trans'].create(vals)
+
+            if voucher_return_line_id.voucher_return_id.voucher_count == voucher_return_line_id.voucher_return_id.voucher_received_count:
+                voucher_return_line_id.voucher_return_id.sudo().trans_received()
             
 
     @api.onchange('code_ean')

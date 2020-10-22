@@ -118,51 +118,7 @@ class VMSStatusController(http.Controller):
         
   
         is_available = True
-        # if ';' in voucher_ean:
-        #     arr_eans = voucher_ean.split(';')
-        #     _logger.info(arr_eans)
-        #     for str_ean in arr_eans:
-        #         arr_ean  = str_ean.split('|')
-        #         _logger.info(arr_ean)
-        #         if process_type == 'reserved':
-        #             domain = [
-        #                 ('voucher_ean', '=', arr_ean),
-        #                 ('state', '=', 'activated')
-        #             ]
-        #         elif process_type == 'used':
-        #             domain = [
-        #                 ('voucher_ean', '=', arr_ean),
-        #                 ('state', '=', 'reserved')
-        #             ]
-        #         elif process_type == 'activated':
-        #             domain = [
-        #                 ('voucher_ean', '=', arr_ean),
-        #                 ('state', '=', 'reserved')
-        #             ]  
-        #         else:
-        #             is_available = False
-        #         voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
-        #         if not voucher_order_line_id:
-        #             is_available = False
-        # else:
-        #     arr_ean  = voucher_ean.split('|')
-        #     if process_type == 'reserved':
-        #         domain = [
-        #             ('voucher_ean', '=', arr_ean),
-        #             ('state', '=', 'activated')
-        #         ]
-        #     elif process_type == 'used':
-        #         domain = [
-        #             ('voucher_ean', '=', arr_ean),
-        #             ('state', '=', 'reserved')
-        #         ]
-        #     elif process_type == 'activated':
-        #         domain = [
-        #             ('voucher_ean', '=', arr_ean),
-        #             ('state', '=', 'reserved')
-        #         ]  
-        #     else:
-        #         is_available = False
+
         if process_type == 'reserved':
             domain = [
                 ('voucher_ean', '=', voucher_ean),

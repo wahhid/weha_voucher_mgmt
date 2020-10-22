@@ -132,8 +132,10 @@
                             <page string="Employee Lines" attrs="{'invisible':[('is_employee','=', False)]}">
                                 <field name="voucher_issuing_employee_line_ids" widget="one2many_list" nolabel="0" attrs="{'readonly':[('current_stage','!=', 'unattended')]}">
                                     <tree string="Employee Lines">
-                                        <field name="member_id"/>
+                                        <field name="employee_nik"/>
+                                        <field name="employee_name"/>
                                         <field name="sku"/>
+                                        <field name="member_id"/>
                                         <field name="quantity"/>
                                         <field name="state"/>
                                     </tree>

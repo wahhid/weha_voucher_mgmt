@@ -28,6 +28,8 @@ class VoucherIssuingEmployeeLine(models.Model):
 
     voucher_issuing_id = fields.Many2one(comodel_name='weha.voucher.issuing', string='Voucher Allocate')
     voucher_trans_purchase_id = fields.Many2one('weha.voucher.trans.payment', 'Payment #')
+    employee_name = fields.Char("Employee", size=100)
+    employee_nik = fields.Char("NIK", size=50)
     member_id = fields.Char("Member #", size=20)
     sku = fields.Char("SKU #", size=20)
     quantity = fields.Integer('Qty')
