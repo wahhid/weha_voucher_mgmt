@@ -60,11 +60,11 @@
                                 string="Scan Allocate Voucher" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
                         <button type="object" 
-                                attrs="{'invisible': ['|', ('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
+                                attrs="{'invisible': [('current_stage', 'in', ('closed','cancelled','rejected'))]}"
                                 class="btn btn-light" 
                                 name="trans_cancelled" 
                                 string="Cancel Order" 
-                                groups="weha_voucher_mgmt.group_finance_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
                                 class="btn btn-light" 

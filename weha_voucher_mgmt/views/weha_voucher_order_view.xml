@@ -51,9 +51,12 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Order" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
-                         <button type="object" attrs="{'invisible': ['|', ('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
-                            class="btn btn-light" name="trans_cancelled" string="Cancel Order" 
-                            groups="weha_voucher_mgmt.group_finance_user"/>
+                         <button type="object" 
+                                 attrs="{'invisible': [('current_stage', 'in', ('closed','cancelled','rejected'))]}"
+                                 class="btn btn-light" 
+                                 name="trans_cancelled" 
+                                 string="Cancel Order" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
                             confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_finance_manager" />
