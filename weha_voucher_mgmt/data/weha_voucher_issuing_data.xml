@@ -15,7 +15,7 @@
         <record id="voucher_issuing_stage_open" model="weha.voucher.issuing.stage">
             <field name="sequence">3</field>
             <field name="name">Ready to issued</field>
-            <field name="open">True</field>
+            <field name="opened">True</field>
             <field name="next_stage_id" ref="voucher_issuing_stage_done"/>
         </record>
 
