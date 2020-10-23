@@ -132,14 +132,14 @@ class VoucherOrder(models.Model):
                 ('voucher_code_id','=', voucher_code_id),
                 ('year','=', year),
                 ('voucher_promo_id','=', voucher_promo_id),
-                ('current_stage','in', ['unattended','approval']),
+                ('current_stage','in', ['unattended','approval','opened','closed']),
             ]
         else:
             domain = [
                 ('voucher_type','=', voucher_type),
                 ('voucher_code_id','=',voucher_code_id),
                 ('year','=', year),
-                ('current_stage','in', ['unattended','approval']),
+                ('current_stage','in', ['unattended','approval','opened','closed']),
             ]
 
         _logger.info(domain)
