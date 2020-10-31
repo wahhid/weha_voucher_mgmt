@@ -26,6 +26,8 @@ class VoucherIssuing(models.Model):
                 rec.current_stage = 'closed'
             if rec.stage_id.cancelled:
                 rec.current_stage = 'cancelled'
+            if rec.stage_id.rejected:
+                rec.current_stage = 'rejected'
         
     def _get_default_stage_id(self):
         return self.env['weha.voucher.issuing.stage'].search([], limit=1).id
@@ -135,15 +137,66 @@ class VoucherIssuing(models.Model):
         if not stage_id:
             raise ValidationError('Stage not found')
         res = super(VoucherIssuing, self).write({'stage_id': stage_id.id})
+        #Create Schedule Activity
+        operating_unit_id = self.operating_unit_id
+        for approval_user_id in operating_unit_id.approval_user_ids:
+            data = {
+                'activity_type_id': 4,
+                'note': 'Voucher Issuing for Approval',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_issuing').id,
+                'user_id': approval_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Issuing for Approval'
+            }
+            self.send_notification(data)
 
     def trans_approve(self):
         _logger.info("Trans Approve")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherIssuing, self).write({'stage_id': stage_id.id})
+        #Create Schedule Activity
+        operating_unit_id = self.operating_unit_id
+        for requester_user_id in operating_unit_id.requester_user_ids:
+            data = {
+                'activity_type_id': 4,
+                'note': 'Voucher Issuing was Approved',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_issuing').id,
+                'user_id': requester_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Issuing was Approved'
+            }
+            self.send_notification(data)
+
+    def trans_reject(self):
+        stage_id = self.env['weha.voucher.issuing.stage'].search([('rejected','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError("Stage not found")
+        res = super(VoucherIssuing, self).write({'stage_id': stage_id.id})
+        #Create Schedule Activity
+        operating_unit_id = self.operating_unit_id
+        for requester_user_id in operating_unit_id.requester_user_ids:
+            data = {
+                'activity_type_id': 4,
+                'note': 'Voucher Issuing was rejected',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_issuing').id,
+                'user_id': requester_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Issuing was rejected'
+            }
+            self.send_notification(data)
 
     def trans_close(self):
         stage_id = self.env['weha.voucher.issuing.stage'].search([('closed','=',True)], limit=1)
         super(VoucherIssuing, self).write({'stage_id': stage_id.id})
+
+    def trans_cancelled(self):
+        stage_id = self.env['weha.voucher.issuing.stage'].search([('cancelled','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage not found')
+        super(VoucherIssuing, self).write({'stage_id': stage_id.id})   
 
     @api.depends('stage_id')
     def trans_confirm(self):

@@ -116,7 +116,9 @@ class VoucherReturn(models.Model):
         self.send_notification(data)
 
     def trans_reject(self):
-        stage_id = self.stage_id.from_stage_id
+        stage_id = self.env['weha.voucher.return.stage'].search([('rejected', '=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError("Stage not found")
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
         for requester_user_id in  self.operating_unit_id.requester_user_ids:
             _logger.info(requester_user_id.name)
@@ -153,6 +155,11 @@ class VoucherReturn(models.Model):
             }
             self.send_notification(data)
 
+    def trans_cancelled(self):
+        stage_id = self.env['weha.voucher.return.stage'].search([('cancelled','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage Cancelled not found')
+        super(VoucherReturn, self).write({'stage_id': stage_id.id})
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Return number', default="/",readonly=True)

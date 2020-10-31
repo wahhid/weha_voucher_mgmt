@@ -35,6 +35,7 @@ class WehaVoucherOrderStage(models.Model):
     next_stage_id = fields.Many2one('weha.voucher.order.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
     approval_user_ids = fields.Many2many('res.users', string='Approval Users')
+    approval_level = fields.Integer('Approval Level', default=1)
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',
@@ -82,6 +83,7 @@ class WehaVoucherRequestStage(models.Model):
              "to display.")
     approval_user_id_l1 = fields.Many2one('res.users', 'Approval User L1')
     approval_user_id_l2 = fields.Many2one('res.users', 'Approval User L2')
+    approval_level = fields.Integer('Approval Level', default=1)
     next_stage_id = fields.Many2one('weha.voucher.request.stage', 'Next Stage', required=False)
     mail_template_id = fields.Many2one(
         'mail.template',
@@ -128,6 +130,7 @@ class WehaVoucherReturnStage(models.Model):
     from_stage_id = fields.Many2one('weha.voucher.return.stage', 'From Stage', required=False)
     next_stage_id = fields.Many2one('weha.voucher.return.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User', required=False)
+    approval_level = fields.Integer('Approval Level', default=1)
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',
@@ -218,6 +221,7 @@ class WehaVoucherAllocateStage(models.Model):
     from_stage_id = fields.Many2one('weha.voucher.allocate.stage', 'From Stage', required=False)
     next_stage_id = fields.Many2one('weha.voucher.allocate.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
+    approval_level = fields.Integer('Approval Level', default=1)
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',
@@ -257,6 +261,7 @@ class WehaVoucherIssuingStage(models.Model):
     from_stage_id = fields.Many2one('weha.voucher.issuing.stage', 'From Stage', required=False)
     next_stage_id = fields.Many2one('weha.voucher.issuing.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
+    approval_level = fields.Integer('Approval Level', default=1)
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',
@@ -300,6 +305,8 @@ class WehaVoucherScrapStage(models.Model):
     from_stage_id = fields.Many2one('weha.voucher.scrap.stage', 'From Stage', required=False)
     next_stage_id = fields.Many2one('weha.voucher.scrap.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
+    approval_level = fields.Integer('Approval Level', default=1)
+
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',

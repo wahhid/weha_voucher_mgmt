@@ -56,13 +56,16 @@
                                  class="btn btn-light" 
                                  name="trans_cancelled" 
                                  string="Cancel Order" 
+                                 confirm="Are you sure you want to cancel voucher order?"
                                 groups="weha_voucher_mgmt.group_voucher_finance_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                             class="btn btn-primary" name="trans_approve" string="Approve" 
                             confirm="Are you sure you want to Approve?" groups="weha_voucher_mgmt.group_voucher_finance_manager" />
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
+                        <button type="object" 
+                            attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                             class="btn btn-primary" name="trans_reject" string="Reject" 
-                            groups="weha_voucher_mgmt.group_voucher_finance_manager" confirm="Are you sure you want to Approve?"/>
+                            groups="weha_voucher_mgmt.group_voucher_finance_manager" 
+                            confirm="Are you sure you want to Reject?"/>
                         <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
                     <sheet>

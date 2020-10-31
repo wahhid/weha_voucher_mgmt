@@ -131,8 +131,6 @@ class VoucherAllocate(models.Model):
         if not stage_id:
             raise ValidationError('Stage Rejected not found')
         super(VoucherAllocate, self).write({'stage_id': stage_id.id})
-        stage_id = self.stage_id.next_stage_id
-        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         data =  {
             'activity_type_id': 4,
             'note': 'Voucher Allocate was rejected',

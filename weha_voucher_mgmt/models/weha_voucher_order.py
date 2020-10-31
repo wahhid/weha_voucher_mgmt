@@ -147,7 +147,8 @@ class VoucherOrder(models.Model):
         _logger.info(voucher_order_ids)
         is_overlap = False
         for voucher_order_id in voucher_order_ids:
-            _logger.info(voucher_order_ids)
+            _logger.info(voucher_order_id.start_number)
+            _logger.info(voucher_order_id.end_number)
             result = self.overlap(start_number,end_number,voucher_order_id.start_number, voucher_order_id.end_number)
             _logger.info(result)
             if result:
@@ -263,7 +264,6 @@ class VoucherOrder(models.Model):
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
 
 
-
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Order number', default="/", readonly=True)
     ref = fields.Char(string='Source Document', required=True)
@@ -285,7 +285,7 @@ class VoucherOrder(models.Model):
         track_visibility='onchange',
     )
     
-    current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
+    current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True, store=True)
 
     priority = fields.Selection(selection=[
         ('0', _('Low')),

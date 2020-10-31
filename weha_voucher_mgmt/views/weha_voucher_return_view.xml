@@ -73,13 +73,14 @@
                                 name="trans_approve"
                                 string="Approve" 
                                 groups="weha_voucher_mgmt.group_voucher_manager" 
-                                confirm="Are you sure you want to Approve?"/>
+                                confirm="Are you sure you want to approve voucher return?"/>
                         
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                                 class="btn btn-primary" 
                                 name="trans_reject" 
                                 string="Reject" 
+                                confirm="Are you sure you want to reject voucher return?"
                                 groups="weha_voucher_mgmt.group_voucher_manager"/>
 
                         <button name="%(weha_voucher_mgmt.act_open_received_return_view_form)d" 
@@ -88,6 +89,14 @@
                                 class="oe_highlight" 
                                 attrs="{'invisible': [('current_stage', '!=', 'progress')]}" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+
+                        <button type="object" 
+                                 attrs="{'invisible': [('current_stage', 'in', ('closed','cancelled','rejected'))]}"
+                                 class="btn btn-light" 
+                                 name="trans_cancelled" 
+                                 string="Cancel Return" 
+                                 confirm="Are you sure you want to cancel voucher return?"
+                                groups="weha_voucher_mgmt.group_voucher_user"/>
 
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>

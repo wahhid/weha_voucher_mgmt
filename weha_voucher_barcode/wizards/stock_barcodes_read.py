@@ -69,14 +69,14 @@ class WizStockBarcodesRead(models.AbstractModel):
                     _logger.info('Allocate Unattended')
                     domain = [
                         ('voucher_ean', '=', barcode),
-                        ('operating_unit_id', '=', voucher_return_id.operating_unit_id.id)
+                        ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
                         ('state', '=', 'open')
                     ]
                 elif voucher_allocate_id.current_stage == 'progress' or voucher_allocate_id.current_stage == 'receiving':
                     _logger.info('Allocate Intrasit or Received')
                     domain = [
                         ('voucher_ean', '=', barcode),
-                        ('operating_unit_id', '=', voucher_return_id.operating_unit_id.id)
+                        ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
                         ('state', '=', 'intransit')
                     ]
                 else:
@@ -120,24 +120,22 @@ class WizStockBarcodesRead(models.AbstractModel):
                             else:
                                 pass
                     else:
-                        if voucher_allocate_line_id.state == 'open':
-                            vals = {
-                                'voucher_allocate_id': active_id,
-                                'voucher_order_line_id': voucher_order_line_id.id
-                            }
-                            self.env['weha.voucher.allocate.line'].create(vals)
-                            self._set_messagge_info("success", _("Allocate Line Create Successfully"))
-                            
-                            vals = {
-                                'name': self.barcode,
-                                'res_model_id': self.res_model_id.id,
-                                'res_id': self.res_id,
-                                'voucher_allocate_id': self.res_id,
-                                'voucher_order_line_id' : voucher_order_line_id.id 
-                            }
-                            self._add_read_log(vals)
-                        else:
-                            self._set_messagge_info("not_found", _("Barcode not found"))
+                        vals = {
+                            'voucher_allocate_id': active_id,
+                            'voucher_order_line_id': voucher_order_line_id.id
+                        }
+                        self.env['weha.voucher.allocate.line'].create(vals)
+                        self._set_messagge_info("success", _("Allocate Line Create Successfully"))
+                        
+                        vals = {
+                            'name': self.barcode,
+                            'res_model_id': self.res_model_id.id,
+                            'res_id': self.res_id,
+                            'voucher_allocate_id': self.res_id,
+                            'voucher_order_line_id' : voucher_order_line_id.id 
+                        }
+                        _logger.info(vals)
+                        self._add_read_log(vals)
                 else:
                     self._set_messagge_info("not_found", _("Barcode not found"))
 
@@ -314,6 +312,7 @@ class WizStockBarcodesRead(models.AbstractModel):
                     self._set_messagge_info("not_found", _("Voucher Scrap not found"))
             else:
                 self._set_messagge_info("not_found", _("Barcode not found"))
+
 
     def _barcode_domain(self, barcode):
         return [("voucher_ean", "=", barcode)]

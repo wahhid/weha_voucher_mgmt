@@ -54,19 +54,14 @@
                                 name="trans_approve" 
                                 string="Approve" 
                                 groups="weha_voucher_mgmt.group_voucher_hrd_manager" 
-                                confirm="Are you sure you want to Approve?"/>
+                                confirm="Are you sure you want to approve voucher activate customer?"/>
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                                 class="btn btn-primary" 
                                 name="trans_reject" 
                                 string="Reject" 
+                                confirm="Are you sure you want to reject voucher activate customer?"
                                 groups="weha_voucher_mgmt.group_voucher_hrd_manager"/>
-                        <button type="object" 
-                                attrs="{'invisible': ['|', ('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
-                                class="btn btn-light" 
-                                name="trans_cancelled" 
-                                string="Cancel Order" 
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_hrd_user"/>                     
                         <button type="action" 
                                 attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                                 class="btn btn-primary" 
@@ -85,6 +80,13 @@
                                 name="action_issuing_voucher" 
                                 string="Ready to Issuing" 
                                 groups="weha_voucher_mgmt.group_voucher_hrd_user"/>
+                        <button type="object" 
+                                 attrs="{'invisible': [('current_stage', 'in', ('closed','cancelled','rejected'))]}"
+                                 class="btn btn-light" 
+                                 name="trans_cancelled" 
+                                 string="Cancel Order" 
+                                 confirm="Are you sure you want to cancel voucher activate customer?"
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_hrd_user"/>
                         <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
                     <sheet>
@@ -112,7 +114,9 @@
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="voucher_count"/>
+                                <!--
                                 <field name="estimate_voucher_count"/>
+                                -->
                                 <field name="current_stage" invisible="1"/>
                             </group>
                         </group>
