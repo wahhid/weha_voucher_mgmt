@@ -364,5 +364,101 @@
             sequence="14"
             groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_api_user"/>
 
+        <!-- Tree view for voucher trans api -->
+        <record id="view_weha_voucher_trans_ftp_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.trans.ftp.tree</field>
+            <field name="model">weha.voucher.trans.ftp</field>
+            <field name="type">tree</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <tree string="Ftp" create="false" delete="false" edit="false">
+                    <field name="name" />
+                    <field name="trans_date" />
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+   <!-- Form view for voucher request -->
+        <record id="view_weha_voucher_trans_ftp_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.trans.ftp.form</field>
+            <field name="model">weha.voucher.trans.ftp</field>
+            <field name="type">form</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <form string="model_form" create="true" delete="true" edit="true">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" />
+                            <h1>
+                                <field name="name" class="oe_inline"
+                                    placeholder="Name" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+
+                                <field name="trans_date"/>
+                                <field name="file_csv_filename" invisible="1"/>
+                                <field name="file_csv" filename="file_csv_filename"/>
+                               
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+         <!-- Search view for voucher ftp -->
+        <record id="view_weha_voucher_trans_ftp_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.trans.ftp.search</field>
+            <field name="model">weha.voucher.trans.ftp</field>
+            <field name="type">search</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <search string="model_search">
+                    <field name="name" />
+                    <field name="trans_date"/>
+                    <field name="state"/>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Main window action for voucher ftp -->
+        <record id="action_weha_voucher_trans_ftp" model="ir.actions.act_window">
+            <field name="type">ir.actions.act_window</field>
+            <field name="name">Ftp</field>
+            <field name="res_model">weha.voucher.trans.ftp</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="search_view_id" ref="view_weha_voucher_trans_ftp_search" />
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add for request new voucher ftp
+                </p>
+                <p>
+                    Voucher Ftp
+                </p>
+            </field>
+        </record>
+    
+        <menuitem 
+            id="weha_voucher_trans_ftp_menu" 
+            name="Ftp" 
+            parent="weha_voucher_api_menu"
+            action="action_weha_voucher_trans_ftp" 
+            sequence="15"
+            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_api_user"/>
+ 
     </data>
 </odoo>

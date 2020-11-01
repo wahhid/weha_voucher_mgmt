@@ -87,5 +87,12 @@
             <field name="padding">5</field>
         </record>
 
+        <record id="weha_voucher_trans_ftp" model="ir.sequence">
+            <field name="name">Voucher Trans Ftp Sequence</field>
+            <field name="code">weha.voucher.trans.ftp.sequence</field>
+            <field name="prefix">VF/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
+
     </data>
 </odoo>

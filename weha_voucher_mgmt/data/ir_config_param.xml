@@ -17,5 +17,19 @@
             <field name="key">crm_api_password</field>
             <field name="value">crm</field>
         </record>
+        <record id="ftp_url" model="ir.config_parameter">
+            <field name="key">ftp_url</field>
+            <field name="value">localhost</field>
+        </record>
+        <record id="ftp_username" model="ir.config_parameter">
+            <field name="key">ftp_username</field>
+            <field name="value">vsuser</field>
+        </record>
+        <record id="ftp_password" model="ir.config_parameter">
+            <field name="key">ftp_password</field>
+            <field name="value">P@ssw0rd!@#</field>
+        </record>
+
+
     </data>
 </odoo>

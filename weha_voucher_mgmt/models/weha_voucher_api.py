@@ -3,10 +3,19 @@ from odoo.exceptions import UserError, ValidationError
 from datetime import datetime, timedelta
 import requests
 from requests import ReadTimeout, ConnectTimeout, HTTPError, Timeout, ConnectionError
-
+from ftplib import FTP
+import os
+import base64
+from datetime import datetime
+import csv
 import logging
+import io
 
 _logger = logging.getLogger(__name__)
+
+ftp_url = "weha_voucher_mgmt.ftp_url"
+ftp_username = "weha_voucher_mgmt.ftp_username"
+ftp_password = "weha_voucher_mgmt.ftp_password"
 
 class VoucherTransPurchase(models.Model):
     _name = "weha.voucher.trans.purchase"
@@ -474,3 +483,138 @@ class VoucheTransStatusLine(models.Model):
         default='open',
         index=True
     )
+
+
+
+class VoucherTransFTP(models.Model):
+    _name = "weha.voucher.trans.ftp"
+     
+    @api.model 
+    def process_ftp(self):
+        _logger.info("Process FTP")
+        self.ftp_url = self.env.ref(ftp_url).sudo().value
+        self.ftp_username = self.env.ref(ftp_username).sudo().value
+        self.ftp_password = self.env.ref(ftp_password).sudo().value
+        ftp = FTP()
+        ftp.connect(self.ftp_url, 21)
+        ftp.login(self.ftp_username, self.ftp_password)
+        ftp.cwd('fail')
+        _logger.info(ftp.pwd())
+        files = []
+        ftp.dir(files.append)  # Takes a callback for each file
+        for file_name in ftp.nlst():
+            #_logger.info(type(f))
+            #base = os.path.basename(f)
+            _logger.info(file_name)
+            #Download CSV File and save to /tmp
+            file_csv = io.BytesIO()
+            with open("/tmp/" + file_name, 'wb') as local_file:  # Open local file for writing
+                # Download `test.txt` from server and write to `local_file`
+                # Pass absolute or relative path
+                response = ftp.retrbinary('RETR ' + file_name, file_csv.write)
+
+                # Check the response code
+                # https://en.wikipedia.org/wiki/List_of_FTP_server_return_codes
+                if response.startswith('226'):  # Transfer complete
+                    print('Transfer complete')
+                   
+                    #Create Ir Attachment
+                    data = file_csv.getvalue()
+                    vals = {
+                        'file_csv': base64.encodebytes(data),
+                        'file_csv_filename': file_name,
+                    }
+                    _logger.info(vals)
+                    #Create Trans Ftp
+                    res = self.env['weha.voucher.trans.ftp'].create(vals)
+                    #attachment_id = self.env['ir.attachment'].sudo().create({
+                    #            'name': file_name,
+                    #            'datas': base64.b64encode(data),
+                    #            'store_fname': file_name,
+                    #            'type': 'binary',
+                    #            'res_model': 'weha.voucher.trans.ftp',
+                    #            'res_id': res.id
+                    #})
+                    #res.write({'attachment_id': attachment_id.id})
+                    keys = ['date', 'time','receipt_number','t_id','cashier_id','store_id', 'sku', 'qty', 'amount', 'voucher_type', 'member_id', 'status']                    
+                    data = base64.decodebytes(res.file_csv)
+                    file_input = io.StringIO(data.decode("utf-8"))
+                    file_input.seek(0)
+                    reader_info = []
+                    reader = csv.reader(file_input, delimiter=';')
+                    try:
+                        reader_info.extend(reader)
+                    except Exception:
+                        raise exceptions.Warning(_("Not a valid file!"))
+                    values = {}
+                    for i in range(len(reader_info)):
+                        field = list(map(str, reader_info[i]))
+                        values = dict(zip(keys, field))
+                        if values:
+                            if i == 0:
+                                continue
+                            else:
+                                _logger.info(values)
+                                if values['voucher_type'] == '1':
+                                    vals = {}
+                                    # #Save Voucher Purchase Transaction
+                                    voucher_trans_purchase_obj = self.env['weha.voucher.trans.purchase']
+                                    trans_date = values['date']  +  " "  + values['time'] + ":00"
+                                    vals.update({'trans_date': trans_date})
+                                    vals.update({'receipt_number': values['receipt_number']})
+                                    vals.update({'t_id': values['t_id']})
+                                    vals.update({'cashier_id': values['cashier_id']})
+                                    vals.update({'store_id': values['store_id']})
+                                    vals.update({'member_id': values['member_id']})
+                                    vals.update({'sku': values['sku'] + "|" + values['qty']})
+                                    vals.update({'voucher_type': values['voucher_type']})        
+
+                                    #Save Data
+                                    result = voucher_trans_purchase_obj.sudo().create(vals)
+                                    if not result:
+                                        _logger.info("error")              
+                                                          
+                                #res = self.env['weha.voucher.issuing.employee.line'].create(values)
+                else:
+                    print('Error transferring. Local file may be incomplete or corrupt.')
+            #f = open("demofile.txt", "r")
+            
+            #data = f.read()
+            # request.env['ir.attachment'].sudo().create({
+            #             'name': f.filename,
+            #             'datas': base64.b64encode(data),
+            #             'datas_fname': f.filename,
+            #             'res_model': 'weha.voucher.trans.ftp',
+            #             'res_id': res.id
+            # })
+        ftp.close()        
+
+    name = fields.Char('Name', )
+    trans_date = fields.Datetime("Transaction Date",  default=datetime.now())    
+    file_csv = fields.Binary('File')
+    file_csv_filename = fields.Char("Filename")
+    attachment_id = fields.Many2one('ir.attachment','CSV File')
+    trans_purchase_id = fields.Many2one("weha.voucher.trans.purchase", "Purchase #")
+    trans_status_id = fields.Many2one("weha.voucher.trans.status", "Status #")
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )
+
+    @api.model 
+    def create(self, vals):
+        #Create Trans #
+        seq = self.env['ir.sequence']
+        if 'company_id' in vals:
+            seq = seq.with_context(force_company=vals['company_id'])
+        vals['name'] = seq.next_by_code('weha.voucher.trans.ftp.sequence') or '/'
+        res = super(VoucherTransFTP, self).create(vals)
+        return res
+
+
