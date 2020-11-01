@@ -404,11 +404,13 @@
                         </div>
                         <group>
                             <group>
-
                                 <field name="trans_date"/>
                                 <field name="file_csv_filename" invisible="1"/>
                                 <field name="file_csv" filename="file_csv_filename"/>
-                               
+                            </group>
+                            <group>
+                                <field name="voucher_type"/>
+                                <field name="trans_purchase_id"/>
                             </group>
                         </group>
                     </sheet>
