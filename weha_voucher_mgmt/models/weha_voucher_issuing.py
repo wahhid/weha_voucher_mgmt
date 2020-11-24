@@ -263,6 +263,12 @@ class VoucherIssuing(models.Model):
         string='Employee Lines',
     )
 
+    voucher_issuing_file_line_ids = fields.One2many(
+        comodel_name='weha.voucher.issuing.file.line', 
+        inverse_name='voucher_issuing_id', 
+        string='File Lines',
+    )
+
     @api.model
     def create(self, vals):
         if vals.get('number', '/') == '/':

@@ -64,7 +64,7 @@
                                 class="btn btn-light" 
                                 name="trans_close" 
                                 string="Closed Allocated" 
-                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user ,weha_voucher_mgmt.group_voucher_user"/>
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                                 class="btn btn-light" 
@@ -78,6 +78,7 @@
                                 string="Approve" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager,weha_voucher_mgmt.group_voucher_marketing_manager" 
                                 confirm="Are you sure you want to Approve?"/>
+                        
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                                 class="btn btn-primary" 
@@ -85,30 +86,57 @@
                                 string="Reject" 
                                 confirm="Are you sure you want to reject?"
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager,weha_voucher_mgmt.group_voucher_marketing_manager"/>
+                        
                         <button name="%(weha_voucher_mgmt.act_open_received_allocate_view_form)d" 
-                                type="action" string="Received Voucher"
+                                type="action" string="Receive Voucher"
                                 class="oe_highlight" 
-                                attrs="{'invisible': [('current_stage', '!=', 'progress')]}" 
+                                attrs="{'invisible': [('current_stage', 'in', ('unattended','approval','open','closed','cancelled','rejected'))]}" 
                                 groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
+                        
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', 'in', ('closed','cancelled','rejected'))]}"
-                                class="btn btn-light" 
+                                attrs="{'invisible': ['|',('current_stage', 'in', ('closed','cancelled','rejected')),('is_force_cancelled','=', True)]}"
+                                class="btn btn-warning" 
                                 name="trans_cancelled" 
                                 string="Cancel Allocate" 
                                 confirm="Are you sure you want to cancel voucher allocate?"
-                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user"/>
+                        
+                        <button type="object" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'closed'),('is_force_cancelled','=', True)]}"
+                                class="btn btn-danger" 
+                                name="trans_force_cancelled_approval" 
+                                string="Request Force Cancel" 
+                                confirm="Are you sure you want to request force cancel?"
+                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user"/>
+                       
+                        <button type="object" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'closed'),('is_force_cancelled','=', False)]}"
+                                class="btn btn-success" 
+                                name="trans_force_cancelled" 
+                                string="Approve Force Cancel" 
+                                confirm="Are you sure you want to force cancel voucher allocate?"
+                                groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
+ 
+                         <button type="object" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'closed'),('is_force_cancelled','=', False)]}"
+                                class="btn btn-warning" 
+                                name="trans_force_cancelled_reject" 
+                                string="Reject Force Cancel" 
+                                confirm="Are you sure you want to force cancel voucher allocate?"
+                                groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
  
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
                         <div name="button_box" class="oe_button_box">
                             <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_allocate_line_from_voucher_allocate)d" 
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"  
                                 icon="fa-ticket">
                                 <field string="Vouchers" name="voucher_count" widget="statinfo"/>
                             </button>
                         </div>
                         <widget name="web_ribbon" text="Request" bg_color="bg-warning" attrs="{'invisible':[('is_request','=', False)]}"/>
+                        <widget name="web_ribbon" text="Force Cancel" bg_color="bg-danger" attrs="{'invisible':[('is_force_cancelled','=', False)]}"/>
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
                             <h1>
@@ -129,6 +157,7 @@
                                 <field name="voucher_count"/>
                                 <field name="voucher_received_count"/>
                                 <field name="is_request" invisible="1"/>
+                                <field name="is_force_cancelled" invisible="1"/>
                                 <field name="voucher_request_qty" attrs="{'invisible':[('is_request','=',False)]}"/>
                             </group>
                         </group>

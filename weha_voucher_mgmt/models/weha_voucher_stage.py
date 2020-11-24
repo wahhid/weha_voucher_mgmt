@@ -20,6 +20,10 @@ class WehaVoucherOrderStage(models.Model):
         string='Approval')
     opened = fields.Boolean(
         string='Open')
+    progress = fields.Boolean(
+        string='In Progress')
+    receiving = fields.Boolean(
+        string='Receiving')
     closed = fields.Boolean(
         string='Closed')
     cancelled = fields.Boolean(

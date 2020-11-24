@@ -12,11 +12,14 @@ class WizardScanVoucherScrap(models.TransientModel):
     _name = "weha.wizard.scan.voucher.scrap"
 
 
-
     @api.onchange('start_number', 'end_number')
     def _onchange_voucher(self):     
         if self.start_number:     
-            voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)],limit=1)
+            domain=[
+                ('voucher_type','=','physical'),
+                ('voucher_ean','=', self.start_number)
+            ]
+            voucher_id  = self.env['weha.voucher.order.line'].search(domain,limit=1)
             if not voucher_id:
                 self.start_number = False
                 raise Warning('Voucher in start number not found')
@@ -28,6 +31,7 @@ class WizardScanVoucherScrap(models.TransientModel):
             
             if self.voucher_promo_id:
                 domain = [
+                    ('voucher_type','=','physical'),
                     ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                     ('voucher_code_id','=', voucher_id.voucher_code_id.id),
                     ('year_id','=', voucher_id.year_id.id),
@@ -35,6 +39,7 @@ class WizardScanVoucherScrap(models.TransientModel):
                 ]
             else:
                 domain = [
+                    ('voucher_type','=','physical'),
                     ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                     ('voucher_code_id','=', voucher_id.voucher_code_id.id),
                     ('year_id','=', voucher_id.year_id.id),
@@ -45,7 +50,11 @@ class WizardScanVoucherScrap(models.TransientModel):
             self.is_valid = True
 
         if self.end_number:     
-            voucher_id = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.end_number)], limit=1)
+            domain=[
+                ('voucher_type','=','physical'),
+                ('voucher_ean','=', self.start_number)
+            ]
+            voucher_id = self.env['weha.voucher.order.line'].search(domain, limit=1)
             if not voucher_id:
                 self.end_number = ''
                 raise Warning('Voucher in end number not found')    
@@ -69,8 +78,30 @@ class WizardScanVoucherScrap(models.TransientModel):
     start_number = fields.Char("Start Number", size=13, required=True)
     end_number = fields.Char("End Number", size=13, required=True)
     is_valid = fields.Boolean("Valid", default=False)
+    is_checked = fields.Boolean("Is Checked", default=False)
     estimate_count = fields.Integer("Estimate Count", readonly=True)
     estimate_total = fields.Integer("Current Stock", readonly=True)
+    voucher_scrap_id = fields.Many2one('weha.voucher.scrap', 'Voucher Scrap #')
+    scan_voucher_scrap_line_ids = fields.One2many('weha.wizard.scan.voucher.scrap.line','scan_voucher_scrap_line_id','Lines')
+
+
+    def confirm(self):
+
+        voucher_scrap_id = self.voucher_scrap_id
+
+         #Clear Voucher Allocate Line
+        for voucher_scrap_line_id in voucher_scrap_id.voucher_scrap_line_ids:
+            voucher_scrap_line_id.unlink()
+
+        for scan_voucher_scrap_line_id in self.scan_voucher_scrap_line_ids:
+            if scan_voucher_scrap_line_id.state == 'available':
+                vals = {
+                    'voucher_scrap_id': voucher_scrap_id.id,
+                    'voucher_order_line_id': scan_voucher_scrap_line_id.voucher_order_line_id.id
+                }
+                self.env['weha.voucher.scrap.line'].create(vals)
+        
+           
 
     def process(self):
         
@@ -121,31 +152,69 @@ class WizardScanVoucherScrap(models.TransientModel):
 
         voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
         _logger.info(voucher_order_line_ids)
-
-        for voucher_order_line_id in voucher_order_line_ids:
-            vals = {
-                'voucher_scrap_id': active_id,
-                'voucher_order_line_id': voucher_order_line_id.id
-            }
-            self.env['weha.voucher.scrap.line'].create(vals)
-           
         
+        line_ids = []
+        estimate_count = 0
+        for voucher_order_line_id in voucher_order_line_ids:
+            #Check Voucher Order Line at other Voucher Allocate
+            is_invalid = self.env['weha.voucher.scrap.line'].check_voucher_order_line(voucher_scrap_id.id, voucher_order_line_id.id)
+            if not is_invalid:
+                _logger.info('Is Invalid')
+                estimate_count = estimate_count + 1
+                vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'available'})
+                line_ids.append(vals)
+            else:
+                _logger.info('Voucher Order Line was allocate in other transaction')
+                vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'allocated'})
+                line_ids.append(vals)
+
+        _logger.info(line_ids)
+        
+        vals = {
+            'voucher_scrap_id': voucher_scrap_id.id,
+            'operating_unit_id':  voucher_order_line_start_id.operating_unit_id.id,
+            'voucher_code_id': voucher_order_line_start_id.voucher_code_id.id,
+            'year_id': voucher_order_line_start_id.year_id.id, 
+            'voucher_promo_id': voucher_order_line_start_id.voucher_promo_id.id,
+            'start_number': self.start_number,
+            'end_number': self.end_number,
+            'is_valid': self.is_valid,
+            'is_checked': True,
+            'estimate_total': len(voucher_ranges),
+        }
+        scan_voucher_scrap_id = self.env['weha.wizard.scan.voucher.scrap'].create(vals)
+        scan_voucher_scrap_id.write({'estimate_count': estimate_count, 'scan_voucher_scrap_line_ids':line_ids})
+        return {
+
+            'name': 'Scan Voucher Scrap',
+            'res_id': scan_voucher_scrap_id.id,
+            'res_model': 'weha.wizard.scan.voucher.scrap',
+            'target': 'new',
+            'type': 'ir.actions.act_window',
+            'view_id': self.env.ref('weha_voucher_mgmt.view_wizard_scan_voucer_scrap').id,
+            'view_mode': 'form',
+            'view_type': 'form',
+        }
+
+
+
+class WizardScanVoucherScrapLine(models.TransientModel):
+    _name = "weha.wizard.scan.voucher.scrap.line"
+
+    scan_voucher_scrap_line_id = fields.Many2one("weha.wizard.scan.voucher.scrap", 'Scan Voucher Scrap #')
+    voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher Order Line #')
+    state = fields.Selection([('available','Available'),('allocated','Allocated')],'Status', readonly=True)
+    
+
+
 class WehaWizardReceivedScrap(models.TransientModel):
     _name = 'weha.wizard.received.scrap'
     _description = 'Wizard form for received voucher'
 
-    # @api.onchange('code_ean')
-    # def code_ean_scanning(self):
-    #     match = False
-    #     voucher_order_line_obj = self.env['weha.voucher.order.line']
-    #     voucher_order_line_id = voucher_order_line_obj.search([('voucher_ean','=', self.code_ean)])
-    #     if self.code_ean and not voucher_order_line_id:
-    #         raise Warning('No voucher is available for this code')
-        
-        # if self.code_ean and not match:
-        #     if voucher_order_line_id:
-        #         raise Warning('This product is not available in the order.'
-        #                       'You can add this product by clicking the "Add an item" and scan')
+
+    def confirm(self):
+        pass 
+
 
     def trans_received(self):
 
@@ -249,7 +318,7 @@ class WehaWizardReceivedScrap(models.TransientModel):
             vals.update({'trans_type': 'RV'})
             obj_order_line_trans.create(vals)
     
-    @api.onchange('code_ean')
+    #@api.onchange('code_ean')
     def _onchange_barcode_scan(self):
         voucher_rec = self.env['weha.voucher.order.line']
         if self.code_ean:
@@ -283,22 +352,22 @@ class WehaWizardReceivedScrap(models.TransientModel):
         "Scan Method",
         default='all'
     )
+    is_checked = fields.Boolean("Checked", default=False)
+    scrap_line_wizard_ids = fields.One2many(comodel_name='weha.wizard.received.scrap.line', inverse_name='wizard_received_scrap_id', string='Wizard scrap Line')
 
-    scrap_line_wizard_ids = fields.One2many(comodel_name='weha.wizard.received.scrap.line', inverse_name='wizard_scrap_id', string='Wizard scrap Line')
 
 
 class WehaWizardReceivedScrapLine(models.TransientModel):
     _name = 'weha.wizard.received.scrap.line'
 
-
     name = fields.Char(string="Voucher")
     date = fields.Date('Date', default=lambda self: fields.date.today())
-    wizard_scrap_id = fields.Many2one(comodel_name='weha.wizard.received.scrap', string='Wizard scrap')
+    wizard_received_scrap_id = fields.Many2one(comodel_name='weha.wizard.received.scrap', string='Wizard scrap')
+    voucher_scrap_id = fields.Many2one('weha.voucher.scrap', 'Voucher Scrap #')
     voucher_order_line_id = fields.Many2one(comodel_name='weha.voucher.order.line', string='Voucher Order Line')
 
 class WehaWizardScrapdReceived(models.TransientModel):
     _name = 'weha.wizard.scrap.received'
-    _inherit = ['multi.step.wizard.mixin']
 
     voucher_scrap_id = fields.Many2one('weha.voucher.scrap','Voucher scrap #', default=lambda self: self._default_voucher_scrap_id(),)
     

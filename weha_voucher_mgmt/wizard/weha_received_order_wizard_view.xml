@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <record id="view_wizard_received_order" model="ir.ui.view">
+        <field name="name">weha.wizard.received.order</field>
+        <field name="model">weha.wizard.received.order</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Received Voucher Order">
+                <group>
+                    <field name="scan_method" widget="radio" options="{'horizontal': true}"/>
+                </group>
+                <group>
+                    <group>
+                        <field name="code_ean" placeholder="Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'one')],'required':[('scan_method','=', 'one')]}"/>
+                        <field name="start_ean" placeholder="Start Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')],'required':[('scan_method','=', 'start_end')]}"/>
+                        <field name="end_ean" placeholder="End Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
+                    </group>
+                    <group>
+                        <field name='is_checked' invisible="1"/>
+                    </group>
+                </group>
+                <notebook>
+                    <page string="Order Move" attrs="{'invisible':[('is_checked','=', False)]}"> 
+                        <field name="order_line_wizard_ids" readonly="1">
+                            <tree string="Allocate Move">
+                                <field name="voucher_order_line_id"/>  
+                                <field name="state"/>                                                                                                                                                                                                                                   
+                            </tree>                    	                            	
+                        </field>
+                    </page>	   
+                </notebook>
+                <footer>
+                    <button name="trans_received" string="Received" type="object" class="btn-primary" attrs="{'invisible':[('is_checked','=', True)]}"/>
+                    <button name="confirm" string="Confirm" type="object" class="btn-primary" attrs="{'invisible':[('is_checked','=', False)]}"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="act_open_received_order_view_form" model="ir.actions.act_window">
+        <field name="name">Received Order</field>
+        <field name="res_model">weha.wizard.received.order</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

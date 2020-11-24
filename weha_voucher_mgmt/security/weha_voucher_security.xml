@@ -80,6 +80,7 @@
         <field name="name">Store Voucher Rule</field>
         <field name="model_id" ref="model_weha_voucher_order_line"/>
         <field name="global" eval="True"/>
+        <field name="perm_write" eval="False"/>
         <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
     </record>
     
@@ -87,7 +88,7 @@
     <record id="voucher_request_operating_unit_rule" model="ir.rule">
         <field name="name">Voucher Request Operating Unit Rule</field>
         <field name="model_id" ref="model_weha_voucher_request"/>
-        <field name="global" eval="True"/>
+        <field name="global" eval="True"/>    
         <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
     </record>
     
@@ -105,6 +106,15 @@
         <field name="model_id" ref="model_weha_voucher_allocate"/>
         <field name="global" eval="True"/>
         <field name="domain_force">[('source_operating_unit','in',user.operating_unit_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('group_voucher_user'))]"/>
+    </record>
+
+    <!-- Voucher Order Operating Unit Rules -->
+    <record id="voucher_issuing_operating_unit_rule" model="ir.rule">
+        <field name="name">Voucher Issuing Operating Unit Rule</field>
+        <field name="model_id" ref="model_weha_voucher_issuing"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
         <field name="groups" eval="[(4, ref('group_voucher_user'))]"/>
     </record>
 

@@ -6,6 +6,16 @@ _logger = logging.getLogger(__name__)
 
 class VoucherIssuingLine(models.Model):
     _name = 'weha.voucher.issuing.line'
+    
+    def check_voucher_order_line(self, voucher_issuing_id, voucher_order_line_id):
+        domain = [
+            ('voucher_order_line_id', '=', voucher_order_line_id),
+            ('state', '=', 'open'),
+        ]        
+        voucher_issuing_line_ids = self.env['weha.voucher.issuing.line'].search(domain)
+        if not voucher_issuing_line_ids:
+            return False
+        return True
 
     def trans_close(self):
         super(VoucherIssuingLine, self).write({'state': 'issued'})
@@ -22,6 +32,7 @@ class VoucherIssuingLine(models.Model):
 
 class VoucherIssuingEmployeeLine(models.Model):
     _name = 'weha.voucher.issuing.employee.line'
+    
 
     def trans_close(self):
         super(VoucherIssuingEmployeeLine, self).write({'state': 'issued'})
@@ -33,7 +44,14 @@ class VoucherIssuingEmployeeLine(models.Model):
     member_id = fields.Char("Member #", size=20)
     sku = fields.Char("SKU #", size=20)
     quantity = fields.Integer('Qty')
+    file_line_id = fields.Many2one('weha.voucher.issuing.file.line', 'File #')
     state = fields.Selection([('open','Open'),('issued','Issued')], 'Status', default='open')
 
-   
-    
+
+class VoucherAllocateFileLine(models.Model):
+    _name = 'weha.voucher.issuing.file.line'
+    _rec_name = 'file_attachment_name'
+        
+    voucher_issuing_id = fields.Many2one(comodel_name='weha.voucher.issuing', string='Voucher Issuing')
+    file_attachment = fields.Binary('File')
+    file_attachment_name = fields.Char('Filename', )

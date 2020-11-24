@@ -24,6 +24,10 @@ class VoucherOrder(models.Model):
                 rec.current_stage = 'rejected'
             if rec.stage_id.opened:
                 rec.current_stage = 'open'
+            if rec.stage_id.progress:
+                rec.current_stage = 'progress'
+            if rec.stage_id.receiving:
+                rec.current_stage = 'receiving'
             if rec.stage_id.closed:
                 rec.current_stage = 'closed'
             if rec.stage_id.cancelled:
@@ -40,9 +44,82 @@ class VoucherOrder(models.Model):
         stage_ids = self.env['weha.voucher.order.stage'].search([])
         return stage_ids
     
+    def _calculate_voucher_count(self):
+        self.voucher_count = len(self.line_ids)
 
     def send_notification(self, data):
         self.env['mail.activity'].create(data).action_feedback()
+
+    @api.onchange('voucher_type')
+    def _voucher_code_onchange(self):
+        if self.voucher_type:
+            self.voucher_code_id = False
+            res = {}
+            res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
+
+    @api.onchange('year')
+    def _onchange_year(self):
+        if self.year:
+            domain = [
+                ('voucher_type','=', self.voucher_type),
+                ('voucher_code_id','=', self.voucher_code_id.id),
+                ('year_id','=', self.year.id),
+            ]
+            voucher_order_line_id = self.env['weha.voucher.order.line'].search(domain, order="check_number desc", limit=1)
+            _logger.info(voucher_order_line_id)
+            if not voucher_order_line_id:
+                self.start_number = 1
+            else:
+                self.start_number = voucher_order_line_id.check_number + 1
+
+    @api.constrains('start_number', 'end_number')
+    def _check_length(self):
+        for record in self:
+            if len(str(record.start_number)) > 6:
+                raise ValidationError("Start Number 6 digit maximum")
+            if len(str(record.end_number)) > 6:
+                raise ValidationError("End Number 6 digit maximum")
+
+    def overlap(self, start1, end1, start2, end2):
+        """Does the range (start1, end1) overlap with (start2, end2)?"""
+        return (
+            start1 <= start2 <= end1 or
+            start1 <= end2 <= end1 or
+            start2 <= start1 <= end2 or
+            start2 <= end1 <= end2
+        )
+
+    def check_order_overlap(self, voucher_type, voucher_code_id, year, voucher_promo_id, start_number, end_number):
+        if voucher_promo_id:
+            domain = [
+                ('voucher_type','=', voucher_type),
+                ('voucher_code_id','=', voucher_code_id),
+                ('year','=', year),
+                ('voucher_promo_id','=', voucher_promo_id),
+                ('current_stage','in', ['unattended','approval','open','closed']),
+            ]
+        else:
+            domain = [
+                ('voucher_type','=', voucher_type),
+                ('voucher_code_id','=',voucher_code_id),
+                ('year','=', year),
+                ('current_stage','in', ['unattended','approval','open','closed']),
+            ]
+
+        _logger.info(domain)
+
+        voucher_order_ids = self.env['weha.voucher.order'].search(domain, order="create_date desc")
+        _logger.info(voucher_order_ids)
+        is_overlap = False
+        for voucher_order_id in voucher_order_ids:
+            _logger.info(voucher_order_id.start_number)
+            _logger.info(voucher_order_id.end_number)
+            result = self.overlap(start_number,end_number,voucher_order_id.start_number, voucher_order_id.end_number)
+            _logger.info(result)
+            if result:
+                is_overlap = True
+                break 
+        return is_overlap
 
     # Generate Voucher
     def trans_generate_voucher(self):
@@ -78,85 +155,8 @@ class VoucherOrder(models.Model):
         #self.write(vals)
         super(VoucherOrder,self).write(vals)
         
-    @api.onchange('voucher_type')
-    def _voucher_code_onchange(self):
-        if self.voucher_type:
-            self.voucher_code_id = False
-            res = {}
-            res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
-
-    @api.onchange('year')
-    def _onchange_year(self):
-        if self.year:
-            domain = [
-                ('voucher_type','=', self.voucher_type),
-                ('voucher_code_id','=', self.voucher_code_id.id),
-                ('year_id','=', self.year.id),
-            ]
-            voucher_order_line_id = self.env['weha.voucher.order.line'].search(domain, order="check_number desc", limit=1)
-            _logger.info(voucher_order_line_id)
-            if not voucher_order_line_id:
-                self.start_number = 1
-            else:
-                self.start_number = voucher_order_line_id.check_number + 1
-
-    @api.onchange('start_number','end_number')
-    def check_voucher_order_line(self):
-        if self.start_number and self.end_number:
-            if self.start_number == 0 or self.end_number == 0:
-                raise UserError('Start number or end number cannot be zero value')
-            if self.start_number >= self.end_number:
-                raise UserError('End number must be greater than start number')
-        
-    @api.constrains('start_number', 'end_number')
-    def _check_length(self):
-        for record in self:
-            if len(str(record.start_number)) > 6:
-                raise ValidationError("Start Number 6 digit maximum")
-            if len(str(record.end_number)) > 6:
-                raise ValidationError("End Number 6 digit maximum")
-    
-    def overlap(self, start1, end1, start2, end2):
-        """Does the range (start1, end1) overlap with (start2, end2)?"""
-        return (
-            start1 <= start2 <= end1 or
-            start1 <= end2 <= end1 or
-            start2 <= start1 <= end2 or
-            start2 <= end1 <= end2
-        )
-
-    def check_order_overlap(self, voucher_type, voucher_code_id, year, voucher_promo_id, start_number, end_number):
-        if voucher_promo_id:
-            domain = [
-                ('voucher_type','=', voucher_type),
-                ('voucher_code_id','=', voucher_code_id),
-                ('year','=', year),
-                ('voucher_promo_id','=', voucher_promo_id),
-                ('current_stage','in', ['unattended','approval','opened','closed']),
-            ]
-        else:
-            domain = [
-                ('voucher_type','=', voucher_type),
-                ('voucher_code_id','=',voucher_code_id),
-                ('year','=', year),
-                ('current_stage','in', ['unattended','approval','opened','closed']),
-            ]
-
-        _logger.info(domain)
-        voucher_order_ids = self.env['weha.voucher.order'].search(domain, order="create_date desc")
-        _logger.info(voucher_order_ids)
-        is_overlap = False
-        for voucher_order_id in voucher_order_ids:
-            _logger.info(voucher_order_id.start_number)
-            _logger.info(voucher_order_id.end_number)
-            result = self.overlap(start_number,end_number,voucher_order_id.start_number, voucher_order_id.end_number)
-            _logger.info(result)
-            if result:
-                is_overlap = True
-                break 
-
-        if is_overlap:
-            raise ValidationError('Overlap Voucher Number')
+    def trans_received(self):
+        pass 
 
     def trans_approve(self):
         #Approve Voucher Order
@@ -255,8 +255,7 @@ class VoucherOrder(models.Model):
                     'summary': 'Voucher Order Approval'
             }
             self.send_notification(data)
-            
-    
+               
     def trans_cancelled(self):
         stage_id = self.env['weha.voucher.order.stage'].search([('cancelled','=', True)], limit=1)
         if not stage_id:
@@ -325,8 +324,10 @@ class VoucherOrder(models.Model):
             raise ValidationError('Start Number greater than End Number')
 
         #Check Overlap Range Number
-        self.check_order_overlap(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year') , vals.get('voucher_promo_id'), vals.get('start_number'),vals.get('end_number'))
-
+        is_overlap = self.check_order_overlap(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year') , vals.get('voucher_promo_id'), vals.get('start_number'),vals.get('end_number'))
+        if is_overlap:
+            raise ValidationError('Overlap Voucher Number')
+        
         #Create Trans #
         if vals.get('number', '/') == '/':
             seq = self.env['ir.sequence']

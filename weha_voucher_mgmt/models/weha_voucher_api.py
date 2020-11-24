@@ -89,7 +89,7 @@ class VoucherTransPurchase(models.Model):
         try:
             vouchers = []
             for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
-                vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
+                vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean|voucher_trans_purchase_line_id.voucher_order_line_id.expired_date) 
             data = {
                 'date': self.trans_date.strftime('%Y-%m-%d'),
                 'time': self.trans_date.strftime('%H:%M:%S'),
@@ -269,7 +269,6 @@ class VoucherTransPurchaseLine(models.Model):
         index=True
     )
 
-
 class VoucherTransPayment(models.Model):
     _name = "weha.voucher.trans.payment"
 
@@ -341,7 +340,6 @@ class VoucheTransPaymentSku(models.Model):
         default='open',
         index=True
     )
-
 
 class VoucherTransStatus(models.Model):
     _name = "weha.voucher.trans.status"
@@ -483,8 +481,6 @@ class VoucheTransStatusLine(models.Model):
         default='open',
         index=True
     )
-
-
 
 class VoucherTransFTP(models.Model):
     _name = "weha.voucher.trans.ftp"

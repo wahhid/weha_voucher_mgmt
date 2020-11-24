@@ -11,6 +11,7 @@
                         <field name="start_number"/>
                         <field name="end_number" attrs="{'invisible':[('is_valid','=', False)]}"/>
                         <field name="is_valid" invisible="1"/>
+                        <field name="is_checked" invisible="1"/>
                     </group>
                     <group>
                         <field name="operating_unit_id"/>
@@ -21,8 +22,19 @@
                         <field name="estimate_count"/>
                     </group>
                 </group>
+                <notebook>
+                    <page string="Scrap Move" attrs="{'invisible':[('is_checked','=', False)]}"> 
+                        <field name="scan_voucher_scrap_line_ids" readonly="1">
+                            <tree string="Scrap Move">
+                                <field name="voucher_order_line_id"/>  
+                                <field name="state"/>                                                                                                                                                                                                                                   
+                            </tree>                    	                            	
+                        </field>
+                    </page>	   
+                </notebook>
                 <footer>
-                    <button name="process" string="Process" type="object" class="btn-primary"/>
+                    <button name="process" string="Process" type="object" class="btn-primary" attrs="{'invisible':[('is_checked','=', True)]}"/>
+                    <button name="confirm" string="Confirm" type="object" class="btn-primary" attrs="{'invisible':[('is_checked','=', False)]}"/>
                     <button string="Cancel" class="btn-default" special="cancel" />
                 </footer>
             </form>
@@ -59,17 +71,6 @@
                         </h1>
                     </group>
                 </group>
-                <notebook>
-                    <page string="Scrap Move" attrs="{'invisible':[('scan_method','=', 'all')]}"> 
-                        <field name="scrap_line_wizard_ids" readonly="1">
-                            <tree string="Scrap Move">
-                                <field name="name" />
-                                <field name="date" />
-                                <field name="voucher_order_line_id"/>  	                                                                                                                                                                                                                                   
-                            </tree>                    	                            	
-                        </field>
-                    </page>	   
-                </notebook>
                 <footer>
                     <button name="trans_received" string="Received" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-default" special="cancel" />

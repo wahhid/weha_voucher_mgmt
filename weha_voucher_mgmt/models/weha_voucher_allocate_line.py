@@ -7,6 +7,16 @@ _logger = logging.getLogger(__name__)
 class VoucherAllocateLine(models.Model):
     _name = 'weha.voucher.allocate.line'
 
+    def check_voucher_order_line(self, voucher_allocate_id, voucher_order_line_id):
+        domain = [
+            ('voucher_order_line_id', '=', voucher_order_line_id),
+            ('state', '=', 'open'),
+        ]        
+        voucher_allocate_line_ids = self.env['weha.voucher.allocate.line'].search(domain)
+        if not voucher_allocate_line_ids:
+            return False
+        return True
+        
     def create_allocate_line(self, voucher_allocated_id, voucher_order_line_id):
         vals = {
             'voucher_allocate_id': voucher_allocated_id,
@@ -19,5 +29,6 @@ class VoucherAllocateLine(models.Model):
     voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code", related="voucher_order_line_id.voucher_code_id")
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
     voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo", related="voucher_order_line_id.voucher_promo_id")
-    state = fields.Selection([('open','Open'),('received','Received')], 'Status', default='open')
+    state = fields.Selection([('open','Open'),('received','Received'),('cancelled','Cancelled')], 'Status', default='open')
     
+

@@ -1,5 +1,5 @@
 from odoo import models, fields, api,  _ 
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError, Warning
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import *
 import logging
@@ -143,16 +143,87 @@ class VoucherAllocate(models.Model):
         self.send_notification(data)
     
     def trans_cancelled(self):
+        received = False
+        if self.current_stage in ('progress','receiving','closed'):
+            for voucher_allocate_line_id in self.voucher_allocate_line_ids:
+                if voucher_allocate_line_id.state == 'open':
+                    vals = {}
+                    vals.update({'state': 'cancelled'})
+                    res = voucher_allocate_line_id.write(vals)
+
+                    vals = {}
+                    vals.update({'operating_unit_id': self.operating_unit_id.id})
+                    vals.update({'state': 'open'})
+                    voucher_allocate_line_id.voucher_order_line_id.write(vals)
+
+                    vals = {}
+                    vals.update({'name': self.number})
+                    vals.update({'voucher_order_line_id': voucher_allocate_line_id.voucher_order_line_id.id})
+                    vals.update({'trans_date': datetime.now()})
+                    vals.update({'operating_unit_loc_fr_id': self.source_operating_unit.id})
+                    vals.update({'operating_unit_loc_to_id': self.operating_unit_id.id})
+                    vals.update({'trans_type': 'CL'})
+                    self.env['weha.voucher.order.line.trans'].create(vals)
+                
+                if voucher_allocate_line_id.state == 'received':
+                    received = True
+
         stage_id = self.env['weha.voucher.allocate.stage'].search([('cancelled','=', True)], limit=1)
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
-        super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        
+        if not received:   
+            super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+            self.message_post(body="Cancel voucher allocated")
+        else:
+            self.is_force_cancelled = True
+            self.message_post(body="Cannot cancel all voucher, There are voucher was received, Please close voucher return and cancel voucher return by managers")
+            #raise Warning("Cannot cancel all voucher, There are voucher was received ,  Please close voucher return and cancel voucher return by managers")
+            return {
+		        'warning': {'title': "Warning", 'message': "Cannot cancel all voucher, There are voucher was received, Please close voucher return and cancel voucher return by managers"},
+		    }
 
+    def trans_force_cancelled_approval(self):
+        self.is_force_cancelled = True
+        
+    def trans_force_cancelled(self):
+        if self.current_stage == 'closed':
+            for voucher_allocate_line_id in self.voucher_allocate_line_ids:
+                if voucher_allocate_line_id.voucher_order_line_id.state == 'open':
+                    vals = {}
+                    vals.update({'state': 'cancelled'})
+                    res = voucher_allocate_line_id.write(vals)
+
+                    vals = {}
+                    vals.update({'operating_unit_id': self.operating_unit_id.id})
+                    vals.update({'state': 'open'})
+                    voucher_allocate_line_id.voucher_order_line_id.write(vals)
+
+                    vals = {}
+                    vals.update({'name': self.number})
+                    vals.update({'voucher_order_line_id': voucher_allocate_line_id.voucher_order_line_id.id})
+                    vals.update({'trans_date': datetime.now()})
+                    vals.update({'operating_unit_loc_fr_id': self.source_operating_unit.id})
+                    vals.update({'operating_unit_loc_to_id': self.operating_unit_id.id})
+                    vals.update({'trans_type': 'CL'})
+                    self.env['weha.voucher.order.line.trans'].create(vals)
+
+            stage_id = self.env['weha.voucher.allocate.stage'].search([('cancelled','=', True)], limit=1)
+            if not stage_id:
+                raise ValidationError('Stage Cancelled not found')
+            super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+
+    def trans_force_cancelled_reject(self):
+        self.is_force_cancelled = False
+    
     def trans_close(self):
         if self.voucher_count != self.voucher_received_count:
             raise ValidationError("Receiving not completed")
         stage_id = self.stage_id.next_stage_id
-        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        if not self.env.user.has_group('weha_voucher_mgmt.group_voucher_finance_user'):
+            res = super(VoucherAllocate, self).sudo().write({'stage_id': stage_id.id})
+        else:
+            res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         return res
         
     def trans_allocate_approval(self):    
@@ -177,6 +248,7 @@ class VoucherAllocate(models.Model):
             }
             self.send_notification(data)
 
+    
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Allocate Number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
@@ -235,17 +307,12 @@ class VoucherAllocate(models.Model):
         domain="[('state','=','received')]"
     )
 
-    voucher_allocate_line_received_ids = fields.One2many(
-        comodel_name='weha.voucher.allocate.line', 
-        inverse_name='voucher_allocate_id',
-        string='Received Lines',
-        domain="[('state','=','received')]"
-    )
-
     voucher_request_id = fields.Many2one('weha.voucher.request', 'Voucher Request', required=False)
     voucher_request_qty = fields.Integer(string='Quantity Ordered From Request', readonly=True)
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=False)
     voucher_received_count = fields.Integer('Voucher Received', compute="_calculate_voucher_received", store=False)
+
+    is_force_cancelled = fields.Boolean('Force Cancelled', default=False)
 
     @api.model
     def create(self, vals):

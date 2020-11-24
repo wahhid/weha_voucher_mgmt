@@ -26,18 +26,18 @@ class VoucherOrderLine(models.Model):
 
         c_code = str(self.env.user.default_operating_unit_id.company_id.res_company_code)
 
+        voucher_code = self.env['weha.voucher.code'].browse(voucher_code_id)
+        v_code = voucher_code.code
+        
+        year = self.env['weha.voucher.year'].browse(year_id)
+        year_code = str(year.year)[2:4]
+        
         if voucher_type == 'physical':
             classifi = '1'
         else:
             classifi = '2'
 
-        voucher_code = self.env['weha.voucher.code'].browse(voucher_code_id)
-        v_code = voucher_code.code
-        
         number = str(check_number).zfill(6)
-
-        year = self.env['weha.voucher.year'].browse(year_id)
-        year_code = str(year.year)
 
         # company_code,type,year,classification,number
         #code12 = [c_code ,v_code,year,classifi,number]
@@ -46,48 +46,6 @@ class VoucherOrderLine(models.Model):
         _logger.info("CODE 12 = " + str(code12))
         
         return code12
-    
-    # def generate_12_numbers(self, voucher_type, voucher_code_id, year_id, voucher_promo_id, check_number):
-
-    #     c_code = str(self.env.user.default_operating_unit_id.company_id.res_company_code)
-
-    #     if voucher_type == 'physical':
-    #         classifi = '1'
-    #     else:
-    #         classifi = '2'
-
-    #     voucher_code = self.env['weha.voucher.code'].browse(voucher_code_id)
-    #     v_code = voucher_code.code
-
-    #     number = str(check_number).zfill(6)
-
-    #     year = self.env['weha.voucher.year'].browse(year_id)
-    #     year_code = str(year.year)
-
-    #     # company_code,type,year,classification,number
-    #     #code12 = [c_code ,v_code,year,classifi,number]
-
-    #     code12 = c_code + v_code + year_code + classifi + number
-    #     _logger.info("CODE 12 = " + str(code12))
-
-    #     return code12
-    
-    # def calculate_checksum(self, ean):
-    #     """
-    #     Calculates the checksum for an EAN13
-    #     @param list ean: List of 12 numbers for first part of EAN13
-    #     :returns: The checksum for `ean`.
-    #     :rtype: Integer
-    
-    #     numbers = generate_12_random_numbers()
-    #     numbers.append(calculate_checksum(numbers))
-    #     print ''.join(map(str, numbers))
-    #     """
-    #     assert len(ean) == 5, "EAN must be a list of 12 numbers"
-    #     sum_ = lambda x, y: int(x) + int(y)
-    #     evensum = reduce(sum_, ean[::2])
-    #     oddsum = reduce(sum_, ean[1::2])
-    #     return (10 - ((evensum + oddsum * 3) % 10)) % 10
 
     def ean_checksum(self, eancode):
         """returns the checksum of an ean string of length 13, returns -1 if
@@ -244,10 +202,11 @@ class VoucherOrderLine(models.Model):
         string='Status',
         selection=[
             ('draft', 'New'), 
+            ('inorder', 'In-Order'),
             ('open', 'Open'), 
             ('deactivated','Deactivated'),
             ('activated','Activated'), 
-            ('damage', 'Damage'),
+            ('damage', 'Scrap'),
             ('transferred','Transferred'),
             ('intransit', 'In-Transit'),
             ('reserved', 'Reserved'),
@@ -256,7 +215,7 @@ class VoucherOrderLine(models.Model):
             ('done','Close'),
             ('scrap','Scrap')
         ],
-        default='open',
+        default='inorder',
         index=True
     )
 
@@ -276,7 +235,7 @@ class VoucherOrderLine(models.Model):
     
 class VoucherOrderLineTrans(models.Model):
     _name = 'weha.voucher.order.line.trans'
-    
+    _order = "trans_date desc"
 
     name = fields.Char(
         string='Voucher Trans ID', readonly=True
@@ -293,6 +252,7 @@ class VoucherOrderLineTrans(models.Model):
     trans_type = fields.Selection(
         string='Transaction Type', 
         selection=[
+            ('OR','Order'),
             ('OP', 'Open'), 
             ('RV', 'Received'), 
             ('DV', 'Delivery'),
@@ -302,7 +262,9 @@ class VoucherOrderLineTrans(models.Model):
             ('AC', 'Activated'), 
             ('RS', 'Reserved'), 
             ('US', 'Used'), 
-            ('DM', 'Damage')],
+            ('DM', 'Scrap'),
+            ('CL', 'Cancel')
+            ],
         default='OP'
     )
 

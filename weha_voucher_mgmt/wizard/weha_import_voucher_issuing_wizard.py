@@ -37,7 +37,8 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
     _name= "weha.wizard.import.voucher.issuing"
 
     file = fields.Binary('File')
-    file_opt = fields.Selection([('excel','Excel'),('csv','CSV')], default='excel')
+    filename = fields.Char('Filename', size=200)
+    #file_opt = fields.Selection([('excel','Excel'),('csv','CSV')], default='excel')
 
     
     def create_voucher_line(self,val):
@@ -75,52 +76,33 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
 
         active_id = self.env.context.get('active_id') or False
         voucher_issuing_id = self.env['weha.voucher.issuing'].browse(active_id)
-            
-        if self.file_opt == 'csv':
-            keys = ['employee_nik', 'employee_name','sku','member_id','quantity']                    
-            data = base64.b64decode(self.file)
-            file_input = io.StringIO(data.decode("utf-8"))
-            file_input.seek(0)
-            reader_info = []
-            reader = csv.reader(file_input, delimiter=',')
- 
-            try:
-                reader_info.extend(reader)
-            except Exception:
-                raise exceptions.Warning(_("Not a valid file!"))
-            values = {}
-            for i in range(len(reader_info)):
-                field = list(map(str, reader_info[i]))
-                values = dict(zip(keys, field))
-                if values:
-                    if i == 0:
-                        continue
-                    else:
-                        res = self.env['weha.voucher.issuing.employee.line'].create(values)
+        
+        values = {
+            'voucher_issuing_id': voucher_issuing_id.id,
+            'file_attachment': self.file,
+            'file_attachment_name': self.filename,
+        }
+        file_line_id = self.env['weha.voucher.issuing.file.line'].create(values)
 
-        elif self.file_opt == 'excel':
-            fp = tempfile.NamedTemporaryFile(suffix=".xlsx")
-            fp.write(binascii.a2b_base64(self.file))
-            fp.seek(0)
-            values = {}
-            workbook = xlrd.open_workbook(fp.name)
-            sheet = workbook.sheet_by_index(0)
-            for row_no in range(1, sheet.nrows):
-                #if row_no <= 0:
-                #    fields = list(map(lambda row:row.value.encode('utf-8'), sheet.row(row_no)))
-                #else:
-                #line = list(map(lambda row:isinstance(row.value, str) and row.value.encode('utf-8') or str(row.value), sheet.row(row_no)))   
-                line = sheet.row(row_no)
-                values.update( {
-                                'voucher_issuing_id': active_id,
-                                'employee_nik': line[0].value,
-                                'employee_name': line[1].value,
-                                'sku': line[2].value,
-                                'quantity': int(float(line[4].value)),
-                                'member_id': line[3].value,
-                                })
-                res = self.env['weha.voucher.issuing.employee.line'].create(values)
-        else:
-            raise Warning('Please Select File Type')
-
-        return res
+        fp = tempfile.NamedTemporaryFile(suffix=".xlsx")
+        fp.write(binascii.a2b_base64(self.file))
+        fp.seek(0)
+        values = {}
+        workbook = xlrd.open_workbook(fp.name)
+        sheet = workbook.sheet_by_index(0)
+        for row_no in range(1, sheet.nrows):
+            #if row_no <= 0:
+            #    fields = list(map(lambda row:row.value.encode('utf-8'), sheet.row(row_no)))
+            #else:
+            #line = list(map(lambda row:isinstance(row.value, str) and row.value.encode('utf-8') or str(row.value), sheet.row(row_no)))   
+            line = sheet.row(row_no)
+            values.update( {
+                            'voucher_issuing_id': active_id,
+                            'employee_nik': line[0].value,
+                            'employee_name': line[1].value,
+                            'sku': line[2].value,
+                            'quantity': int(float(line[4].value)),
+                            'member_id': line[3].value,
+                            'file_line_id': file_line_id.id,
+                            })
+            res = self.env['weha.voucher.issuing.employee.line'].create(values)

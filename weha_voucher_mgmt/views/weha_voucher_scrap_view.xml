@@ -73,7 +73,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'unattended'),('current_stage', '!=', 'approval')]}"
-                                class="btn btn-light" 
+                                class="btn btn-warning" 
                                 name="trans_cancelled" 
                                 string="Cancel Voucher Scrap" 
                                 confirm="Are you sure you want to cancel?"

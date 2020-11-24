@@ -48,12 +48,17 @@
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-primary" name="trans_generate_voucher" string="Generate Voucher" 
                             groups="weha_voucher_mgmt.group_voucher_finance_user" confirm="Are you sure you want to Generate Voucher?"/>/>
+                        <button name="%(weha_voucher_mgmt.act_open_received_order_view_form)d" 
+                                type="action" string="Receive Voucher"
+                                class="oe_highlight" 
+                                attrs="{'invisible': [('current_stage', 'in', ('unattended','approval','closed','cancelled','rejected'))]}" 
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                             class="btn btn-light" name="trans_close" string="Closed Order" 
                             groups="weha_voucher_mgmt.group_voucher_user"/>
                          <button type="object" 
                                  attrs="{'invisible': [('current_stage', 'in', ('closed','cancelled','rejected'))]}"
-                                 class="btn btn-light" 
+                                 class="btn btn-warning" 
                                  name="trans_cancelled" 
                                  string="Cancel Order" 
                                  confirm="Are you sure you want to cancel voucher order?"
@@ -93,7 +98,7 @@
                                 <field name="request_date" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="voucher_type" widget="radio" options="{'horizontal': true}" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_type" widget="radio" options="{'horizontal': true}" readonly="0"/>
                                 <field name="voucher_code_id" domain="[('voucher_type','=', voucher_type)]" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="voucher_promo_id" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="current_stage" invisible="1"/>
@@ -212,7 +217,7 @@
             <field name="res_model">weha.voucher.order</field>
             <field name="view_mode">kanban,tree,form,graph</field>
             <field name="domain">[]</field>
-            <field name="context">{}</field>
+            <field name="context">{'default_voucher_type': 'physical'}</field>
             <field name="search_view_id" ref="view_weha_voucher_order_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">

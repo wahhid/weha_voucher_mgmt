@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_wizard_weha_voucher_stock_report" model="ir.ui.view">
+        <field name="name">weha.voucher.stock.report.form.view</field>
+        <field name="model">weha.voucher.stock.report</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Stock Voucher">
+                <group>
+                    <group>
+                        <field name="state"/>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+
+                    <field name="operating_unit_ids" widget="many2many_tags"/>
+
+                </group>
+                <footer>
+                    <button name="print_report_pdf" string="PrintToPDF" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="act_open_report_voucher_stock_wizard" model="ir.actions.act_window">
+        <field name="name">Stock Voucher</field>
+        <field name="res_model">weha.voucher.stock.report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem 
+            id="weha_voucher_stock_report_menu"
+            name="Stock Voucher"
+            parent="weha_voucher_reporting_main_menu"
+            action="act_open_report_voucher_stock_wizard" sequence="34"/>
+</odoo>

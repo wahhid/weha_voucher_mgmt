@@ -124,6 +124,19 @@ class VoucherPromoLine(models.Model):
 class VoucherYear(models.Model):
     _name = 'weha.voucher.year'
 
+
+    @api.constrains('name')
+    def _check_name(self):
+        for record in self:
+            if len(str(record.name)) != 4:
+                raise ValidationError("Year Name of digits must be 4")
+
+    @api.constrains('year')
+    def _check_year(self):
+        year = self.year
+        if year and len(str(abs(year))) != 4:
+            raise ValidationError(_('Year of digits must be 4'))
+
     # @api.constrains('year')
     # def _check_year(self):
     #     for record in self:

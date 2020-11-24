@@ -8,21 +8,33 @@
             <form string="Scan Voucher Allocate">
                 <group>
                     <group>
-                        <field name="start_number"/>
-                        <field name="end_number" attrs="{'invisible':[('is_valid','=', False)]}"/>
+                        <field name="start_number" attrs="{'readonly':[('is_checked','=', True)]}"/>
+                        <field name="end_number" attrs="{'invisible':[('is_valid','=', False)], 'readonly':[('is_checked','=', True)]}"/>
                         <field name="is_valid" invisible="1"/>
+                        <field name="is_checked" invisible="1"/>
                     </group>
                     <group>
-                        <field name="operating_unit_id"/>
-                        <field name="voucher_code_id"/>
-                        <field name="year_id"/>
+                        <field name="operating_unit_id" />
+                        <field name="voucher_code_id"/> 
+                        <field name="year_id" />
                         <field name="voucher_promo_id"/>
                         <field name="estimate_total"/>
                         <field name="estimate_count"/>
                     </group>
                 </group>
+                <notebook>
+                    <page name="voucher_order_line" string="Voucher Order Line" attrs="{'invisible':[('is_checked','=', False)]}">
+                        <field name="scan_voucher_allocate_line_ids">
+                            <tree decoration-danger="state == 'allocated'" create="false" edit="false" delete="false">
+                                <field name="voucher_order_line_id"/>
+                                <field name="state"/>
+                            </tree> 
+                        </field>
+                    </page>
+                </notebook>
                 <footer>
-                    <button name="process" string="Process" type="object" class="btn-primary"/>
+                    <button name="process" string="Process" type="object" class="btn-primary" attrs="{'invisible':[('is_checked','=', True)]}"/>
+                    <button name="confirm" string="Confirm" type="object" class="btn-primary" attrs="{'invisible':[('is_checked','=', False)]}"/>
                     <button string="Cancel" class="btn-default" special="cancel" />
                 </footer>
             </form>
@@ -44,7 +56,7 @@
         <field name="arch" type="xml">
             <form string="Received Voucher Allocate">
                 <group>
-                    <field name="scan_method" widget="radio"/>
+                    <field name="scan_method" widget="radio" options="{'horizontal': true}"/>
                 </group>
                 <group>
                     <group>
@@ -53,21 +65,23 @@
                         <field name="end_ean" placeholder="End Voucher Ean" attrs="{'invisible':[('scan_method','!=', 'start_end')], 'required':[('scan_method','=', 'start_end')]}"/>
                     </group>
                     <group>
+                        <field name='is_checked' invisible="1"/>
                     </group>
                 </group>
                 <notebook>
-                    <page string="Allocate Move" attrs="{'invisible':[('scan_method','=', 'all')]}"> 
+                    <page string="Allocate Move" attrs="{'invisible':[('is_checked','=', False)]}"> 
                         <field name="allocate_line_wizard_ids" readonly="1">
                             <tree string="Allocate Move">
-                                <field name="name" />
-                                <field name="date" />
-                                <field name="voucher_order_line_id"/>  	                                                                                                                                                                                                                                   
+                                <field name="voucher_order_line_id"/>  
+                                <field name="voucher_allocate_line_id"/>  	
+                                <field name="state"/>                                                                                                                                                                                                                                   
                             </tree>                    	                            	
                         </field>
                     </page>	   
                 </notebook>
                 <footer>
-                    <button name="trans_received" string="Received" type="object" class="btn-primary"/>
+                    <button name="trans_received" string="Received" type="object" class="btn-primary" attrs="{'invisible':[('is_checked','=', True)]}"/>
+                    <button name="confirm" string="Confirm" type="object" class="btn-primary" attrs="{'invisible':[('is_checked','=', False)]}"/>
                     <button string="Cancel" class="btn-default" special="cancel" />
                 </footer>
             </form>
