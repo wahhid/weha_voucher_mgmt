@@ -89,10 +89,11 @@ class VoucherPromo(models.Model):
     _name = 'weha.voucher.promo'
     
     def get_usage_quota(self):
-        amount = 0
-        for voucher_promo_line_id in self.voucher_promo_line_ids:
-            amount = amount + voucher_promo_line_id.current_amount
-        self.current_amount = amount
+        for data in self:
+            amount = 0
+            for voucher_promo_line_id in data.voucher_promo_line_ids:
+                amount = amount + voucher_promo_line_id.current_amount
+            data.current_amount = amount
 
     name = fields.Char("Name", size=200, required=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
@@ -100,19 +101,26 @@ class VoucherPromo(models.Model):
     voucher_promo_line_ids = fields.One2many('weha.voucher.promo.line','voucher_promo_id','Lines')
     current_amount = fields.Float('Quota Usage', compute="get_usage_quota")
     amount = fields.Float('Max Quota', default=0.0)
+    start_date = fields.Date('Start Date', required=True)
+    end_date = fields.Date('End Date', required=True)
+    term = fields.Text('Term and Condition')
+    image = fields.Image('Image')
+    
+
 
 class VoucherPromoLine(models.Model):
     _name = 'weha.voucher.promo.line'
 
     def get_usage_quota(self):
-        strSQL = """SELECT sum(amount) FROM weha_voucher_trans_purchase_sku WHERE voucher_mapping_sku_id={}""".format(self.voucher_mapping_sku_id.id)
-        _logger.info(strSQL)
-        self.env.cr.execute(strSQL)
-        row = self.env.cr.fetchone()
-        if row:
-            self.current_amount = row[0]
-        else:
-            self.current_amount = 0.0
+        for data in self:
+            strSQL = """SELECT sum(amount) FROM weha_voucher_trans_purchase_sku WHERE voucher_mapping_sku_id={}""".format(data.voucher_mapping_sku_id.id)
+            _logger.info(strSQL)
+            self.env.cr.execute(strSQL)
+            row = self.env.cr.fetchone()
+            if row:
+                data.current_amount = row[0]
+            else:
+                data.current_amount = 0.0
 
     voucher_promo_id = fields.Many2one('weha.voucher.promo')
     voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku','Mapping SKU #')

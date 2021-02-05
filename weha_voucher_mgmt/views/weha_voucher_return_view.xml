@@ -24,7 +24,7 @@
                 <tree string="model_tree" create="true" delete="true" edit="true">
                     <field name="number" />
                     <field name="user_id" />
-                    <field name="stage_id" />
+                    <field name="stage_id" invisible="1"/>
                 </tree>
             </field>
         </record>
@@ -43,36 +43,36 @@
 
                         <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" name="trans_return_approval" string="Request Approval" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                            groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button 
                             type="action" 
                             attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                             class="btn btn-primary" 
                             name="%(weha_voucher_mgmt.act_open_scan_voucher_return_view_form)d" 
-                            string="Scan Return Voucher" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                            string="Scan Voucher" 
+                            groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
                                 class="btn btn-light" 
                                 name="trans_close" 
                                 string="Closed Return" 
-                                groups="weha_voucher_mgmt.group_voucher_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                                 class="btn btn-primary" 
                                 name="trans_delivery" 
                                 string="Delivery" 
-                                groups="weha_voucher_mgmt.group_voucher_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                                 class="btn btn-primary" 
                                 name="trans_approve"
                                 string="Approve" 
-                                groups="weha_voucher_mgmt.group_voucher_manager" 
+                                groups="weha_voucher_mgmt.group_voucher_manager,weha_voucher_mgmt.group_voucher_marketing_manager" 
                                 confirm="Are you sure you want to approve voucher return?"/>
                         
                         <button type="object" 
@@ -81,7 +81,7 @@
                                 name="trans_reject" 
                                 string="Reject" 
                                 confirm="Are you sure you want to reject voucher return?"
-                                groups="weha_voucher_mgmt.group_voucher_manager"/>
+                                groups="weha_voucher_mgmt.group_voucher_manager, weha_voucher_mgmt.group_voucher_marketing_manager"/>
 
                         <button name="%(weha_voucher_mgmt.act_open_received_return_view_form)d" 
                                 type="action" 
@@ -90,6 +90,20 @@
                                 attrs="{'invisible': [('current_stage','in',('unatteneded','approval','closed','cancelled','rejected'))]}" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user"/>
 
+                        <button type="action"
+                                class="btn btn-warning"
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}"
+                                name="%(weha_voucher_mgmt.act_open_weha_voucher_return_wizard)d"
+                                string="Set Reason"
+                                groups="weha_voucher_mgmt.group_voucher_marketing_user"
+                        />
+                        <button type="action"
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}"
+                                class="btn btn-warning"
+                                name="%(weha_voucher_mgmt.act_open_weha_voucher_return_wizard)d"
+                                string="Set Reason"
+                                groups="weha_voucher_mgmt.group_voucher_user"
+                        />
 
                         <button type="object" 
                                 attrs="{'invisible': ['|',('current_stage', 'in', ('closed','cancelled','rejected')),('is_force_cancelled','=', True)]}"
@@ -116,25 +130,28 @@
                                 confirm="Are you sure you want to force cancel voucher allocate?"
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
  
-                         <button type="object" 
+                        <button type="object" 
                                 attrs="{'invisible': ['|',('current_stage', '!=', 'closed'),('is_force_cancelled','=', False)]}"
                                 class="btn btn-warning" 
                                 name="trans_force_cancelled_reject" 
                                 string="Reject Force Cancel" 
                                 confirm="Are you sure you want to force cancel voucher allocate?"
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
- 
-
+                        
+                        <button type="action"
+                                attrs="{'invisible': [('current_stage', '!=', 'intransit')]}"
+                                class="btn btn-danger"
+                                name="%(act_return_cancel_received_view_form)d"
+                                string="Cancel Received"
+                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
+                        
                         <field name="stage_id" widget="statusbar" clickable="True" />
                     </header>
                     <sheet>
                         <div name="button_box" class="oe_button_box">
-                            <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_request_line_from_voucher_request)d" 
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"
-                                icon="fa-ticket">
-                                <field string="Vouchers" name="voucher_count" widget="statinfo"/>
-                            </button>
+                         
                         </div>
+                        <widget name="web_ribbon" text="Has Reason" bg_color="bg-warning" attrs="{'invisible':[('has_exception','=', False)]}"/>
                         <widget name="web_ribbon" text="Force Cancel" bg_color="bg-danger" attrs="{'invisible':[('is_force_cancelled','=', False)]}"/>
 
                         <div class="oe_title">
@@ -148,7 +165,10 @@
                                 <field name="return_date" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="current_stage" invisible="0"/>
+                                <field name="source_operating_unit_id"/>
+                                <field name="current_stage" invisible="1"/>
+                                <field name="has_exception" invisible="1"/>
+                                <field name="return_type" invisible="1"/>
                             </group>
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
@@ -169,6 +189,9 @@
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>
+                            <page string="Reason" attrs="{'invisible': [('has_exception','=',False)]}"> 
+                                <field name="exception_reason"/>
+                            </page>
                         </notebook>
                     </sheet>
                     <div class="oe_chatter">
@@ -259,27 +282,60 @@
         </record>
         
         <!-- Main window action for voucher order -->
-        <record id="action_weha_voucher_return_act_window" model="ir.actions.act_window">
+        <record id="action_weha_voucher_return_finance_act_window" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
-            <field name="name">Voucher Return</field>
+            <field name="name">Voucher Return to Finance</field>
             <field name="res_model">weha.voucher.return</field>
             <field name="view_mode">kanban,tree,form,graph</field>
-            <field name="domain">[]</field>
-            <field name="context">\{}</field>
+            <field name="domain">[('return_type','=','finance')]</field>
+            <field name="context">{'return_type': 'finance'}</field>
             <field name="search_view_id" ref="view_weha_voucher_return_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
-                    Click to add for return voucher
+                    Click to add for return voucher to finance
+                </p>
+            </field>
+        </record>
+
+        <record id="action_weha_voucher_return_marketing_act_window" model="ir.actions.act_window">
+            <field name="type">ir.actions.act_window</field>
+            <field name="name">Voucher Return to Marketing</field>
+            <field name="res_model">weha.voucher.return</field>
+            <field name="view_mode">kanban,tree,form,graph</field>
+            <field name="domain">[('return_type','=','marketing')]</field>
+            <field name="context">{'return_type': 'marketing'}</field>
+            <field name="search_view_id" ref="view_weha_voucher_return_search" />
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add for return voucher to marketing
                 </p>
             </field>
         </record>
     
+    
+        <menuitem id="weha_return_main_menu" 
+                name="Return"
+                parent="weha_transaction_main_menu" 
+                sequence="22"
+                groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user,group_voucher_hrd_user"/>
         
+
         <menuitem 
-            id="weha_voucher_return_menu" 
-            name="Return" 
-            parent="weha_transaction_main_menu"
-            action="action_weha_voucher_return_act_window" sequence="22"/>
+            id="weha_voucher_return_finance_menu" 
+            name="To Finance" 
+            parent="weha_return_main_menu"
+            action="action_weha_voucher_return_finance_act_window" 
+            sequence="1"
+            groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user,group_voucher_finance_user"/>
+
+        <menuitem 
+            id="weha_voucher_return_marketing_menu" 
+            name="To Marketing" 
+            parent="weha_return_main_menu"
+            action="action_weha_voucher_return_marketing_act_window" 
+            sequence="2"
+            groups="weha_voucher_mgmt.group_voucher_user"/>
+
 
         
     </data>

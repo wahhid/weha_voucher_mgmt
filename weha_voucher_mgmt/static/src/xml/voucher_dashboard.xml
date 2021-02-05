@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="VoucherDashboard">
+        <div class="oh_dashboards">
+            <div class="container-fluid o_voucher_dashboard">
+            </div>
+        </div>
+    </t>
+    <t t-name="VoucherOrderLines">
+        <div class="row main-section">
+            <div class="col-md-4 col-sm-6 pos_order_today oh-payslip">
+                    <div class="oh-card">
+                        <div class="oh-card-body">
+                            <div class="stat-widget-one">
+                                <div class="stat-icon" style="background:#5bcbd0"><i class="fa fa-shopping-bag"/></div>
+                                <div class="stat-content">
+                                    <div class="stat-head">Total Voucher</div>
+                                    <div class="stat_count"><t t-esc="widget.total_voucher_count"/></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <div class="col-md-4 col-sm-6 pos_total_sales oh-payslip">
+                <div class="oh-card" >
+                    <div class="oh-card-body">
+                        <div class="stat-widget-one">
+                            <div class="stat-icon" style="background:#85d05b"><i class="fa fa-shopping-cart"/></div>
+                            <!--                                                <div class="stat-icon" style="width:150px;background:##85d05b"><t t-esc="widget.total_sale"/></div>-->
+                            <div class="stat-content">
+                                <div class="stat-head">Total Open Voucher</div>
+                                <div class="stat_count"><t t-esc="widget.total_open_voucher"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 pos_session oh-payslip">
+                <div class="oh-card">
+                    <div class="oh-card-body">
+                        <div class="stat-widget-one">
+                            <div class="stat-icon" style="background:#d05bb8"><i class="fa fa-signal"/></div>
+                            <div class="stat-content">
+                                <div class="stat-head">Total Issuing Voucher</div>
+                                <div class="stat_count"><t t-esc="widget.total_issuing_voucher"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-sm-6 pos_order oh-payslip">
+                <div class="oh-card">
+                    <div class="oh-card-body">
+                        <div class="stat-widget-one">
+                            <div class="stat-icon" style="background:#645bd0"><i class="fa fa-shopping-bag"/></div>
+                            <div class="stat-content">
+                                <div class="stat-head">Total Amount</div>
+                                <div class="stat_count"><t t-esc="widget.total_voucher_amount"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <div class="col-md-6 col-sm-6 pos_order oh-payslip">
+                <div class="oh-card">
+                    <div class="oh-card-body">
+                        <div class="stat-widget-one">
+                            <div class="stat-icon" style="background:#645bd0"><i class="fa fa-shopping-bag"/></div>
+                            <div class="stat-content">
+                                <div class="stat-head">Total Amount</div>
+                                <div class="stat_count"><t t-esc="widget.total_voucher_amount"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </t>
+</templates>

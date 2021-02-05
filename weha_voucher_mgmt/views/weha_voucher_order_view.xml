@@ -21,10 +21,15 @@
             <field name="priority" eval="16" />
             <field name="active" eval="True" />
             <field name="arch" type="xml">
-                <tree string="model_tree" create="true" delete="true" edit="true">
+                <tree string="model_tree">
                     <field name="number" />
+                    <field name="voucher_code_id"/>
                     <field name="start_number"/>
                     <field name="end_number"/>
+                    <field name="voucher_request" string="Request"/>
+                    <field name="voucher_count" string="Count"/>
+                    <field name="voucher_received" string="Received"/>
+                    <field name="voucher_total_amount" string="Total Amount"/>
                     <field name="user_id" />
                     <field name="stage_id" />
                 </tree>
@@ -52,10 +57,10 @@
                                 type="action" string="Receive Voucher"
                                 class="oe_highlight" 
                                 attrs="{'invisible': [('current_stage', 'in', ('unattended','approval','closed','cancelled','rejected'))]}" 
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                        <button type="object" attrs="{'invisible': [('current_stage', 'in', ('unattended','approval','closed','cancelled','rejected'))]}"
                             class="btn btn-light" name="trans_close" string="Closed Order" 
-                            groups="weha_voucher_mgmt.group_voucher_user"/>
+                            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
                          <button type="object" 
                                  attrs="{'invisible': [('current_stage', 'in', ('closed','cancelled','rejected'))]}"
                                  class="btn btn-warning" 
@@ -72,6 +77,7 @@
                             groups="weha_voucher_mgmt.group_voucher_finance_manager" 
                             confirm="Are you sure you want to Reject?"/>
                         <field name="stage_id" widget="statusbar" clickable="False" />
+
                     </header>
                     <sheet>
                     <!-- attrs="{'invisible': [('stage_id.opened', '!=', True)]}" -->
@@ -94,18 +100,20 @@
                             </h1>
                         </div>
                         <group>
-                            <group>
+                            <group string="General">
                                 <field name="request_date" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 <field name="voucher_type" widget="radio" options="{'horizontal': true}" readonly="0"/>
                                 <field name="voucher_code_id" domain="[('voucher_type','=', voucher_type)]" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
-                                <field name="voucher_promo_id" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="current_stage" invisible="1"/>
                             </group>
-                            <group>
+                            <group string="Voucher Information">
                                 <field name="ref" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_request" />
                                 <field name="voucher_count" />
+                                <field name="voucher_received" />
+                                <Field name="voucher_total_amount" />
                                 <field name="is_voucher_generated" invisible="1"/>
                             </group>
                             <group string='Voucher Number'>
@@ -164,9 +172,6 @@
                                     <br/>
                                     <field name="voucher_code_id"/> : <field name="start_number"/> to <field name="end_number"/>
                                     <br/>
-                                    <field name="priority" widget="priority"/>
-                                    <br/>
-                                    
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left"/>

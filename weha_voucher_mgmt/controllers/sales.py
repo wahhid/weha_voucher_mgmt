@@ -4,6 +4,8 @@ import functools
 import logging
 import json
 import werkzeug.wrappers
+from datetime import datetime
+
 from odoo.exceptions import AccessError
 from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response
 
@@ -17,6 +19,7 @@ from odoo.addons.weha_voucher_mgmt.common import (
 
 
 from odoo.http import request
+
 
 _logger = logging.getLogger(__name__)
 
@@ -134,8 +137,9 @@ class VMSSalesController(http.Controller):
             
         # #Save Voucher Purchase Transaction
         voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
-        trans_date = date  +  " "  + time + ":00"
-        values.update({'trans_date': trans_date})
+        str_trans_date = date  +  " "  + time + ":00"
+        #trans_data = datetime.strptime()
+        values.update({'trans_date': str_trans_date})
         values.update({'receipt_number': receipt_number})
         values.update({'t_id': t_id})
         values.update({'cashier_id': cashier_id})

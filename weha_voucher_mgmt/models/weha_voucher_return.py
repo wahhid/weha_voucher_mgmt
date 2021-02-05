@@ -9,9 +9,23 @@ _logger = logging.getLogger(__name__)
 
 class VoucherReturn(models.Model):
     _name = 'weha.voucher.return'
+    _description = 'Voucher Return'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+
+    @api.model
+    def default_get(self, fields):
+        company_id = self.env.user.company_id
+        res = super(VoucherReturn, self).default_get(fields)
+        context = self.env.context
+        return_type = context.get('return_type')
+        res.update({'return_type': return_type})
+        if return_type == 'finance':
+            res.update({'source_operating_unit_id': company_id.res_company_return_operating_unit.id})  
+        else:
+            res.update({'source_operating_unit_id': company_id.res_company_return_marketing_operating_unit.id})  
+        return res
 
     @api.depends('stage_id')
     def _compute_current_stage(self):
@@ -237,18 +251,42 @@ class VoucherReturn(models.Model):
     def trans_force_cancelled_reject(self):
         self.is_force_cancelled = False
 
+    def change_stage_to_intransit(self):
+        stage_id = self.env['weha.voucher.return.stage'].search([('opened', '=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError("Stage not found")
+        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        for requester_user_id in  self.operating_unit_id.requester_user_ids:
+            _logger.info(requester_user_id.name)
+            data =  {
+                'activity_type_id': 4,
+                'note': 'Request Voucher Return was need to review',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_return').id,
+                'user_id': requester_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Request Voucher Return was need to review'
+            }
+            self.send_notification(data)
+
+
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Return number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
     return_date = fields.Date('Return Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
+    source_operating_unit_id = fields.Many2one('operating.unit','Source Store', required=True)
+    return_type = fields.Selection([('finance','Finance'),('marketing','Marketing')], 'Return Type')
 
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
     year_id = fields.Many2one('weha.voucher.year','Year', required=False, readonly=True)
     voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', required=False, readonly=True)
     start_number = fields.Integer(string='Start Number', required=False, readonly=True)
     end_number = fields.Integer(string='End Number', required=False, readonly=True)
+
+    has_exception = fields.Boolean(string="Has Reason", default=False, readonly=True)
+    exception_reason = fields.Html("Reason", readonly=True)
 
 
     #for kanban

@@ -94,4 +94,29 @@
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
+
+    <record id="view_wizard_weha_return_cancel_received" model="ir.ui.view">
+        <field name="name">weha.return.cancel.received.form.view</field>
+        <field name="model">weha.wizard.return.cancel.received</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Reason">
+                <group>
+                    <field name="reason" widget="html"/>
+                </group>
+                <footer>
+                    <button name="submit" string="Submit" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="act_return_cancel_received_view_form" model="ir.actions.act_window">
+        <field name="name">Return Cancel Received</field>
+        <field name="res_model">weha.wizard.return.cancel.received</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
 </odoo>

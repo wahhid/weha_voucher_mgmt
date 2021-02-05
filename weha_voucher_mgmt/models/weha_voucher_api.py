@@ -10,6 +10,7 @@ from datetime import datetime
 import csv
 import logging
 import io
+import json
 
 _logger = logging.getLogger(__name__)
 
@@ -82,33 +83,86 @@ class VoucherTransPurchase(models.Model):
                    vals['voucher_mapping_sku_id'] = mapping_sku_id.id
                    vals['amount'] = int(vals['quantity']) * voucher_number_range_id.voucher_code_id.voucher_amount
                 self.env['weha.voucher.trans.purchase.sku'].create(vals)
-                   
+
+    def _auth_trust(self):
+        url = "http://apiindev.trustranch.co.id/login"
+
+        payload='barcode=3000030930&password=weha.ID!!2020'
+        headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        #json_data = json.loads(response.text)
+        str_json_data  = response.text.replace("'"," ")
+        json_data = json.loads(str_json_data)
+        #_logger.info(response.text)
+        _logger.info(json_data['data']['api_token'])
+        return json_data['data']['api_token']
+
     def send_data_to_trust(self):
+        api_token = self._auth_trust()
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
-        base_url = 'http://localhost:5000'
+        base_url = 'http://apiindev.trustranch.co.id'
         try:
             vouchers = []
             for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
-                vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean|voucher_trans_purchase_line_id.voucher_order_line_id.expired_date) 
+                vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean + ';' + voucher_trans_purchase_line_id.voucher_order_line_id.expired_date.strftime('%Y-%m-%d')) 
+            
             data = {
                 'date': self.trans_date.strftime('%Y-%m-%d'),
                 'time': self.trans_date.strftime('%H:%M:%S'),
-                'receipt_number': self.receipt_number,
-                't_id': self.trans_date,
-                'cashier_id': self.cashier_id,
-                'store_id': self.store_id,
-                'member_id': self.member_id,
-                'vouchers': vouchers
+                'receipt': self.receipt_number,
+                'transactionId': self.t_id,
+                'cashierId': self.cashier_id,
+                'storeId': self.store_id,
+                'memberId': '3000000183',
+                'vouchers': '|'.join(vouchers)
             }
             _logger.info(data)
-            eq = requests.post('{}/vs'.format(base_url), data=data)
-            _logger.info(eq)
-                #content = json.loads(req.content.decode('utf-8'))
-                #headers.update(access-token=content.get('access_token'))
+            headers = {'Authorization' : 'Bearer ' + api_token}
+            req = requests.post('{}/vms/get-voucher'.format(base_url), headers=headers ,data=data)
+            _logger.info(req.text)
+            
+            #content = json.loads(req.content.decode('utf-8'))
+            #headers.update(access-token=content.get('access_token'))
         except Exception as err:
             _logger.info(err)  
         finally:
             _logger.info("final")  
+
+    def reserved_voucher(self):
+        seq = self.env['ir.sequence']
+        for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
+            for i in range(1,voucher_trans_purchase_sku_id.quantity + 1):
+                vals = {}
+                vals.update({'member_id': self.member_id})
+                vals.update({'operating_unit_id': 3})
+                vals.update({'voucher_type': 'electronic'})
+                vals.update({'voucher_trans_type': self.voucher_type})
+                vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
+                vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
+                vals.update({'tender_type': self.tender_type})
+                vals.update({'bank_category': self.bank_category})
+                if voucher_trans_purchase_sku_id.voucher_promo_id:
+                    vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
+                
+                vals.update({'year_id': voucher_trans_purchase_sku_id.year_id.id})
+                check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
+                vals.update({'check_number': check_number})
+                voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
+                if not voucher_order_line_id:
+                    raise ValidationError("Can't Generate voucher order line, contact administrator!")
+                voucher_order_line_id.write({'state': 'reserved'})
+                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+
+                vals = {
+                    'voucher_trans_purchase_id': self.id,
+                    'voucher_trans_purchase_sku_id': voucher_trans_purchase_sku_id.id,
+                    'voucher_order_line_id': voucher_order_line_id.id
+                }
+                self.env['weha.voucher.trans.purchase.line'].create(vals)
 
     def issuing_voucher(self):
         seq = self.env['ir.sequence']
@@ -148,7 +202,8 @@ class VoucherTransPurchase(models.Model):
         for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
             lines = []
             for  voucher_trans_purchase_line_id in voucher_trans_purchase_sku_id.voucher_trans_purchase_line_ids:
-                lines.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
+                lines.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean + "|" + voucher_trans_purchase_line_id.voucher_order_line_id.expired_date.strftime("%Y-%m-%d"))
+                #lines.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
             vouchers.append({'sku': voucher_trans_purchase_sku_id.sku, 'vouchers' : lines})
         return vouchers
 
@@ -201,25 +256,22 @@ class VoucherTransPurchase(models.Model):
             seq = seq.with_context(force_company=vals['company_id'])
         vals['name'] = seq.next_by_code('weha.voucher.trans.purchase.sequence') or '/'
         
-        if vals.get('voucher_type') == '1' or vals.get('voucher_type') == '3':
-            pass     
-
-        if vals.get('voucher_type') == '2':
-            pass
-
-
         #Create Trans
         res = super(VoucherTransPurchase, self).create(vals)
 
         #Complete SKU List
         res.complete_sku()
-            
-        #Issuing Voucher
-        res.issuing_voucher()
 
-        #Update CRM
-        res.send_data_to_trust()
+        # if vals.get('voucher_type') == '1' or vals.get('voucher_type') == '3':
+        #     res.issuing_voucher()
+        #     res.send_data_to_trust()
+
+        # if vals.get('voucher_type') == '2':
+        #     #Reserved Voucher
         
+        res.reserved_voucher()
+
+      
         res.trans_close()
 
         return res    
@@ -344,10 +396,42 @@ class VoucheTransPaymentSku(models.Model):
 class VoucherTransStatus(models.Model):
     _name = "weha.voucher.trans.status"
 
+    def send_data_to_trust(self):
+        api_token = self._auth_trust()
+        headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        base_url = 'http://apiindev.trustranch.co.id'
+        try:
+            vouchers = []
+            for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
+                vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean + ';' + voucher_trans_purchase_line_id.voucher_order_line_id.expired_date.strftime('%Y-%m-%d')) 
+            
+            data = {
+                'date': self.trans_date.strftime('%Y-%m-%d'),
+                'time': self.trans_date.strftime('%H:%M:%S'),
+                'receipt': self.receipt_number,
+                'transactionId': self.t_id,
+                'cashierId': self.cashier_id,
+                'storeId': self.store_id,
+                'memberId': '3000000183',
+                'vouchers': '|'.join(vouchers)
+            }
+            _logger.info(data)
+            headers = {'Authorization' : 'Bearer ' + api_token}
+            req = requests.post('{}/vms/get-voucher'.format(base_url), headers=headers ,data=data)
+            _logger.info(req.text)
+            
+            #content = json.loads(req.content.decode('utf-8'))
+            #headers.update(access-token=content.get('access_token'))
+        except Exception as err:
+            _logger.info(err)  
+        finally:
+            _logger.info("final")  
+
     def trans_error(self):
         super(VoucherTransStatus, self).sudo().write({'state': 'error'})
 
     def trans_close(self):
+
         super(VoucherTransStatus, self).sudo().write({'state': 'done'})
 
     def get_json(self):
@@ -401,6 +485,7 @@ class VoucherTransStatus(models.Model):
         'Process Type',
         index=True
     )
+    void = fields.Boolean('Void', default=False)
 
     @api.model 
     def create(self, vals):
@@ -431,7 +516,7 @@ class VoucherTransStatus(models.Model):
         elif vals['process_type'] == 'activated':
             domain = [
                 ('voucher_ean', '=', vals['voucher_ean']),
-                ('state', '=', 'reserved')
+                ('state', 'in', ['reserved','used'])
             ]
         else:
             raise ValidationError("Process Type not valid")
@@ -450,7 +535,7 @@ class VoucherTransStatus(models.Model):
                     voucher_order_line_id.create_order_line_trans(res.name, 'RS')
                 elif vals['process_type'] == 'activated':
                     voucher_order_line_id.sudo().write({'state': 'activated'})
-                    vals = {}
+                    #vals = {}
                     voucher_order_line_id.create_order_line_trans(res.name, 'AC')
                 elif vals['process_type'] == 'used':
                     voucher_order_line_id.sudo().write({'state': 'used'})
@@ -619,4 +704,201 @@ class VoucherTransFTP(models.Model):
         res = super(VoucherTransFTP, self).create(vals)
         return res
 
+class VoucherTransBooking(models.Model):
+    _name = "weha.voucher.trans.booking" 
 
+    def complete_sku(self):
+        mapping_sku = []
+        if ';' in self.sku:
+            arr_skus = self.sku.split(';')
+            _logger.info(arr_skus)
+            for str_sku in arr_skus: 
+                vals = {}
+                arr_sku  = str_sku.split('|')
+                vals['voucher_trans_booking_id'] = self.id
+                vals['sku'] = arr_sku[0]
+                vals['quantity'] = arr_sku[1]
+                #vals['amount'] = arr_sku[2]
+                _logger.info(arr_sku)
+                domain = [
+                    ('code_sku', '=', arr_sku[0]),
+                ]
+                mapping_sku_id = self.env['weha.voucher.mapping.sku'].search(domain, limit=1)
+                if mapping_sku_id:
+                    _logger.info("Mapping SKU Exist")
+                    voucher_mapping_pos_id = mapping_sku_id.voucher_mapping_pos_id
+                    _logger.info(mapping_sku_id.voucher_code_id)
+                    vals['voucher_code_id']  = mapping_sku_id.voucher_code_id.id
+                    vals['voucher_terms_id']  = mapping_sku_id.voucher_code_id.voucher_terms_id.id
+                    vals['year_id'] = 1
+                    vals['voucher_mapping_sku_id'] = mapping_sku_id.id
+                    vals['amount'] = int(vals['quantity']) * mapping_sku_id.voucher_code_id.voucher_amount
+                    self.env['weha.voucher.trans.booking.sku'].create(vals)
+
+        else:
+            vals = {}
+            arr_sku  = self.sku.split('|')
+            vals['voucher_trans_booking_id'] = self.id
+            vals['sku'] = arr_sku[0]
+            vals['quantity'] = arr_sku[1]
+            #vals['amount'] = arr_sku[2]
+            _logger.info(arr_sku)
+            domain = [
+                ('code_sku', '=', arr_sku[0]),
+            ]
+
+            mapping_sku_id = self.env['weha.voucher.mapping.sku'].search(domain, limit=1)
+            if mapping_sku_id:
+                _logger.info("Mapping SKU Exist")
+                voucher_mapping_pos_id = mapping_sku_id.voucher_mapping_pos_id
+                _logger.info(mapping_sku_id.voucher_code_id)
+                vals['voucher_code_id']  = mapping_sku_id.voucher_code_id.id
+                vals['voucher_terms_id']  = mapping_sku_id.voucher_code_id.voucher_terms_id.id
+                vals['year_id'] = 1
+                vals['voucher_mapping_sku_id'] = mapping_sku_id.id
+                vals['amount'] = int(vals['quantity']) * mapping_sku_id.voucher_code_id.voucher_amount
+                self.env['weha.voucher.trans.booking.sku'].create(vals)
+
+    def issuing_voucher(self):
+        seq = self.env['ir.sequence']
+        for voucher_trans_booking_sku_id in self.voucher_trans_booking_sku_ids:
+            store_id  = voucher_trans_booking_sku_id.voucher_trans_booking_id.store_id
+            operating_unit_id = self.env['operating.unit'].search([('code','=', store_id)], limit=1)
+            for i in range(1,voucher_trans_booking_sku_id.quantity + 1):
+                domain = [
+                    ('operating_unit_id','=',operating_unit_id.id),
+                    ('voucher_type','=', 'physical'),
+                    ('voucher_code_id', '=', voucher_trans_booking_sku_id.voucher_code_id.id),
+                    ('voucher_terms_id', '=',  voucher_trans_booking_sku_id.voucher_code_id.voucher_terms_id.id),
+                    ('year_id', '=', voucher_trans_booking_sku_id.year_id.id),
+                    ('state','=', 'open')
+                ]
+                _logger.info(domain)
+                voucher_order_line_id = self.env['weha.voucher.order.line'].search(domain, limit=1)
+                _logger.info(voucher_order_line_id)
+                vals = {
+                    'voucher_trans_booking_id': self.id,
+                    'voucher_trans_booking_sku_id': voucher_trans_booking_sku_id.id,
+                    'voucher_order_line_id': voucher_order_line_id.id
+                }
+                result = self.env['weha.voucher.trans.booking.line'].create(vals)
+                if result:
+                    voucher_order_line_id.write(
+                        {
+                            'member_id': self.member_id,
+                            'state': 'booking'
+                        }
+                    )
+
+    def get_json(self):
+        vouchers = []
+        #for voucher_trans_purchase_line_id in result.voucher_trans_purchase_line_ids:
+        #    vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
+        for voucher_trans_booking_sku_id in self.voucher_trans_booking_sku_ids:
+            lines = []
+            for  voucher_trans_booking_line_id in voucher_trans_booking_sku_id.voucher_trans_booking_line_ids:
+                #_logger.info(voucher_trans_booking_line_id.voucher_order_line_id.voucher_ean)
+                #_logger.info(voucher_trans_booking_line_id.voucher_order_line_id.expired_date.strftime("%Y-%m-%d"))
+                #voucher_ean = voucher_trans_booking_line_id.voucher_order_line_id.voucher_ean
+                #lines.append(voucher_trans_booking_line_id.voucher_order_line_id.voucher_ean + "|" + voucher_trans_booking_line_id.voucher_order_line_id.expired_date.strftime("%Y-%m-%d"))
+                _logger.info(voucher_trans_booking_line_id.voucher_order_line_id)
+                lines.append(voucher_trans_booking_line_id.voucher_order_line_id.voucher_ean)
+            vouchers.append({'sku': voucher_trans_booking_sku_id.sku, 'vouchers' : lines})
+        return vouchers
+
+    def trans_close(self):
+        super(VoucherTransBooking, self).write({'state': 'done'})
+
+    name = fields.Char('Name', )
+    trans_type = fields.Char('Trans Type', size=10)
+    trans_date = fields.Datetime("Transaction Date")
+    receipt_number = fields.Char("Receipt #", size=10)
+    t_id = fields.Char("Terminal #")
+    cashier_id = fields.Char("Cashier #", size=10)
+    store_id = fields.Char("Store #", size=10)
+    member_id = fields.Char("Member #", size=20)
+    sku = fields.Char("SKU", size=255)
+
+    voucher_trans_booking_line_ids = fields.One2many('weha.voucher.trans.booking.line','voucher_trans_booking_id','Lines')
+    voucher_trans_booking_sku_ids = fields.One2many('weha.voucher.trans.booking.sku','voucher_trans_booking_id','Skus')
+
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )
+    state_remark = fields.Char('Remark', size=250)
+
+    @api.model
+    def create(self, vals):
+        #Create Trans #
+        seq = self.env['ir.sequence']
+        if 'company_id' in vals:
+            seq = seq.with_context(force_company=vals['company_id'])
+        vals['name'] = seq.next_by_code('weha.voucher.trans.booking.sequence') or '/'
+        
+        #Create Trans
+        res = super(VoucherTransBooking, self).create(vals)
+
+        #Complete SKU List
+        res.complete_sku()
+            
+        #Issuing Voucher
+        res.issuing_voucher()
+
+        #Update CRM
+        #res.send_data_to_trust()
+        
+        res.trans_close()
+
+        return res    
+
+class VoucheTransBookingSku(models.Model):
+    _name = "weha.voucher.trans.booking.sku"
+
+    voucher_trans_booking_id = fields.Many2one('weha.voucher.trans.booking', 'Booking #')
+    voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku', 'Mapping SKU #')
+    sku = fields.Char("SKU", size=8)
+    quantity = fields.Integer('Qty')
+    amount = fields.Float('Amount', default="0.0")
+    voucher_number_range_id = fields.Many2one('weha.voucher.number.ranges','Number Range')
+    voucher_code_id = fields.Many2one("weha.voucher.code", "Voucher Code")
+    voucher_terms_id = fields.Many2one("weha.voucher.terms", "Voucher Terms")
+    year_id = fields.Many2one("weha.voucher.year", "Year")
+    voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
+    voucher_trans_booking_line_ids = fields.One2many('weha.voucher.trans.booking.line','voucher_trans_booking_sku_id','Lines')
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )
+
+class VoucherTransBookingLine(models.Model):
+    _name = "weha.voucher.trans.booking.line"
+
+    voucher_trans_booking_id = fields.Many2one('weha.voucher.trans.booking', 'Purchase #')
+    voucher_trans_booking_sku_id = fields.Many2one('weha.voucher.trans.booking.sku', 'Purchase SKU #')
+    voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher #')
+    voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code", related="voucher_order_line_id.voucher_code_id")
+    year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo", related="voucher_order_line_id.voucher_promo_id")
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )

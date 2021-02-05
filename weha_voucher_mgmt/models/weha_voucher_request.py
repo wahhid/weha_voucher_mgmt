@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 class WeheVoucherRequest(models.Model):
     _name = 'weha.voucher.request'
+    _description = 'Voucher Request'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -91,7 +92,7 @@ class WeheVoucherRequest(models.Model):
                 'date_deadline': datetime.now() + timedelta(days=2),
                 'summary': 'Voucher Request was approved'
             }).action_feedback()
-            #To Finance Manager
+        #To Finance Manager
         company_id = self.env.user.company_id
         for approval_user_id in company_id.res_company_request_operating_unit.approval_user_ids:
             data =  {
@@ -217,6 +218,7 @@ class WeheVoucherRequest(models.Model):
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )    
+    remark = fields.Char('Remark', size=200)
 
     #Relation
     voucher_request_line_ids = fields.One2many(

@@ -13,57 +13,59 @@ class WehaWizardScanVoucherReturn(models.TransientModel):
 
     @api.onchange('start_number')
     def _onchange_voucher_start_number(self):     
-        domain = [
-            ('voucher_ean','=', self.start_number),
-            ('state','=','open')
-        ]
-        voucher_id  = self.env['weha.voucher.order.line'].search(domain,limit=1)
-        if not voucher_id:
-            self.start_number = False
-            raise Warning('Voucher in start number not found')
-        
-        self.operating_unit_id = voucher_id.operating_unit_id.id
-        self.voucher_code_id = voucher_id.voucher_code_id.id
-        self.year_id = voucher_id.year_id.id
-        self.voucher_promo_id =  voucher_id.voucher_promo_id.id
-        
-        if self.voucher_promo_id:
+        if self.start_number and len(self.start_number) == 13:    
             domain = [
-                ('operating_unit_id','=', voucher_id.operating_unit_id.id),
-                ('voucher_code_id','=', voucher_id.voucher_code_id.id),
-                ('year_id','=', voucher_id.year_id.id),
-                ('voucher_promo_id', '=', voucher_id.voucher_promo_id.id),
+                ('voucher_ean','=', self.start_number),
                 ('state','=','open')
             ]
-        else:
-            domain = [
-                ('operating_unit_id','=', voucher_id.operating_unit_id.id),
-                ('voucher_code_id','=', voucher_id.voucher_code_id.id),
-                ('year_id','=', voucher_id.year_id.id),
-                ('state','=','open')
-            ]
-        
-        voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
-        self.estimate_total = len(voucher_order_line_ids)
-        self.is_valid = True
+            voucher_id  = self.env['weha.voucher.order.line'].search(domain,limit=1)
+            if not voucher_id:
+                self.start_number = False
+                raise Warning('Voucher in start number not found')
+            
+            self.operating_unit_id = voucher_id.operating_unit_id.id
+            self.voucher_code_id = voucher_id.voucher_code_id.id
+            self.year_id = voucher_id.year_id.id
+            self.voucher_promo_id =  voucher_id.voucher_promo_id.id
+            
+            if self.voucher_promo_id:
+                domain = [
+                    ('operating_unit_id','=', voucher_id.operating_unit_id.id),
+                    ('voucher_code_id','=', voucher_id.voucher_code_id.id),
+                    ('year_id','=', voucher_id.year_id.id),
+                    ('voucher_promo_id', '=', voucher_id.voucher_promo_id.id),
+                    ('state','=','open')
+                ]
+            else:
+                domain = [
+                    ('operating_unit_id','=', voucher_id.operating_unit_id.id),
+                    ('voucher_code_id','=', voucher_id.voucher_code_id.id),
+                    ('year_id','=', voucher_id.year_id.id),
+                    ('state','=','open')
+                ]
+            
+            voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
+            self.estimate_total = len(voucher_order_line_ids)
+            self.is_valid = True
         
     @api.onchange('end_number')
     def _onchange_voucher_end_number(self):
-        domain = [
-            ('voucher_ean','=', self.end_number),
-            ('state','=','open')
-        ]
-        voucher_id = self.env['weha.voucher.order.line'].search(domain, limit=1)
-        if not voucher_id:
-            self.end_number = ''
-            raise Warning('Voucher in end number not found')    
-        
-        if self.operating_unit_id.id != voucher_id.operating_unit_id.id and \
-            self.voucher_code_id.id != voucher_id.voucher_code_id.id and \
-            self.year_id.id != voucher_id.year_id.id and \
-            self.voucher_promo_id.id != voucher_id.voucher_promo_id.id:
-            self.end_number = False
-            raise Validation('Voucher not match')
+        if self.end_number and len(self.start_number) == 13:    
+            domain = [
+                ('voucher_ean','=', self.end_number),
+                ('state','=','open')
+            ]
+            voucher_id = self.env['weha.voucher.order.line'].search(domain, limit=1)
+            if not voucher_id:
+                self.end_number = ''
+                raise Warning('Voucher in end number not found')    
+            
+            if self.operating_unit_id.id != voucher_id.operating_unit_id.id and \
+                self.voucher_code_id.id != voucher_id.voucher_code_id.id and \
+                self.year_id.id != voucher_id.year_id.id and \
+                self.voucher_promo_id.id != voucher_id.voucher_promo_id.id:
+                self.end_number = False
+                raise Validation('Voucher not match')
         
         #Generate Wizard Voucher Return Line
             
@@ -199,8 +201,7 @@ class WehaWizardScanVoucherReturn(models.TransientModel):
             'view_mode': 'form',
             'view_type': 'form',
         }
-        
-                
+                       
 class WehaWizardScanVoucherReturnLine(models.TransientModel):
     _name = 'weha.wizard.scan.voucher.return.line'
     _rec_name = "voucher_order_line_id"
@@ -210,7 +211,6 @@ class WehaWizardScanVoucherReturnLine(models.TransientModel):
     wizard_scan_voucher_return_id = fields.Many2one(comodel_name='weha.wizard.scan.voucher.return', string='Wizard Return')
     voucher_order_line_id = fields.Many2one(comodel_name='weha.voucher.order.line', string='Voucher Order Line')
     state = fields.Selection([('available','Available'),('not_available','Not Available')],'Status', readonly=True)
-
 
 class WehaWizardReceivedReturn(models.TransientModel):
     _name = 'weha.wizard.received.return'
@@ -436,3 +436,15 @@ class WehaWizardReturndReceived(models.TransientModel):
 
     voucher_return_id = fields.Many2one('weha.voucher.return','Voucher Return #', default=lambda self: self._default_voucher_return_id(),)
     
+class WehaWizardReturnCancelReceived(models.TransientModel):
+    _name = 'weha.wizard.return.cancel.received'
+    _description = 'Wizard Return Cancel Recevied'
+
+    reason = fields.Html('Reason')
+
+    def submit(self):
+        active_id = self.env.context.get('active_id') or False
+        voucher_return_id = self.env['weha.voucher.return'].browse(active_id)
+        _logger.info(self.reason)
+        voucher_return_id.message_post(body=self.reason)
+        voucher_return_id.change_stage_to_intransit()

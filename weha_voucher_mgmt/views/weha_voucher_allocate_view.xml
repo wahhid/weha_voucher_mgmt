@@ -129,11 +129,6 @@
                     </header>
                     <sheet>
                         <div name="button_box" class="oe_button_box">
-                            <button class="oe_stat_button" type="action" name="%(weha_voucher_mgmt.action_voucher_allocate_line_from_voucher_allocate)d" 
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"  
-                                icon="fa-ticket">
-                                <field string="Vouchers" name="voucher_count" widget="statinfo"/>
-                            </button>
                         </div>
                         <widget name="web_ribbon" text="Request" bg_color="bg-warning" attrs="{'invisible':[('is_request','=', False)]}"/>
                         <widget name="web_ribbon" text="Force Cancel" bg_color="bg-danger" attrs="{'invisible':[('is_force_cancelled','=', False)]}"/>
@@ -145,14 +140,15 @@
                             </h1>
                         </div>
                         <group>
-                            <group>
+                            <group string="General Information">
                                 <field name="allocate_date" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 <field name="source_operating_unit" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
+                                
                                 <field name="current_stage" invisible="1"/>
                             </group>
-                            <group>
+                            <group string="Voucher Allocate Information">
                                 <field name="ref" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="voucher_count"/>
                                 <field name="voucher_received_count"/>
@@ -162,19 +158,30 @@
                             </group>
                         </group>
                         <group>
-                            <group>
+                            <group string="Voucher Detail">
                                 <field name="voucher_code_id"/>
                                 <field name="voucher_terms_id"/>
+                                <field name="expired_days" attrs="{'invisible': [('is_voucher_promo','=', True)], 'required': [('is_voucher_promo','=', False)]}"/>
                                 <field name="year_id"/>     
-                                <field name="voucher_promo_id"/>   
                             </group>
-                            <group>
-                                <field name="start_number"/>
-                                <field name="end_number"/>
+                            <group string="Voucher Promo">
+                                <field name="voucher_promo_id"/>
+                                <field name="is_voucher_promo" invisible="1"/>
+                                <field name="promo_expired_date" attrs="{'invisible': [('is_voucher_promo','=', False)], 'required': [('is_voucher_promo','=', True)]}"/>
                             </group>
                         </group>
 
                         <notebook colspan="4">
+                            <page string="Allocate Ranges">
+	                        	<field name="voucher_allocate_range_ids" widget="one2many_list" nolabel="0" readonly="0">
+	                            	<tree string="Allocate Ranges">
+	                            	    <field name="start_number"/> 
+                                        <field name="end_number"/>
+                                        <field name="voucher_count"/>  
+                                        <field name="voucher_received"/>                  	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page> 
                             <page string="Allocate Lines">
 	                        	<field name="voucher_allocate_line_ids" widget="one2many_list" nolabel="0" readonly="0">
 	                            	<tree string="Allocate Lines">

@@ -27,7 +27,7 @@ class VoucherIssuingLine(models.Model):
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
     voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo", related="voucher_order_line_id.voucher_promo_id")
     member_id = fields.Char('Member #', size=20)
-    state = fields.Selection([('open','Open'),('issued','Issued')], 'Status', default='open')
+    state = fields.Selection([('open','Open'),('issued','Issued'),('cancelled','Cancelled')], 'Status', default='open')
 
 
 class VoucherIssuingEmployeeLine(models.Model):
@@ -45,13 +45,25 @@ class VoucherIssuingEmployeeLine(models.Model):
     sku = fields.Char("SKU #", size=20)
     quantity = fields.Integer('Qty')
     file_line_id = fields.Many2one('weha.voucher.issuing.file.line', 'File #')
-    state = fields.Selection([('open','Open'),('issued','Issued')], 'Status', default='open')
+    state = fields.Selection([('open','Open'),('issued','Issued'),('cancelled','Cancelled')], 'Status', default='open')
 
 
 class VoucherAllocateFileLine(models.Model):
     _name = 'weha.voucher.issuing.file.line'
     _rec_name = 'file_attachment_name'
-        
+
+    def delete_lines(self):
+        self.env.cr.execute('DELETE FROM weha_voucher_issuing_employee_line WHERE file_line_id=' + str(self.id))
+   
     voucher_issuing_id = fields.Many2one(comodel_name='weha.voucher.issuing', string='Voucher Issuing')
     file_attachment = fields.Binary('File')
     file_attachment_name = fields.Char('Filename', )
+    voucher_issuing_employee_line_ids = fields.One2many(
+        comodel_name='weha.voucher.issuing.employee.line', 
+        inverse_name='file_line_id', 
+        string='Employee Lines',
+    )
+
+    def unlink(self):
+        self.delete_lines()
+        super(VoucherAllocateFileLine, self).unlink()

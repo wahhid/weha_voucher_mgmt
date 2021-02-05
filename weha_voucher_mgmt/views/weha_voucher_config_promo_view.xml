@@ -15,6 +15,8 @@
                     <field name="name" />
                     <field name="tender_type_id"/>
                     <field name="bank_category_id"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
                     <field name="amount"/>
                     <field name="current_amount"/>
                 </tree>
@@ -44,8 +46,13 @@
                             <group>
                                 <field name="tender_type_id"/>
                                 <field name="bank_category_id"/>
+                                <field name="start_date"/>
+                                <field name="end_date"/>
                                 <field name="amount"/>
                                 <field name="current_amount"/>
+                            </group>
+                            <group>
+                                <field name="image" widget="image"/>
                             </group>
                         </group>
                         <notebook>
@@ -56,6 +63,9 @@
                                         <field name="current_amount"/>
                                     </tree>
                                 </field>
+                            </page>
+                            <page string="Term and Condition">
+                                <field name="term"/>
                             </page>
                         </notebook>
                     </sheet>

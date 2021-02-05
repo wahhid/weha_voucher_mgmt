@@ -53,7 +53,7 @@
                                 class="btn btn-primary" 
                                 name="trans_request_approval" 
                                 string="Request Approval" 
-                                groups="weha_voucher_mgmt.group_voucher_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=','approval')]}"
@@ -61,14 +61,14 @@
                                 name="trans_approve" 
                                 string="Approve" 
                                 confirm="Are you sure you want to Approve?" 
-                                groups="weha_voucher_mgmt.group_voucher_manager" />
+                                groups="weha_voucher_mgmt.group_voucher_manager,weha_voucher_mgmt.group_voucher_marketing_manager" />
                         
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                                 class="btn btn-primary" 
                                 name="trans_reject" 
                                 string="Reject"
-                                groups="weha_voucher_mgmt.group_voucher_manager"/>
+                                groups="weha_voucher_mgmt.group_voucher_manager, weha_voucher_mgmt.group_voucher_marketing_manager"/>
 
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=','approval')]}"
@@ -84,7 +84,7 @@
                                 name="trans_reject" 
                                 string="Reject"
                                 confirm="Are you sure you want to reject?" 
-                                groups="weha_voucher_mgmt.group_voucher_finance_manager,weha_voucher_mgmt.group_voucher_manager"/>
+                                groups="weha_voucher_mgmt.group_voucher_finance_manager,weha_voucher_mgmt.group_voucher_manager, weha_voucher_mgmt.group_voucher_marketing_manager"/>
                         
                         <button type="object" 
                                  attrs="{'invisible': [('current_stage', 'in', ('opened', 'closed','cancelled','rejected'))]}"
@@ -92,7 +92,7 @@
                                  name="trans_cancelled" 
                                  string="Cancel Request" 
                                  confirm="Are you sure you want to cancel?"
-                                groups="weha_voucher_mgmt.group_voucher_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
@@ -126,6 +126,7 @@
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="voucher_count"/>
                                 <field name="current_stage" invisible="1"/>
+                                <field name="remark" widget="textarea"/>
                             </group>
                         </group>
 
@@ -138,6 +139,7 @@
                                     </tree>
                                 </field>
                             </page>
+                            <!--
                             <page string="Request Allocate Lines">
 	                        	<field name="voucher_request_allocate_line_ids" widget="one2many_list" nolabel="0" readonly="1">
 	                            	<tree string="Allocate Lines">
@@ -149,6 +151,7 @@
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page> 
+                            -->
                         </notebook>
                     </sheet>
 
@@ -272,7 +275,7 @@
             parent="weha_transaction_main_menu"
             action="action_weha_voucher_request_act_window" 
             sequence="21"
-            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_user"/>
+            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user"/>
         
 
         

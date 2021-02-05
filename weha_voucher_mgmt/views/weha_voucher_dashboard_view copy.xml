@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="act_view_weha_voucher_order_line_physical_graph" model="ir.actions.act_window">
+      <field name="name">Voucher Order (Physical)</field>
+      <field name="res_model">weha.voucher.order.line</field>
+      <field name="view_mode">graph</field>
+      <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_line_graph"/>
+      <field name="domain">[('voucher_type','=','physical')]</field>
+      <field name="context">{'search_default_operating_unit': 1}</field>
+    </record>
+
+    <record id="act_view_weha_voucher_order_line_electronic_graph" model="ir.actions.act_window">
+      <field name="name">Voucher Order (Electronic)</field>
+      <field name="res_model">weha.voucher.order.line</field>
+      <field name="view_mode">graph</field>
+      <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_line_graph"/>
+      <field name="domain">[('voucher_type','=','electronic')]</field>
+      <field name="context">{'search_default_state': 1}</field>
+    </record>    
+
+    <record id="act_view_weha_voucher_order_line_operating_unit_graph" model="ir.actions.act_window">
+      <field name="name">Voucher Order (Operating Unit)</field>
+      <field name="res_model">weha.voucher.order.line</field>
+      <field name="view_mode">graph</field>
+      <field name="view_id" ref="weha_voucher_mgmt.view_weha_voucher_order_line_graph"/>
+      <field name="domain">[('voucher_type','=','physical')]</field>
+      <field name="context">{'search_default_operating_unit': 1}</field>
+    </record>
+
+
+    
+    
+    <!--My Dashboard Menu base.menu_board_root-->
+    <!-- <menuitem 
+        id="menu_board_my_dash"
+        parent="weha_voucher_mgmt_main_menu"
+        action="open_board_my_dash_action"
+        sequence="1"/> -->
+
+
+    <record id="voucher_operating_unit_kanban_view" model="ir.ui.view">
+      <field name="name">voucher.operating.unit.kanban</field>
+      <field name="model">operating.unit</field>
+      <field name="arch" type="xml">
+        <kanban class="o_kanban_dashboard" create="false">
+          <field name="name"/>
+          <field name="voucher_count"/>
+          <field name="color"/>
+          <templates>
+            <t t-name="kanban-box">
+              <div t-attf-class="#{kanban_color(record.color.raw_value)}">
+                  <div t-attf-class="o_kanban_card_header">
+                      <div class="o_kanban_card_header_title mb16">
+                        <div class="o_primary">
+                          <t t-esc="record.name.value"/>
+                        </div>
+                      </div>
+                      <div class="o_kanban_manage_button_section">
+                        <a class="o_kanban_manage_toggle_button" href="#"><i class="fa fa-ellipsis-v" /></a>
+                      </div>
+                      <div class="container o_kanban_card_content">
+                        <div class="row">
+                          <div class="col-6 o_kanban_primary_left" style="padding-top:20px;">
+                            <button class="btn btn-primary" name="open_voucher_request_ui" type="object">Request</button>
+                          </div>
+                          <div class="col-6 o_kanban_primary_right">
+                            <div class="row">
+                              <div class="col-6">
+                                <span>Active Request</span>
+                              </div>
+                              <div class="col-6">
+                                <span>10 (1000 Vouchers)</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="container o_kanban_card_manage_pane dropdown-menu" role="menu">
+                        <div class="row">
+                            <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view">
+                                <div class="o_kanban_card_manage_title">
+                                    <span>View</span>
+                                </div>
+                                <div>
+                                    <a name="%(action_voucher_order_line_from_voucher_order)d" type="action">
+                                        All
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div t-if="widget.editable" class="o_kanban_card_manage_settings row">
+                            <div class="col-8">
+                                <ul class="oe_kanban_colorpicker" data-field="color"/>
+                            </div>
+                        </div>
+                      </div>
+                  </div>
+              </div>
+            </t>
+          </templates>
+        </kanban>
+      </field>
+    </record>
+
+    <record id="act_view_operating_unit_kanban" model="ir.actions.act_window">
+      <field name="name">Operating Unit</field>
+      <field name="res_model">operating.unit</field>
+      <field name="view_mode">kanban</field>
+      <field name="view_id" ref="weha_voucher_mgmt.voucher_operating_unit_kanban_view"/>
+    </record>
+
+    <!--My Dashboard-->
+    <record model="ir.ui.view" id="board_my_dash_view">
+        <field name="name">My Dashboard</field>
+        <field name="model">board.board</field>
+        <field name="arch" type="xml">
+            <form string="My Dashboard">
+                <board style="1-2">
+
+                    <column>
+
+                        <action 
+                            string="Voucher Order Statistic"
+                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_line_physical_graph)d"/>
+
+                        <action 
+                            string="Voucher Order Statistic"
+                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_line_electronic_graph)d"/>
+
+                            <action 
+                            string="Voucher Order Statistic"
+                            name="%(weha_voucher_mgmt.act_view_weha_voucher_order_line_operating_unit_graph)d"/>
+                    </column>
+                    <column>
+                        <action 
+                            string="Operating Unit"
+                            name="%(weha_voucher_mgmt.act_view_operating_unit_kanban)d"/>
+                    </column>
+                </board>
+            </form>
+        </field>
+    </record>
+
+    <!--My Dashboard Action-->
+    <record model="ir.actions.act_window" id="open_board_my_dash_action">
+        <field name="name">My Dashboard</field>
+        <field name="res_model">board.board</field>
+        <field name="view_mode">form</field>
+        <field name="usage">menu</field>
+        <field name="view_id" ref="board_my_dash_view"/>
+    </record> 
+
+
+    <menuitem id="weha_voucher_dashboard_menu" 
+              name="Dashboard"
+              parent="weha_voucher_mgmt_main_menu" 
+              action="weha_voucher_mgmt.open_board_my_dash_action" 
+              sequence="1"
+              groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user"/>
+</odoo>

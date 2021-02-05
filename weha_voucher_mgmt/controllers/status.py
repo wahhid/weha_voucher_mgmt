@@ -60,6 +60,8 @@ class VMSStatusController(http.Controller):
         voucher_ean = post['voucher_ean'] or False if 'voucher_ean' in post else False
         #voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
         process_type = post['process_type'] or False if 'process_type' in post else False
+        void = post['void'] or False if 'void' in post else False
+        
 
         if not process_type:
             data =  {
@@ -122,7 +124,7 @@ class VMSStatusController(http.Controller):
         if process_type == 'reserved':
             domain = [
                 ('voucher_ean', '=', voucher_ean),
-                ('state', '=', 'activated')
+                #('state', '=', 'activated')
             ]
         elif process_type == 'used':
             domain = [
@@ -132,7 +134,7 @@ class VMSStatusController(http.Controller):
         elif process_type == 'activated':
             domain = [
                 ('voucher_ean', '=', voucher_ean),
-                ('state', '=', 'reserved')
+                ('state', 'in', ['reserved','used'])
             ]
         else:
             response_data = {
@@ -144,7 +146,7 @@ class VMSStatusController(http.Controller):
             }
             return valid_response(response_data)
 
-
+        _logger.info(domain)
         voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
         if not voucher_order_line_id:
             response_data = {
@@ -155,8 +157,29 @@ class VMSStatusController(http.Controller):
                 ]
             }
             return valid_response(response_data)
+        
 
         if process_type == 'reserved':
+            if voucher_order_line_id.state != 'activated':
+                if voucher_order_line_id.state == 'used':
+                    response_data = {
+                        "err": True,
+                        "message": "Vouchers was used",
+                        "data": [
+                            {'code': 'N'}
+                        ]
+                    }
+                    return valid_response(response_data)
+                else:
+                    response_data = {
+                        "err": True,
+                        "message": "Vouchers not found",
+                        "data": [
+                            {'code': 'N'}
+                        ]
+                    }
+                    return valid_response(response_data)
+
             if voucher_order_line_id.expired_date <= date.today():
                 response_data = {
                     "err": True,
@@ -181,10 +204,14 @@ class VMSStatusController(http.Controller):
         values.update({'member_id': member_id})
         values.update({'voucher_ean': voucher_ean})
         values.update({'process_type': process_type})
-
+        if process_type == 'activated':
+            if void == '0':
+                values.update({'void': False})
+            else:
+                values.update({'void': True})
+                
         #Save Data
-        result = voucher_trans_status_obj.sudo().create(values)
-        
+        result = voucher_trans_status_obj.sudo().create(values)    
         if result:
             if process_type == 'reserved':
                 add_data = result.get_json()

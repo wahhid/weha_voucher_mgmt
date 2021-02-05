@@ -300,6 +300,7 @@
                                 <field name="cashier_id"/>
                                 <field name="member_id"/>
                                 <field name="process_type"/>
+                                <field name="void"/>
                             </group>
                         </group>
                         <notebook colspan="4">
@@ -344,14 +345,13 @@
             <field name="res_model">weha.voucher.trans.status</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>
-            <field name="context">{}</field>
             <field name="search_view_id" ref="view_weha_voucher_trans_status_search" />
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">
-                    Click to add for request new voucher payment
+                    Click to add for request new voucher status
                 </p>
                 <p>
-                    Voucher Payment
+                    Voucher Status
                 </p>
             </field>
         </record>
@@ -462,5 +462,140 @@
             sequence="15"
             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
  
+    
+        <!-- Tree view for voucher trans booking -->
+        <record id="view_weha_voucher_trans_booking_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.trans.booking.tree</field>
+            <field name="model">weha.voucher.trans.booking</field>
+            <field name="type">tree</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <tree string="Ftp" create="false" delete="false" edit="false">
+                    <field name="name" />
+                    <field name="trans_date" />
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form view for voucher trans booking -->
+        <record id="view_weha_voucher_trans_booking_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.trans.booking.form</field>
+            <field name="model">weha.voucher.trans.booking</field>
+            <field name="type">form</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <form string="model_form" create="true" delete="true" edit="true">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" />
+                            <h1>
+                                <field name="name" class="oe_inline"
+                                    placeholder="Name" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="trans_date"/>
+                                <field name="trans_type"/>
+                                <field name="t_id"/>
+                                <field name="store_id"/>
+                                <field name="receipt_number"/>
+                                <field name="cashier_id"/>
+                                <field name="member_id"/>
+                            </group>
+                            <group>
+                            
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                
+                            </group>
+                            <group>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Sku Lines">
+	                        	<field name="voucher_trans_booking_sku_ids" widget="one2many_list" nolabel="0" readonly="1">
+	                            	<tree string="Voucher Lines">
+                                        <field name='sku'/>
+                                        <field name='quantity'/>
+                                        <field name="amount"/>
+                                        <field name="voucher_number_range_id"/>
+                                        <field name="voucher_code_id"/>
+                                        <field name="voucher_terms_id"/>
+                                        <field name="year_id"/>     
+                                        <field name="voucher_promo_id"/>                      	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>	   
+                            <page string="Voucher Lines">
+	                        	<field name="voucher_trans_booking_line_ids" widget="one2many_list" nolabel="0" readonly="1">
+	                            	<tree string="Voucher Lines">
+	                            	    <field name="voucher_order_line_id" /> 
+                                        <field name="voucher_code_id"/>
+                                        <field name="year_id"/>
+                                        <field name="voucher_promo_id"/>                        	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>	   
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+                 <!-- Search view for voucher ftp -->
+        <record id="view_weha_voucher_trans_booking_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.trans.booking.search</field>
+            <field name="model">weha.voucher.trans.booking</field>
+            <field name="type">search</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <search string="model_search">
+                    <field name="name" />
+                    <field name="trans_date"/>
+                    <field name="state"/>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Main window action for voucher trans booking -->
+        <record id="action_weha_voucher_trans_booking" model="ir.actions.act_window">
+            <field name="type">ir.actions.act_window</field>
+            <field name="name">Booking</field>
+            <field name="res_model">weha.voucher.trans.booking</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="search_view_id" ref="view_weha_voucher_trans_booking_search" />
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add for request new voucher booking
+                </p>
+                <p>
+                    Voucher Booking
+                </p>
+            </field>
+        </record>
+    
+        <menuitem 
+            id="weha_voucher_trans_booking_menu" 
+            name="Booking" 
+            parent="weha_voucher_api_menu"
+            action="action_weha_voucher_trans_booking" 
+            sequence="16"
+            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+
     </data>
 </odoo>

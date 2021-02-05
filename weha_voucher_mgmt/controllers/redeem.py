@@ -138,10 +138,8 @@ class VMSRedeemController(http.Controller):
         values.update({'store_id': store_id})
         values.update({'member_id': member_id})
         values.update({'sku': sku})
-        #values.update({'quantity': quantity})
-        #values.update({'amount': amount})
         values.update({'voucher_type': voucher_type})
-        #values.update({'voucher_code_id': mapping_sku_id.voucher_code_id.id})
+
         
 
         #Save Data

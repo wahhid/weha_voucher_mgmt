@@ -73,7 +73,6 @@
                         <field name="allocate_line_wizard_ids" readonly="1">
                             <tree string="Allocate Move">
                                 <field name="voucher_order_line_id"/>  
-                                <field name="voucher_allocate_line_id"/>  	
                                 <field name="state"/>                                                                                                                                                                                                                                   
                             </tree>                    	                            	
                         </field>

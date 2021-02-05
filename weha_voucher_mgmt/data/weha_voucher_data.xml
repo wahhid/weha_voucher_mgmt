@@ -94,5 +94,12 @@
             <field name="padding">5</field>
         </record>
 
+        <record id="weha_voucher_trans_booking" model="ir.sequence">
+            <field name="name">Voucher Trans Booking Sequence</field>
+            <field name="code">weha.voucher.trans.booking.sequence</field>
+            <field name="prefix">VB/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
+
     </data>
 </odoo>

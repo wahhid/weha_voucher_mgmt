@@ -9,6 +9,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherOrder(models.Model):
     _name = 'weha.voucher.order'
+    _description = 'Voucher Order'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -45,18 +46,34 @@ class VoucherOrder(models.Model):
         return stage_ids
     
     def _calculate_voucher_count(self):
-        self.voucher_count = len(self.line_ids)
+        for row in self:
+            row.voucher_count = len(row.line_ids)
+
+    def _calculate_voucher_request(self):
+        for row in self:
+            row.voucher_request = len(range(row.start_number,row.end_number+1))
+
+    def _calculate_voucher_received(self):
+        for row in self:
+            row.voucher_received = len(row.line_ids.filtered(lambda r: r.state == 'open'))
+
+    def _calculate_voucher_total_amount(self):
+        for row in self:
+            row.voucher_total_amount = len(range(row.start_number,row.end_number+1)) * row.voucher_code_id.voucher_amount 
+
+    def delete_lines(self):
+        self.env.cr.execute('DELETE FROM weha_voucher_order_line WHERE voucher_order_id=' + str(self.id))
 
     def send_notification(self, data):
         self.env['mail.activity'].create(data).action_feedback()
 
     @api.onchange('voucher_type')
-    def _voucher_code_onchange(self):
+    def _voucher_type_onchange(self):
         if self.voucher_type:
             self.voucher_code_id = False
             res = {}
             res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
-
+    
     @api.onchange('year')
     def _onchange_year(self):
         if self.year:
@@ -89,22 +106,14 @@ class VoucherOrder(models.Model):
             start2 <= end1 <= end2
         )
 
-    def check_order_overlap(self, voucher_type, voucher_code_id, year, voucher_promo_id, start_number, end_number):
-        if voucher_promo_id:
-            domain = [
-                ('voucher_type','=', voucher_type),
-                ('voucher_code_id','=', voucher_code_id),
-                ('year','=', year),
-                ('voucher_promo_id','=', voucher_promo_id),
-                ('current_stage','in', ['unattended','approval','open','closed']),
-            ]
-        else:
-            domain = [
-                ('voucher_type','=', voucher_type),
-                ('voucher_code_id','=',voucher_code_id),
-                ('year','=', year),
-                ('current_stage','in', ['unattended','approval','open','closed']),
-            ]
+    def check_order_overlap(self, voucher_type, voucher_code_id, year, start_number, end_number):
+        
+        domain = [
+            ('voucher_type','=', voucher_type),
+            ('voucher_code_id','=',voucher_code_id),
+            ('year','=', year),
+            ('current_stage','in', ['unattended','approval','open','closed']),
+        ]
 
         _logger.info(domain)
 
@@ -131,32 +140,39 @@ class VoucherOrder(models.Model):
         voucher_year = self.year
         number = start_number
 
+        voucher_order_lines = []
+
         for i in range(self.start_number,self.end_number + 1): 
             vals = {}
             vals.update({'operating_unit_id': self.operating_unit_id.id})
-            #vals.update({'operating_unit_loc_fr_id': self.operating_unit_id.id})
             vals.update({'voucher_type': self.voucher_type})
             vals.update({'voucher_order_id': self.id})
-            #vals.update({'voucher_code': self.voucher_code_id.code})
             vals.update({'voucher_code_id': self.voucher_code_id.id})
+            vals.update({'voucher_amount': self.voucher_code_id.voucher_amount})
             vals.update({'voucher_terms_id': self.voucher_code_id.voucher_terms_id.id})
-            if self.voucher_promo_id:
-                vals.update({'voucher_promo_id': self.voucher_promo_id.id})
             vals.update({'year_id': self.year.id})
             vals.update({'check_number': i})
-            
-            val_order_line_obj = obj_voucher_order_line.sudo().create(vals)            
-            if not val_order_line_obj:
-                raise ValidationError("Can't Generate voucher order line, contact administrator!")
-         
+            vals.update({'state': 'inorder'})
+            _logger.info(vals)
+            _logger.info("postgresql_create")
+            self.env['weha.voucher.order.line'].postgresql_create(vals)
+
+
+        #val_order_line_obj = obj_voucher_order_line.sudo().create(voucher_order_lines)   
+        #if not val_order_line_obj:
+        #    raise ValidationError("Can't Generate voucher order line, contact administrator!")
+    
         self.is_voucher_generated = True
         next_stage_id =  self.stage_id.next_stage_id
-        vals = { 'stage_id': next_stage_id.id}
+        vals = {'stage_id': next_stage_id.id }
         #self.write(vals)
         super(VoucherOrder,self).write(vals)
         
     def trans_received(self):
-        pass 
+        stage_id = self.env['weha.voucher.order.stage'].search([('receiving','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage receiving not found')
+        super(VoucherOrder, self).write({'stage_id': stage_id.id})
 
     def trans_approve(self):
         #Approve Voucher Order
@@ -211,9 +227,10 @@ class VoucherOrder(models.Model):
         #self.write({'stage_id': stage})
 
     def trans_close(self):
-        stage_id = self.stage_id.next_stage_id
-        res = super(VoucherOrder, self).write({'stage_id': stage_id.id})
-        return res
+        stage_id = self.env['weha.voucher.order.stage'].search([('closed','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage closed not found')
+        super(VoucherOrder, self).write({'stage_id': stage_id.id})
         
     def trans_request_approval(self):    
         _logger.info('Trans Request Approval Process')
@@ -261,6 +278,7 @@ class VoucherOrder(models.Model):
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        self.delete_lines()
 
 
     company_id = fields.Many2one('res.company', 'Company')
@@ -295,10 +313,9 @@ class VoucherOrder(models.Model):
    
     color = fields.Integer(string='Color Index')
     
-    voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
+    #voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
     start_number = fields.Integer(string='Start Number', required=True)
     end_number = fields.Integer(string='End Number', required=True)
-    #estimate_voucher_count = fields.Integer('Estimate Voucher Count', compute="_calculate_voucher_count", store=True)
     year = fields.Many2one('weha.voucher.year', 'Year', required=True)
     
     
@@ -309,7 +326,11 @@ class VoucherOrder(models.Model):
     
     is_voucher_generated = fields.Boolean('Is Voucher Generated', default=False)
     
-    voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=True)
+    voucher_request = fields.Integer('Voucher Request', compute="_calculate_voucher_request", store=False)
+    voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=False)
+    voucher_received = fields.Integer('Voucher Received', compute="_calculate_voucher_received", store=False)
+    voucher_total_amount =  fields.Float('Voucher Total Amount', compute="_calculate_voucher_total_amount", store=False, readonly=True)
+    
     line_ids = fields.One2many(
         string='Vouchers',
         comodel_name='weha.voucher.order.line',
@@ -324,7 +345,7 @@ class VoucherOrder(models.Model):
             raise ValidationError('Start Number greater than End Number')
 
         #Check Overlap Range Number
-        is_overlap = self.check_order_overlap(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year') , vals.get('voucher_promo_id'), vals.get('start_number'),vals.get('end_number'))
+        is_overlap = self.check_order_overlap(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year') , vals.get('start_number'),vals.get('end_number'))
         if is_overlap:
             raise ValidationError('Overlap Voucher Number')
         

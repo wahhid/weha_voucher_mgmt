@@ -169,6 +169,7 @@ class VMSPromoController(http.Controller):
         values.update({'tender_type': tender_type})
         values.update({'bank_category': bank_category})
         values.update({'voucher_type': voucher_type})
+
         #values.update({'voucher_code_id': mapping_sku_id.voucher_code_id.id})
 
         #Save Data

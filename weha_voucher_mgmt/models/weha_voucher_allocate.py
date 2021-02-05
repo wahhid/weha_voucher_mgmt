@@ -10,6 +10,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherAllocate(models.Model):
     _name = 'weha.voucher.allocate'
+    _description = 'Voucher Allocate'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -62,6 +63,21 @@ class VoucherAllocate(models.Model):
         res = {}
         res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
         return res
+
+    @api.onchange('voucher_code_id')
+    def _voucher_code_id_onchange(self):
+        _logger.info('Voucher Code Onchange')
+        self.expired_days = self.voucher_code_id.voucher_terms_id.number_of_days
+        _logger.info(self.expired_days)
+    
+    @api.onchange('voucher_promo_id')
+    def _voucher_promo_id_onchange(self):
+        if self.voucher_promo_id:
+            self.is_voucher_promo = True
+            self.promo_expired_date = self.voucher_promo_id.end_date
+        else:
+            self.is_voucher_promo = False
+            self.promo_expired_date = False
 
     def trans_delivery(self):
         stage_id = self.stage_id.next_stage_id
@@ -144,7 +160,7 @@ class VoucherAllocate(models.Model):
     
     def trans_cancelled(self):
         received = False
-        if self.current_stage in ('progress','receiving','closed'):
+        if self.current_stage in ('progress','receiving'):
             for voucher_allocate_line_id in self.voucher_allocate_line_ids:
                 if voucher_allocate_line_id.state == 'open':
                     vals = {}
@@ -169,6 +185,7 @@ class VoucherAllocate(models.Model):
                     received = True
 
         stage_id = self.env['weha.voucher.allocate.stage'].search([('cancelled','=', True)], limit=1)
+        
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         
@@ -189,7 +206,7 @@ class VoucherAllocate(models.Model):
     def trans_force_cancelled(self):
         if self.current_stage == 'closed':
             for voucher_allocate_line_id in self.voucher_allocate_line_ids:
-                if voucher_allocate_line_id.voucher_order_line_id.state == 'open':
+                if voucher_allocate_line_id.voucher_order_line_id.state in ['open','activated']:
                     vals = {}
                     vals.update({'state': 'cancelled'})
                     res = voucher_allocate_line_id.write(vals)
@@ -252,7 +269,7 @@ class VoucherAllocate(models.Model):
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Allocate Number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
-    allocate_date = fields.Date('Allocate Date', required=False, default=lambda self: fields.date.today(), readonly=True)
+    allocate_date = fields.Date('Allocate Date', required=True, default=lambda self: fields.date.today(), readonly=True)
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     source_operating_unit = fields.Many2one('operating.unit','Source Store', required=True)
@@ -264,11 +281,15 @@ class VoucherAllocate(models.Model):
         default='physical'
     )
 
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True, readonly=False)
+    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', related="voucher_code_id.voucher_terms_id")
+    year_id = fields.Many2one('weha.voucher.year','Year', required=True, readonly=False)
+    
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', readonly=False)
+    is_voucher_promo = fields.Boolean('Is Voucher Promo', default=False)
+    promo_expired_date = fields.Date('Promo Expired Date')
+    expired_days =fields.Integer('Expired Days', default=0, required=True)
 
-    voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', required=False, readonly=True)
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)
-    year_id = fields.Many2one('weha.voucher.year','Year', required=False, readonly=True)
-    voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', required=False, readonly=True)
     start_number = fields.Integer(string='Start Number', required=False, readonly=True)
     end_number = fields.Integer(string='End Number', required=False, readonly=True)
     
@@ -279,6 +300,7 @@ class VoucherAllocate(models.Model):
         default=_get_default_stage_id,
         track_visibility='onchange',
     )
+
     current_stage = fields.Char(string='Current Stage', size=50, compute="_compute_current_stage", readonly=True)
     priority = fields.Selection(selection=[
         ('0', _('Low')),
@@ -297,6 +319,13 @@ class VoucherAllocate(models.Model):
         comodel_name='weha.voucher.allocate.line', 
         inverse_name='voucher_allocate_id', 
         string='Allocate Lines',
+        domain="[('state','=','open')]"
+    )
+    
+    voucher_allocate_range_ids = fields.One2many(
+        comodel_name='weha.voucher.allocate.range', 
+        inverse_name='voucher_allocate_id', 
+        string='Allocate Ranges',
         domain="[('state','=','open')]"
     )
 

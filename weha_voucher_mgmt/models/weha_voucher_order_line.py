@@ -15,14 +15,13 @@ class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    
     def calc_check_digit(self, number):
         """Calculate the EAN check digit for 13-digit numbers. The number passed
         should not have the check bit included."""
         return str((10 - sum((3, 1)[i % 2] * int(n)
                             for i, n in enumerate(reversed(number)))) % 10)
 
-    def generate_12_numbers(self, voucher_type, voucher_code_id, year_id, voucher_promo_id, check_number):
+    def generate_12_numbers(self, voucher_type, voucher_code_id, year_id, check_number):
 
         c_code = str(self.env.user.default_operating_unit_id.company_id.res_company_code)
 
@@ -38,11 +37,9 @@ class VoucherOrderLine(models.Model):
             classifi = '2'
 
         number = str(check_number).zfill(6)
-
-        # company_code,type,year,classification,number
-        #code12 = [c_code ,v_code,year,classifi,number]
     
         code12 = c_code + v_code + year_code + classifi + number
+        _logger.info("CODE 12 = " + str(code12))
         _logger.info("CODE 12 = " + str(code12))
         
         return code12
@@ -92,7 +89,40 @@ class VoucherOrderLine(models.Model):
         return ean[:-1] + str(self.ean_checksum(ean))
 
     def calculate_expired(self):
-        self.expired_date = datetime.now() + timedelta(days=self.voucher_terms_id.number_of_days)
+        if self.voucher_type == 'physical':
+            self.expired_date = datetime.now() + timedelta(days=self.expired_days)
+        else:
+            self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
+
+    def postgresql_create(self, vals):
+        #Generate 12 Digit
+        voucher_12_digit = self.generate_12_numbers(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year_id'), vals.get('check_number'))
+        #Check Digit and Generate EAN 13
+        _logger.info("Calc Check Digit")
+        ean = voucher_12_digit + self.calc_check_digit(voucher_12_digit)
+        _logger.info("INSERT 1")
+        vals['voucher_12_digit'] = voucher_12_digit
+        vals['voucher_ean'] = ean
+        vals['name'] = ean
+        _logger.info("INSERT")
+        strSQL = """INSERT INTO weha_voucher_order_line 
+            (voucher_12_digit,voucher_ean, name, operating_unit_id,voucher_type,
+             voucher_order_id,voucher_code_id,voucher_terms_id,year_id,check_number,voucher_amount,state)
+            VALUES ('{}','{}','{}',{},'{}',{},{},{},{},{},{},'{}')""".format(
+                vals['voucher_12_digit'],
+                vals['voucher_ean'],
+                vals['name'],
+                vals['operating_unit_id'],
+                vals['voucher_type'],
+                vals['voucher_order_id'],
+                vals['voucher_code_id'],
+                vals['voucher_terms_id'],
+                vals['year_id'],
+                vals['check_number'],
+                vals['voucher_amount'],
+                'inorder'
+            )
+        self.env.cr.execute(strSQL)
 
     @api.model
     def create_order_line_trans(self, name, trans_type):
@@ -127,6 +157,12 @@ class VoucherOrderLine(models.Model):
         default='physical',
         index=True
     )
+    #Voucher Trans Type
+    voucher_trans_type = fields.Selection(
+        string='Trans Type',
+        selection=[('1', 'Sales'),('2','Promo'),('3','Redeem'),('4','Employee')],
+        index=True
+    )
     #P-Voucher or E-Voucher
     voucher_code = fields.Char(string='Voucher Code')
     voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID', index=True)
@@ -135,9 +171,14 @@ class VoucherOrderLine(models.Model):
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms', index=True)
     #Voucher Promo
     voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo', index=True)
-    tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type', related='voucher_promo_id.tender_type_id', store=True)
+    is_voucher_promo = fields.Boolean('Is Promo Voucher', default=False, readonly=True)
+    tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
+
+    #tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type', related='voucher_promo_id.tender_type_id', store=True)
     tender_type = fields.Char('Tender Type', size=20)
-    bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category', related='voucher_promo_id.bank_category_id', store=True)
+    bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category')
+
+    #bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category', related='voucher_promo_id.bank_category_id', store=True)
     bank_category = fields.Char('Bank Category', size=20)
     #Check Number Voucher
     check_number = fields.Integer(string='Check Number', group_operator=False)
@@ -149,7 +190,9 @@ class VoucherOrderLine(models.Model):
     operating_unit_loc_fr_id = fields.Many2one(string='Loc.Fr', comodel_name='operating.unit', ondelete='restrict',)
     #Loc To
     operating_unit_loc_to_id = fields.Many2one(string='Loc.To', comodel_name='operating.unit', ondelete='restrict',)
+    
     #Expired Date Voucher & Year
+    expired_days =fields.Integer('Expired Days', default=0)
     expired_date = fields.Date(string='Expired Date')
     year_id = fields.Many2one('weha.voucher.year',string='Year', index=True)
     
@@ -157,9 +200,9 @@ class VoucherOrderLine(models.Model):
     voucher_order_id = fields.Many2one(
         string='Voucher Order',
         comodel_name='weha.voucher.order',
-        ondelete='restrict',
-        index=True
+        ondelete='cascade',
     )
+
     voucher_request_id = fields.Many2one(
        string='Request id',
        comodel_name='weha.voucher.request',
@@ -209,6 +252,7 @@ class VoucherOrderLine(models.Model):
             ('damage', 'Scrap'),
             ('transferred','Transferred'),
             ('intransit', 'In-Transit'),
+            ('booking', 'Booking'),
             ('reserved', 'Reserved'),
             ('used', 'Used'),
             ('return', 'Return'),
@@ -219,17 +263,23 @@ class VoucherOrderLine(models.Model):
         index=True
     )
 
+    _sql_constraints = [('voucher_ean_unique', 'unique(voucher_ean)', 'Voucher already exists.')]
+
     @api.model
     def create(self, vals):
         #Generate 12 Digit
-        voucher_12_digit = self.generate_12_numbers(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year_id'), vals.get('voucher_promo_id'), vals.get('check_number'))
+        voucher_12_digit = self.generate_12_numbers(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year_id'), vals.get('check_number'))
         #Check Digit and Generate EAN 13
         ean = voucher_12_digit + self.calc_check_digit(voucher_12_digit)
+        
         vals['voucher_12_digit'] = voucher_12_digit
         vals['voucher_ean'] = ean
         vals['name'] = ean
         res = super(VoucherOrderLine, self).create(vals)
-        res.calculate_expired()
+
+        if vals.get('voucher_type') == 'electronic':
+            res.calculate_expired()
+
         res.create_order_line_trans(res.name, 'OP')
         return res
     
@@ -252,7 +302,7 @@ class VoucherOrderLineTrans(models.Model):
     trans_type = fields.Selection(
         string='Transaction Type', 
         selection=[
-            ('OR','Order'),
+            ('OR', 'Order'),
             ('OP', 'Open'), 
             ('RV', 'Received'), 
             ('DV', 'Delivery'),
