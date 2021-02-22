@@ -33,6 +33,7 @@
         'wizard/weha_report_voucher_stock_wizard_view.xml',
         'wizard/weha_received_order_wizard_view.xml',
         'wizard/weha_return_reason_wizard_view.xml',
+        'wizard/weha_import_voucher_legacy_issuing_wizard_view.xml',
         'views/weha_voucher_stage_view.xml',
         'views/weha_voucher_order_view.xml',
         'views/weha_voucher_order_line_view.xml',

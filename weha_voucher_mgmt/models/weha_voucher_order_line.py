@@ -124,9 +124,16 @@ class VoucherOrderLine(models.Model):
             )
         self.env.cr.execute(strSQL)
 
+    def get_voucher_expired(self):
+        is_expired = False
+        for row in self:
+            if row.expired_date:
+                if row.expired_date < date.today():
+                    is_expired = True
+            row.is_expired = is_expired
+
     @api.model
     def create_order_line_trans(self, name, trans_type):
-        
         for row in self:
             order_line_trans_obj = self.env['weha.voucher.order.line.trans']
             vals = {} 
@@ -143,6 +150,7 @@ class VoucherOrderLine(models.Model):
     #Customer Code
     customer_id = fields.Many2one('res.partner', 'Customer')
     member_id = fields.Char("Member #", size=20, index=True)
+    
     #Operating Unit
     operating_unit_id = fields.Many2one(
         string='Operating Unit',
@@ -157,6 +165,7 @@ class VoucherOrderLine(models.Model):
         default='physical',
         index=True
     )
+
     #Voucher Trans Type
     voucher_trans_type = fields.Selection(
         string='Trans Type',
@@ -240,6 +249,8 @@ class VoucherOrderLine(models.Model):
         readonly=True,
     )
     
+    is_expired = fields.Boolean('Is Expired', compute="get_voucher_expired")
+
     #State Voucher
     state = fields.Selection(
         string='Status',
@@ -256,6 +267,7 @@ class VoucherOrderLine(models.Model):
             ('reserved', 'Reserved'),
             ('used', 'Used'),
             ('return', 'Return'),
+            ('exception', 'Exception Request'),
             ('done','Close'),
             ('scrap','Scrap')
         ],

@@ -57,9 +57,9 @@ class VMSBookingController(http.Controller):
         voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
 
         _fields_includes_in_body = all([store_id,
-                                        member_id,
-                                        sku,
-                                        voucher_type])
+                                        #member_id,
+                                        sku])
+                                        #voucher_type])
         if not _fields_includes_in_body:
                 data =  {
                     "err": True,
@@ -107,7 +107,9 @@ class VMSBookingController(http.Controller):
         voucher_code_id = mapping_sku_id.voucher_code_id
         domain = [
             ('voucher_code_id', '=', voucher_code_id.id),
-            ('operating_unit_id', '=', operating_unit_id.id)
+            ('operating_unit_id', '=', operating_unit_id.id),
+            ('is_expired', '=', False),
+            ('state', '=', 'open')
         ]
         
         stock_count  = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
@@ -115,9 +117,7 @@ class VMSBookingController(http.Controller):
             response_data = {
                 "err": True,
                 "message": "Voucher not enough",
-                "data": [
-                    {'code': 'N'}
-                ]
+                "data": []
             }
             return valid_response(response_data)
 
@@ -125,7 +125,7 @@ class VMSBookingController(http.Controller):
             "err": False,
             "message": "Voucher Available",
             "data": [
-                {'code': 'N'}
+                {'qty': stock_count}
             ]
         }
         return valid_response(response_data)

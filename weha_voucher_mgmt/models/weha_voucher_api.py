@@ -108,8 +108,7 @@ class VoucherTransPurchase(models.Model):
         try:
             vouchers = []
             for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
-                vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean + ';' + voucher_trans_purchase_line_id.voucher_order_line_id.expired_date.strftime('%Y-%m-%d')) 
-            
+                vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean + ';' + voucher_trans_purchase_line_id.voucher_order_line_id.expired_date.strftime('%Y-%m-%d') + ";" + voucher_trans_purchase_line_id.voucher_trans_purchase_sku_id.sku  ) 
             data = {
                 'date': self.trans_date.strftime('%Y-%m-%d'),
                 'time': self.trans_date.strftime('%H:%M:%S'),
@@ -118,6 +117,7 @@ class VoucherTransPurchase(models.Model):
                 'cashierId': self.cashier_id,
                 'storeId': self.store_id,
                 'memberId': '3000000183',
+                #'memberId': self.member_id,
                 'vouchers': '|'.join(vouchers)
             }
             _logger.info(data)

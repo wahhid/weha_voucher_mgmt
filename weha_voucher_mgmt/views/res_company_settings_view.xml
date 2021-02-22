@@ -14,7 +14,8 @@
                    <page string="Settings">
                         <group>
                             <group string="Company Code">
-                                <field name="res_company_code" />
+                                <field name="company_code"/>
+                                <field name="res_company_code" string="Voucher Code"/>
                                 <field name="res_company_return_operating_unit" />
                                 <field name="res_company_request_operating_unit" />  
                                 <field name="res_company_return_marketing_operating_unit"/>

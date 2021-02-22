@@ -167,6 +167,7 @@ class VoucherScrap(models.Model):
     scrap_date = fields.Date('Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
+    reason = fields.Text('Reason')
     stage_id = fields.Many2one(
         'weha.voucher.scrap.stage',
         string='Stage',

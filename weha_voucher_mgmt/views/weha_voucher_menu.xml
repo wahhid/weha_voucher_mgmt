@@ -35,6 +35,10 @@
             parent="weha_voucher_mgmt_main_menu" sequence="30"
             groups="group_voucher_manager"/>
 
+        <menuitem id="weha_voucher_import_main_menu" name="Import"
+            parent="weha_voucher_mgmt_main_menu" sequence="32"
+            groups="group_voucher_manager"/>
+
         <menuitem id="weha_voucher_config_main_menu" name="Configuration"
             parent="weha_voucher_mgmt_main_menu" sequence="35"
             groups="group_voucher_manager"/>

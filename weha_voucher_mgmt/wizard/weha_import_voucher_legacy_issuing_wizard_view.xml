@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+     <record id="import_voucher_legacy_issuing_wizard" model="ir.ui.view">
+        <field name="name">Import Voucher Legacy Issuing</field>
+        <field name="model">weha.wizard.import.voucher.legacy.issuing</field>
+        <field name="arch" type="xml">
+            <form string="Import Voucher Lines">
+                <group>
+                    <field name="year"/>
+                    <field name="file" filename="filename"/>
+                    <field name="filename" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="import_file" string="Import" type="object" class="btn-primary"/>
+                    or
+                    <button name="cancel" string="Cancel" class="oe_link"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+        <record id="action_import_voucher_legacy_issuing_wizard" model="ir.actions.act_window">
+            <field name="name">Import Physical Voucher</field>
+            <field name="res_model">weha.wizard.import.voucher.legacy.issuing</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+   	 <!-- <record id="view_bank_statement_form_inherit_import_lines" model="ir.ui.view">
+            <field name="name">view.bank.statement.form.inherit.import.lines</field>
+            <field name="model">account.bank.statement</field>
+            <field name="inherit_id" ref="account.view_bank_statement_form"/>
+            <field name="arch" type="xml">
+                <button name="%(account.action_bank_reconcile_bank_statements)d" position="before">
+                      <button name="%(action_bank_statement_import_line_wizard)d" string="Add Lines" type="action" />
+                </button>
+            </field>
+        </record> -->
+     
+       <menuitem 
+            id="weha_import_voucher_legacy_issuing_menu" 
+            name="Import Physical Voucher" 
+            parent="weha_voucher_import_main_menu"
+            action="action_import_voucher_legacy_issuing_wizard" 
+            sequence="99"
+            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+        
+  </data>
+</odoo>

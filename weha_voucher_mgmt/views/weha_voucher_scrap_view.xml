@@ -118,7 +118,10 @@
                                         <field name="state"/>                         	                                                                                                                                                                                                                                   
 	                            	</tree>                    	                            	
 	                        	</field>
-	                        </page>	 	   
+	                        </page>	 	
+                            <page string="Reason">
+                                <field name="reason" widget='html'/>
+                            </page>   
                         </notebook>
                     </sheet>
                     <div class="oe_chatter">
