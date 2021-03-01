@@ -157,6 +157,9 @@ class VoucherYear(models.Model):
     year = fields.Integer("Year", required=True)
     active = fields.Boolean('Active', default=True)
 
+    _sql_constraints = [
+        ('year_unique', 'UNIQUE (year)',  'Year already exist')
+    ]
 
 class VoucherTenderType(models.Model):
     _name = 'weha.voucher.tender.type'

@@ -44,110 +44,27 @@ def validate_token(func):
 
 
 
-class VMSBookingController(http.Controller):
+class VMSIssuingContoller(http.Controller):
     
     @validate_token
-    @http.route("/api/vms/v1.0/stockcheck", type="http", auth="none", methods=["POST"], csrf=False)
-    def stockcheck(self, **post):
-        message = "Create Successfully"
-        store_id = post['store_id'] or False  if 'store_id' in post else False
-        member_id = post['member_id'] or False  if 'member_id' in post else False
-        sku = post['sku'] or False  if 'sku' in post else False
-        #phyiscal or electronic
-        voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
-
-        _fields_includes_in_body = all([store_id,
-                                        #member_id,
-                                        sku])
-                                        #voucher_type])
-        if not _fields_includes_in_body:
-                data =  {
-                    "err": True,
-                    "message": "Missing fields",
-                    "data": []
-                }
-                return valid_response(data)
-
-        operating_unit_id = http.request.env['operating.unit'].search([('code','=',store_id)])
-        if not operating_unit_id:
-            response_data = {
-                "err": True,
-                "message": "Operating Unit not found",
-                "data": [
-                    {'code': 'N'}
-                ]
-            }
-            return valid_response(response_data)
-
-        arr_sku  = sku.split('|')
-        domain = [
-            ('code_sku', '=', arr_sku[0])
-        ]
-        mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)            
-        if not mapping_sku_id:
-            response_data = {
-                "err": True,
-                "message": "SKU not found",
-                "data": [
-                    {'code': 'N'}
-                ]
-            }
-            return valid_response(response_data)
-
-        if mapping_sku_id.voucher_code_id.voucher_type != 'physical':
-            response_data = {
-                "err": True,
-                "message": "Voucher Voucher Type not match",
-                "data": [
-                    {'code': 'N'}
-                ]
-            }
-            return valid_response(response_data)
-
-        voucher_code_id = mapping_sku_id.voucher_code_id
-        domain = [
-            ('voucher_code_id', '=', voucher_code_id.id),
-            ('operating_unit_id', '=', operating_unit_id.id),
-            ('is_expired', '=', False),
-            ('state', '=', 'open')
-        ]
-        
-        stock_count  = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
-        if stock_count < int(arr_sku[1]):
-            response_data = {
-                "err": True,
-                "message": "Voucher not enough",
-                "data": []
-            }
-            return valid_response(response_data)
-
-        response_data = {
-            "err": False,
-            "message": "Voucher Available",
-            "data": [
-                {'qty': stock_count}
-            ]
-        }
-        return valid_response(response_data)
-        
-
-    @validate_token
-    @http.route("/api/vms/v1.0/booking", type="http", auth="none", methods=["POST"], csrf=False)
+    @http.route("/api/vms/v1.0/issuing", type="http", auth="none", methods=["POST"], csrf=False)
     def crmbooking(self, **post):
         message = "Booking Successfully"
         date = post['date'] or False if 'date' in post else False
         time = post['time'] or False if 'time' in post else False
+        ref = post['ref'] or False  if 'ref' in post else False
         store_id = post['store_id'] or False  if 'store_id' in post else False
         member_id = post['member_id'] or False  if 'member_id' in post else False
-        sku = post['sku'] or False  if 'sku' in post else False
-        voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
+        voucher_ean = post['voucher_ean'] or False  if 'voucher_ean' in post else False
+
 
         _fields_includes_in_body = all([date, 
                                         time, 
                                         store_id,
+                                        ref,
                                         member_id,
-                                        sku,
-                                        voucher_type])
+                                        voucher_ean])
+
         if not _fields_includes_in_body:
                 data =  {
                     "err": True,
@@ -156,14 +73,14 @@ class VMSBookingController(http.Controller):
                 }
                 return valid_response(data)
 
-        if voucher_type != 'physical':
-            return valid_response(
-                {
-                    "err": True,
-                    "message": "Only Physical Voucher Allowed",
-                    "data": []
-                }
-            )
+        # if voucher_type != 'physical':
+        #     return valid_response(
+        #         {
+        #             "err": True,
+        #             "message": "Only Physical Voucher Allowed",
+        #             "data": []
+        #         }
+        #     )
 
         
         operating_unit_id = http.request.env['operating.unit'].search([('code','=',store_id)])
@@ -180,68 +97,47 @@ class VMSBookingController(http.Controller):
         
 
         #Check Vouche by SKU on store
-        skus = []
+        voucher_eans = []
         is_error = False
-        if ';' in sku:
-            arr_skus = sku.split(';')
-            _logger.info(arr_skus)
-            for str_sku in arr_skus:
-                arr_sku  = str_sku.split('|')
-                _logger.info(arr_sku)
-                domain = [
-                    ('code_sku', '=', arr_sku[0]),
-                ]
-                mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
-                if not mapping_sku_id:
-                    is_error = True
-                    break
-                if mapping_sku_id.voucher_code_id.voucher_type != 'physical':
-                    is_error = True
-                    break
-            if is_error:
-                response_data = {
-                    "err": True,
-                    "message": "SKU not found or Voucher Type not match",
-                    "data": [
-                        {'code': 'N'}
-                    ]
-                }
-                return valid_response(response_data)
-        else:
-            arr_sku  = sku.split('|')
-            _logger.info(arr_sku)
+        err_message = ''
+        arr_voucher_ean  = voucher_ean.split('|')
+        _logger.info(arr_voucher_ean)
+        for ean in arr_voucher_ean:
             domain = [
-                ('code_sku', '=', arr_sku[0]),
+                ('voucher_ean', '=', ean),
+                ('operating_unit_id', '=', operating_unit_id.id)
             ]
-            mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
-            if not mapping_sku_id:
-                response_data = {
+
+            voucher_ean_id = http.request.env['weha.voucher.order.line'].search(domain, limit=1)
+            if not voucher_ean_id:
+                is_error = True
+                err_message = f'{ean} not found'
+                break
+        
+        if is_error:
+            response_data = {
                 "err": True,
-                "message": "SKU not found",
+                "message": err_message,
                 "data": []
                 }
-            
-            if mapping_sku_id.voucher_code_id.voucher_type != 'physical':
-                response_data = {
-                    "err": True,
-                    "message": "Voucher type not allowed",
-                    "data": []
-                }
-                return valid_response(response_data)
+            return valid_response(response_data)
 
-
-        
+        # if mapping_sku_id.voucher_code_id.voucher_type != 'physical':
+        #     response_data = {
+        #         "err": True,
+        #         "message": "Voucher type not allowed",
+        #         "data": []
+        #     }
+        #     return valid_response(response_data)
 
         values = {}
             
         # #Save Voucher Booking Transaction
-        voucher_trans_booking_obj = http.request.env['weha.voucher.trans.booking']
-        trans_date = date  +  " "  + time + ":00"
-        values.update({'trans_date': trans_date})
-        values.update({'store_id': store_id})
-        values.update({'member_id': member_id})
-        values.update({'sku': sku})
-        #values.update({'voucher_type': voucher_type})        
+        voucher_issuing_obj = http.request.env['weha.voucher.issuing']
+        values.update({'issuing_date': datetime.now().strftime("%Y-%m-%d")})
+        values.update({'operating_unit_id':operating_unit_id.id})
+        values.update({'user_id': })
+        values.update({'ref': })
 
         #Save Data
         result = voucher_trans_booking_obj.sudo().create(values)

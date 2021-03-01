@@ -51,6 +51,7 @@ class WehaWizardReceivedOrder(models.TransientModel):
             domain = [
                 ('voucher_type', '=', 'physical'),
                 ('voucher_ean', '=', self.start_ean),
+                ('voucher_order_id', '=', voucher_order_id.id),
                 #('state', '=', 'inorder')
             ]
             _logger.info(domain)
@@ -60,6 +61,7 @@ class WehaWizardReceivedOrder(models.TransientModel):
             domain =  [
                 ('voucher_type', '=', 'physical'),
                 ('voucher_ean', '=',  self.end_ean),
+                ('voucher_order_id', '=', voucher_order_id.id),
                 #('state', '=', 'inorder')
             ]
 
@@ -90,13 +92,16 @@ class WehaWizardReceivedOrder(models.TransientModel):
                 _logger.info(voucher_order_line_ids)
                 line_ids = []
                 for voucher_order_line_id in voucher_order_line_ids:
+                    _logger.info(voucher_order_line_id.state)
                     if voucher_order_line_id.state == 'inorder':
+                        _logger.info('Voucher Valid')
                         line_id = (0,0,{
                                 'voucher_order_line_id': voucher_order_line_id.id,
                                 'state': 'valid',
                             })
                         line_ids.append(line_id)
                     else:
+                        _logger.info('Voucher not Valid')
                         line_id = (0,0,{
                                 'voucher_order_line_id': voucher_order_line_id.id,
                                 'state': 'not_valid',
@@ -110,7 +115,7 @@ class WehaWizardReceivedOrder(models.TransientModel):
             domain = [
                 ('voucher_type', '=', 'physical'),
                 ('voucher_ean','=', self.code_ean),
-                ('state','=','intransit')
+                ('state','=','inorder')
             ]
 
             voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)

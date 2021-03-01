@@ -59,7 +59,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
             self.is_valid = True
 
 
-    @api.onchange('end_number')
+    api.onchange('end_number')
     def _onchange_end_number(self):
         #Get Current Voucher Order Allocate
         active_id = self.env.context.get('active_id') or False
@@ -138,44 +138,36 @@ class WizardScanVoucherAllocate(models.TransientModel):
         #    voucher_allocate_line_id.unlink()
             
         #Get Voucher Check Number
-        voucher_order_line_start_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)], limit=1)
+        domain  = [
+            ('voucher_type','=','physical'),
+            ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
+            ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
+            ('voucher_ean','=', self.start_number),
+            ('year_id','=', voucher_allocate_id.year_id.id),
+            ('state','=','open')
+        ]
+        voucher_order_line_start_id  = self.env['weha.voucher.order.line'].search(domain, limit=1)
         start_check_number = voucher_order_line_start_id.check_number        
         
         #Get Voucher Check Number
-        voucher_order_line_end_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.end_number)], limit=1)
+        domain  = [
+            ('voucher_type','=','physical'),
+            ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
+            ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
+            ('voucher_ean','=', self.end_number),
+            ('year_id','=', voucher_allocate_id.year_id.id),
+            ('state','=','open')
+        ]
+        voucher_order_line_end_id  = self.env['weha.voucher.order.line'].search(domain, limit=1)
         end_check_number = voucher_order_line_end_id.check_number
 
-        #Set Voucher Order Allocate Data
-        voucher_allocate_id.voucher_code_id = voucher_order_line_start_id.voucher_code_id.id
-        voucher_allocate_id.voucher_terms_id = voucher_order_line_start_id.voucher_code_id.voucher_terms_id.id
-        voucher_allocate_id.year_id = voucher_order_line_start_id.year_id.id 
-        #voucher_allocate_id.voucher_promo_id = voucher_order_line_start_id.voucher_promo_id.id 
-        voucher_allocate_id.start_number = start_check_number
-        voucher_allocate_id.end_number = end_check_number
         
         #Get Voucher Range
         voucher_ranges = range(start_check_number, end_check_number + 1)
         _logger.info(voucher_ranges)  
 
-        #Get Vouchers
-        # if voucher_order_line_start_id.voucher_promo_id:
-        #     domain = [
-        #         ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
-        #         ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-        #         ('year_id','=', voucher_order_line_start_id.year_id.id),
-        #         ('voucher_promo_id', '=', voucher_order_line_start_id.voucher_promo_id.id),
-        #         ('state', '=', 'open'),
-        #         ('check_number', 'in', tuple(voucher_ranges))
-        #     ]
-        # else:
-        #     domain = [
-        #         ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
-        #         ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-        #         ('year_id','=', voucher_order_line_start_id.year_id.id),
-        #         ('state', '=', 'open'),
-        #         ('check_number', 'in', tuple(voucher_ranges))
-        #     ]
         domain = [
+            ('voucher_type','=','physical'),
             ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
             ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
             ('year_id','=', voucher_order_line_start_id.year_id.id),

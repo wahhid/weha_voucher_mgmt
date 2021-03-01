@@ -47,7 +47,7 @@ def validate_token(func):
 class VMSStatusController(http.Controller):
     
     @validate_token
-    @http.route("/api/vms/v1.0/status", type="http", auth="none", methods=["POST"], csrf=False)
+    @http.route("/api/vms/v1.0/status", type="http", auth="none", methods=["POST"], csrf=False, cors="*")
     def vssales(self, **post):
         
         trans_date = post['date'] or False if 'date' in post else False
@@ -124,7 +124,7 @@ class VMSStatusController(http.Controller):
         if process_type == 'reserved':
             domain = [
                 ('voucher_ean', '=', voucher_ean),
-                #('state', '=', 'activated')
+                ('state', '=', 'activated')
             ]
         elif process_type == 'used':
             domain = [
@@ -148,13 +148,13 @@ class VMSStatusController(http.Controller):
 
         _logger.info(domain)
         voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+        _logger.info(voucher_order_line_id.id)
         if not voucher_order_line_id:
+            _logger.info("Search Voucher Order Line")
             response_data = {
                 "err": True,
                 "message": "Vouchers not found",
-                "data": [
-                    {'code': 'N'}
-                ]
+                "data": []
             }
             return valid_response(response_data)
         

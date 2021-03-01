@@ -1,5 +1,14 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
+import requests
+from requests import ReadTimeout, ConnectTimeout, HTTPError, Timeout, ConnectionError
+from ftplib import FTP
+import os
+import base64
+import csv
+import logging
+import io
+import json
 import logging
 from random import randrange
 from datetime import datetime, timedelta, date
@@ -14,6 +23,7 @@ import re
 class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+
 
     def calc_check_digit(self, number):
         """Calculate the EAN check digit for 13-digit numbers. The number passed
@@ -132,6 +142,107 @@ class VoucherOrderLine(models.Model):
                     is_expired = True
             row.is_expired = is_expired
 
+    def get_last_trans_line(self):
+        trans_line_id = self.env['weha.voucher.order.line.trans'].search([],limit=1)
+        return trans_line_id
+
+    def _auth_trust(self):
+        url = "http://apiindev.trustranch.co.id/login"
+
+        payload='barcode=3000030930&password=weha.ID!!2020'
+        headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        #json_data = json.loads(response.text)
+        str_json_data  = response.text.replace("'"," ")
+        json_data = json.loads(str_json_data)
+        #_logger.info(response.text)
+        _logger.info(json_data['data']['api_token'])
+        return json_data['data']['api_token']
+
+    def send_data_to_trust(self):
+        _logger.info("Send Data")
+        trans_line_id = self.get_last_trans_line()
+        _logger.info(trans_line_id.name)
+        if self.voucher_trans_type == '1':
+            trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
+        if self.voucher_trans_type == '2':
+            trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
+        if self.voucher_trans_type == '3':
+            trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
+    
+        api_token = self._auth_trust()
+        headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        base_url = 'http://apiindev.trustranch.co.id'
+        try:
+            vouchers = []
+            vouchers.append(self.voucher_ean + ';' + self.expired_date.strftime('%Y-%m-%d') + ";" + self.voucher_sku)
+            data = {
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'time': datetime.now().strftime('%H:%M:%S'),
+                'receipt': trans_purchase_id.receipt_number,
+                'transaction_id': trans_purchase_id.t_id,
+                'cashier_id': trans_purchase_id.cashier_id,
+                'store_id': trans_purchase_id.store_id,
+                #'member_id': trans_purchase_id.member_id,
+                'member_id': self.member_id,
+                'vouchers': '|'.join(vouchers)
+            }
+            _logger.info(data)
+            headers = {'Authorization' : 'Bearer ' + api_token}
+            req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+            _logger.info(req.text)
+            if req.status_code != '200':
+                _logger.info(f'Error : {req.status_code}')
+                response_json = req.json()
+                _logger.info(f'Error Message: {response_json}')
+
+            response_json = req.json()
+            _logger.info(f'Success : {req.status_code}')
+            _logger.info(f'Data: {response_json}')
+            # #content = json.loads(req.content.decode('utf-8'))
+            #headers.update(access-token=content.get('access_token'))
+        except Exception as err:
+            _logger.error(err)  
+        finally:
+            _logger.info("final") 
+
+    def send_used_notification_to_trust(self):  
+        _logger.info("Send Used Notifcation")
+        
+        trans_line_id = self.get_last_trans_line()
+        _logger.info(trans_line_id.name)
+
+        if self.voucher_trans_type == '5':
+            trans_status_id = self.env['weha.voucher.trans.status'].search([('name','=',trans_line_id.name)], limit=1)
+    
+        api_token = self._auth_trust()
+        headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        base_url = 'http://apiindev.trustranch.co.id'
+        try:
+            vouchers = []
+            vouchers.append(self.voucher_ean)
+            data = {
+                'store_id': trans_status_id.store_id,
+                #'member_id': trans_status_id.member_id,
+                'member_id': self.member_id,
+                'vouchers': '|'.join(vouchers)
+            }
+            _logger.info(data)
+            headers = {'Authorization' : 'Bearer ' + api_token}
+            req = requests.post('{}/vms/use-voucher'.format(base_url), headers=headers ,data=data)
+            _logger.info(req.text)
+            
+            #content = json.loads(req.content.decode('utf-8'))
+            #headers.update(access-token=content.get('access_token'))
+        except Exception as err:
+            _logger.info(err)  
+        finally:
+            _logger.info("final") 
+
     @api.model
     def create_order_line_trans(self, name, trans_type):
         for row in self:
@@ -169,7 +280,7 @@ class VoucherOrderLine(models.Model):
     #Voucher Trans Type
     voucher_trans_type = fields.Selection(
         string='Trans Type',
-        selection=[('1', 'Sales'),('2','Promo'),('3','Redeem'),('4','Employee')],
+        selection=[('1', 'Sales'),('2','Promo'),('3','Redeem'),('4','Employee'),('5','Payment')],
         index=True
     )
     #P-Voucher or E-Voucher
@@ -195,6 +306,8 @@ class VoucherOrderLine(models.Model):
     voucher_12_digit = fields.Char('Code 12', size=12)
     #Voucher EAN
     voucher_ean = fields.Char('Code', size=13)
+    #Voucher SKU
+    voucher_sku = fields.Char('SKU', size=20)
     #Loc Fr
     operating_unit_loc_fr_id = fields.Many2one(string='Loc.Fr', comodel_name='operating.unit', ondelete='restrict',)
     #Loc To

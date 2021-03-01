@@ -140,6 +140,7 @@ class VoucherTransPurchase(models.Model):
                 vals.update({'member_id': self.member_id})
                 vals.update({'operating_unit_id': 3})
                 vals.update({'voucher_type': 'electronic'})
+                vals.update({'voucher_sku': voucher_trans_purchase_sku_id.sku})
                 vals.update({'voucher_trans_type': self.voucher_type})
                 vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
                 vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
@@ -155,7 +156,7 @@ class VoucherTransPurchase(models.Model):
                 if not voucher_order_line_id:
                     raise ValidationError("Can't Generate voucher order line, contact administrator!")
                 voucher_order_line_id.write({'state': 'reserved'})
-                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+                voucher_order_line_id.create_order_line_trans(self.name, 'RS')
 
                 vals = {
                     'voucher_trans_purchase_id': self.id,
@@ -267,11 +268,9 @@ class VoucherTransPurchase(models.Model):
         #     res.send_data_to_trust()
 
         # if vals.get('voucher_type') == '2':
-        #     #Reserved Voucher
-        
-        res.reserved_voucher()
 
-      
+        #Reserved Voucher
+        res.reserved_voucher()      
         res.trans_close()
 
         return res    
@@ -531,14 +530,26 @@ class VoucherTransStatus(models.Model):
             result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
             if result:
                 if vals['process_type'] == 'reserved':
-                    voucher_order_line_id.sudo().write({'state': 'reserved'})
+                    voucher_order_line_id.sudo().write({'voucher_trans_type': '5','state': 'reserved'})
                     voucher_order_line_id.create_order_line_trans(res.name, 'RS')
                 elif vals['process_type'] == 'activated':
                     voucher_order_line_id.sudo().write({'state': 'activated'})
-                    #vals = {}
+                    if voucher_order_line_id.voucher_trans_type == '1':
+                        voucher_order_line_id.send_data_to_trust()
+                        voucher_order_line_id.voucher_trans_type = False
+                    if voucher_order_line_id.voucher_trans_type == '2':
+                        voucher_order_line_id.send_data_to_trust()
+                        voucher_order_line_id.voucher_trans_type = False
+                    if voucher_order_line_id.voucher_trans_type == '3':
+                        voucher_order_line_id.send_data_to_trust()
+                        voucher_order_line_id.voucher_trans_type = False
+                    if voucher_order_line_id.voucher_trans_type == '5':
+                        pass
                     voucher_order_line_id.create_order_line_trans(res.name, 'AC')
                 elif vals['process_type'] == 'used':
                     voucher_order_line_id.sudo().write({'state': 'used'})
+                    voucher_order_line_id.send_used_notification_to_trust()
+                    voucher_order_line_id.voucher_trans_type = False
                     voucher_order_line_id.create_order_line_trans(res.name, 'US')
                 else:
                     pass
