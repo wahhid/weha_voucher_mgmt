@@ -143,7 +143,7 @@ class VoucherOrderLine(models.Model):
             row.is_expired = is_expired
 
     def get_last_trans_line(self):
-        trans_line_id = self.env['weha.voucher.order.line.trans'].search([],limit=1)
+        trans_line_id = self.env['weha.voucher.order.line.trans'].search([('voucher_order_line_id','=', self.id)],limit=1)
         return trans_line_id
 
     def _auth_trust(self):
@@ -283,6 +283,9 @@ class VoucherOrderLine(models.Model):
         selection=[('1', 'Sales'),('2','Promo'),('3','Redeem'),('4','Employee'),('5','Payment')],
         index=True
     )
+    #Last Voucher Transaction Number
+    #voucher_trans_number = fields.Char('Voucher Trans Number', size=200, readonly=True)
+
     #P-Voucher or E-Voucher
     voucher_code = fields.Char(string='Voucher Code')
     voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID', index=True)

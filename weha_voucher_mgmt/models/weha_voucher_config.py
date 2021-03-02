@@ -83,6 +83,7 @@ class VoucherMappingSku(models.Model):
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
     voucher_mapping_pos_id = fields.Many2one('weha.voucher.mapping.pos', 'Voucher Mapping POS Id', required=False)
     point_redeem = fields.Integer('Point Redeem')
+    term = fields.Text('Term and Condition')
 
 
 class VoucherPromo(models.Model):

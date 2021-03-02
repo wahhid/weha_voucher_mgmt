@@ -1,1 +1,1 @@
-from . import token, sales, promo, redeem, status, sku, booking
+from . import token, sales, promo, redeem, status, sku, booking, issuing

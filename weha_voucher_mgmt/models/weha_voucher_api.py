@@ -263,12 +263,6 @@ class VoucherTransPurchase(models.Model):
         #Complete SKU List
         res.complete_sku()
 
-        # if vals.get('voucher_type') == '1' or vals.get('voucher_type') == '3':
-        #     res.issuing_voucher()
-        #     res.send_data_to_trust()
-
-        # if vals.get('voucher_type') == '2':
-
         #Reserved Voucher
         res.reserved_voucher()      
         res.trans_close()

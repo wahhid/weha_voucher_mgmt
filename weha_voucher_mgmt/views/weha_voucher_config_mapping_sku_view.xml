@@ -41,6 +41,11 @@
                                 <foeld name="point_redeem"/>
                             </group>
                         </group>
+                        <notebook>
+                            <page string="Term and Condition">
+                                <field name="term"/>
+                            </page>
+                        </notebook>
                     </sheet>
                 </form>
             </field>
