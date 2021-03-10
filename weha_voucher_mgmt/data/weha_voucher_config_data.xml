@@ -52,31 +52,37 @@
         <record id="operating_unit_0001" model="operating.unit">
             <field name="name">Ranch Market Pesangrahan</field>
             <field name="code">1107</field>
+            <field name="partner_id">1</field>
         </record>
 
         <record id="operating_unit_0002" model="operating.unit">
             <field name="name">Ranch Market Grand Indonesia</field>
             <field name="code">1106</field>
+            <field name="partner_id">1</field>
         </record>
 
         <record id="operating_unit_0003" model="operating.unit">
             <field name="name">Ranch Market Kelapa Gading</field>
             <field name="code">2101</field>
+            <field name="partner_id">1</field>
         </record>
 
         <record id="operating_unit_0004" model="operating.unit">
             <field name="name">Finance</field>
             <field name="code">OU02</field>
+            <field name="partner_id">1</field>
         </record>
 
         <record id="operating_unit_0005" model="operating.unit">
             <field name="name">HRD</field>
             <field name="code">OU03</field>
+            <field name="partner_id">1</field>
         </record>
 
         <record id="operating_unit_0006" model="operating.unit">
             <field name="name">Marketing</field>
             <field name="code">OU04</field>
+            <field name="partner_id">1</field>
         </record>
 
     </data>
