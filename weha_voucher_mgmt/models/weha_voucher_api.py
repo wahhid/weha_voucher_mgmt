@@ -45,7 +45,8 @@ class VoucherTransPurchase(models.Model):
                 ]
                 mapping_sku_id = self.env['weha.voucher.mapping.sku'].search(domain, limit=1)
                 if mapping_sku_id:
-                    voucher_number_range_id = self.env['weha.voucher.number.ranges'].sudo().search([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id)], limit=1)
+                    current_year = self.env['weha.voucher.year'].get_current_year()
+                    voucher_number_range_id = self.env['weha.voucher.number.ranges'].sudo().search([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id),('year_id','=', current_year.id)], limit=1)
                     _logger.info(voucher_number_range_id)
                     _logger.info(voucher_number_range_id.sequence_id)
                     if voucher_number_range_id:
@@ -72,7 +73,8 @@ class VoucherTransPurchase(models.Model):
             if mapping_sku_id:
                 voucher_mapping_pos_id = mapping_sku_id.voucher_mapping_pos_id
                 #if voucher_mapping_pos_id.pos_trx_type == 'Promo':
-                voucher_number_range_id = self.env['weha.voucher.number.ranges'].sudo().search([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id)], limit=1)
+                current_year = self.env['weha.voucher.year'].get_current_year()
+                voucher_number_range_id = self.env['weha.voucher.number.ranges'].sudo().search([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id),('year_id','=', current_year.id)], limit=1)
                 _logger.info(voucher_number_range_id)
                 _logger.info(voucher_number_range_id.sequence_id)
                 if voucher_number_range_id:
@@ -116,8 +118,8 @@ class VoucherTransPurchase(models.Model):
                 'transactionId': self.t_id,
                 'cashierId': self.cashier_id,
                 'storeId': self.store_id,
-                'memberId': '3000000183',
-                #'memberId': self.member_id,
+                #'memberId': '3000000183',
+                'memberId': self.member_id,
                 'vouchers': '|'.join(vouchers)
             }
             _logger.info(data)
@@ -149,7 +151,8 @@ class VoucherTransPurchase(models.Model):
                 if voucher_trans_purchase_sku_id.voucher_promo_id:
                     vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
                 
-                vals.update({'year_id': voucher_trans_purchase_sku_id.year_id.id})
+                current_year = self.env['weha.voucher.year'].get_current_year()
+                vals.update({'year_id': current_year.id})
                 check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
                 vals.update({'check_number': check_number})
                 voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
@@ -217,6 +220,7 @@ class VoucherTransPurchase(models.Model):
     store_id = fields.Char("Store #", size=10)
     member_id = fields.Char("Member #", size=20)
     sku = fields.Char("SKU", size=255)
+    ref = fields.Char(string='Source Document', required=True)
 
     # additional field for bank promo    
     tender_type = fields.Char('Tender Type')
@@ -264,7 +268,14 @@ class VoucherTransPurchase(models.Model):
         res.complete_sku()
 
         #Reserved Voucher
-        res.reserved_voucher()      
+        if res.voucher_type == '4':
+            for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
+                voucher_trans_purchase_line_id.voucher_order_line_id.sudo().write({'state': 'activated'})
+                voucher_trans_purchase_line_id.voucher_order_line_id.send_data_to_trust()
+                voucher_trans_purchase_line_id.voucher_order_line_id.voucher_trans_type = False
+        else:
+            res.reserved_voucher()  
+
         res.trans_close()
 
         return res    
@@ -389,6 +400,12 @@ class VoucheTransPaymentSku(models.Model):
 class VoucherTransStatus(models.Model):
     _name = "weha.voucher.trans.status"
 
+    def trans_error(self):
+        super(VoucherTransStatus, self).sudo().write({'state': 'error'})
+
+    def trans_close(self):
+        super(VoucherTransStatus, self).sudo().write({'state': 'done'})
+
     def send_data_to_trust(self):
         api_token = self._auth_trust()
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
@@ -405,7 +422,7 @@ class VoucherTransStatus(models.Model):
                 'transactionId': self.t_id,
                 'cashierId': self.cashier_id,
                 'storeId': self.store_id,
-                'memberId': '3000000183',
+                'memberId': self.member_id,
                 'vouchers': '|'.join(vouchers)
             }
             _logger.info(data)
@@ -420,13 +437,81 @@ class VoucherTransStatus(models.Model):
         finally:
             _logger.info("final")  
 
-    def trans_error(self):
-        super(VoucherTransStatus, self).sudo().write({'state': 'error'})
+    def process_voucher_order_line(self, vals):
+        arr_ean = vals['voucher_ean'].split('|')
+        _logger.info(arr_ean)
+        for voucher_ean in arr_ean:
+            if vals['process_type'] == 'reserved':
+                domain = [
+                    ('voucher_ean', '=', voucher_ean),
+                    ('state', '=', 'activated')
+                ]
+            elif vals['process_type'] == 'used':
+                domain = [
+                    ('voucher_ean', '=', voucher_ean),
+                    ('state', '=', 'reserved')
+                ]
+            elif vals['process_type'] == 'activated':
+                domain = [
+                    ('voucher_ean', '=', voucher_ean),
+                    ('state', 'in', ['reserved','used'])
+                ]
+            elif vals['process_type'] == 'reopen':
+                domain = [
+                    ('voucher_ean', '=', voucher_ean),
+                    ('state', 'in', ['reserved','activated','used'])
+                ]
+            else:
+                raise ValidationError("Process Type not valid")
+            
+            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+            _logger.info(voucher_order_line_id)
+            if voucher_order_line_id:
+                data = {
+                    'voucher_trans_status_id': self.id,
+                    'voucher_order_line_id': voucher_order_line_id.id,   
+                }
+                result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
+                if result:
+                    if vals['process_type'] == 'reserved':
+                        _logger.info(vals['process_type'])
+                        voucher_order_line_id.sudo().write({'voucher_trans_type': '5','state': 'reserved'})
+                        voucher_order_line_id.create_order_line_trans(self.name, 'RS')
+                    elif vals['process_type'] == 'activated':
+                        _logger.info(vals['process_type'])
+                        voucher_order_line_id.sudo().write({'state': 'activated'})
+                        if voucher_order_line_id.voucher_trans_type == '1':
+                            voucher_order_line_id.send_data_to_trust()
+                            voucher_order_line_id.voucher_trans_type = False
+                        if voucher_order_line_id.voucher_trans_type == '2':
+                            voucher_order_line_id.send_data_to_trust()
+                            voucher_order_line_id.voucher_trans_type = False
+                        if voucher_order_line_id.voucher_trans_type == '3':
+                            voucher_order_line_id.send_data_to_trust()
+                            voucher_order_line_id.voucher_trans_type = False
+                        if voucher_order_line_id.voucher_trans_type == '4':
+                            voucher_order_line_id.send_data_to_trust()
+                            voucher_order_line_id.voucher_trans_type = False
+                        if voucher_order_line_id.voucher_trans_type == '5':
+                            pass
+                        voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+                    elif vals['process_type'] == 'used':
+                        _logger.info(vals['process_type'])
+                        voucher_order_line_id.sudo().write({'state': 'used'})
+                        voucher_order_line_id.send_used_notification_to_trust()
+                        voucher_order_line_id.voucher_trans_type = False
+                        voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                    elif vals['process_type'] == 'reopen':
+                        _logger.info(vals['process_type'])
+                        voucher_order_line_id.sudo().write({'state': 'open'})
+                        voucher_order_line_id.create_order_line_trans(self.name, 'RO')
+                        pass
+                    else:
+                        pass
 
-    def trans_close(self):
-
-        super(VoucherTransStatus, self).sudo().write({'state': 'done'})
-
+    def procces_voucher_order_line_reopen(self, voucher_ean):
+        pass                
+    
     def get_json(self):
         data = {}
         if self.process_type == 'reserved':
@@ -451,7 +536,7 @@ class VoucherTransStatus(models.Model):
     cashier_id = fields.Char("Cashier #", size=5)
     store_id = fields.Char("Store #", size=4)
     member_id = fields.Char("Member #", size=10)
-    voucher_ean = fields.Char("Voucher Ean", size=20)
+    voucher_ean = fields.Char("Voucher Ean", size=250)
     voucher_code_id = fields.Many2one("weha.voucher.code", "Voucher Code")
     year_id = fields.Many2one("weha.voucher.year", "Year")
     voucher_promo_id = fields.Many2one("weha.voucher.promo", "Voucher Promo")
@@ -473,6 +558,7 @@ class VoucherTransStatus(models.Model):
             ('reserved', 'Reserved'),
             ('activated', 'Activated'),
             ('used', 'Used'),
+            ('reopen', 'Re-Open')
             
         ],
         'Process Type',
@@ -490,64 +576,18 @@ class VoucherTransStatus(models.Model):
         vals['name'] = seq.next_by_code('weha.voucher.trans.status.sequence') or '/'
 
         res = super(VoucherTransStatus, self).create(vals)
-        order_line_trans_obj = self.env['weha.voucher.order.line.trans']
 
         # arr_voucher_ean = vals['voucher_ean'].split("|")
         # voucher_ean_ids = []
         # for voucher_ean in arr_voucher_ean:
 
-        if vals['process_type'] == 'reserved':
-            domain = [
-                ('voucher_ean', '=', vals['voucher_ean']),
-                ('state', '=', 'activated')
-            ]
-        elif vals['process_type'] == 'used':
-            domain = [
-                ('voucher_ean', '=', vals['voucher_ean']),
-                ('state', '=', 'reserved')
-            ]
-        elif vals['process_type'] == 'activated':
-            domain = [
-                ('voucher_ean', '=', vals['voucher_ean']),
-                ('state', 'in', ['reserved','used'])
-            ]
+       
+        if vals['process_type'] in ('reserved', 'activated', 'used'):
+            res.process_voucher_order_line(vals) 
         else:
-            raise ValidationError("Process Type not valid")
-
-        voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
-        _logger.info(voucher_order_line_id)
-        if voucher_order_line_id:
-            data = {
-                'voucher_trans_status_id': res.id,
-                'voucher_order_line_id': voucher_order_line_id.id,   
-            }
-            result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
-            if result:
-                if vals['process_type'] == 'reserved':
-                    voucher_order_line_id.sudo().write({'voucher_trans_type': '5','state': 'reserved'})
-                    voucher_order_line_id.create_order_line_trans(res.name, 'RS')
-                elif vals['process_type'] == 'activated':
-                    voucher_order_line_id.sudo().write({'state': 'activated'})
-                    if voucher_order_line_id.voucher_trans_type == '1':
-                        voucher_order_line_id.send_data_to_trust()
-                        voucher_order_line_id.voucher_trans_type = False
-                    if voucher_order_line_id.voucher_trans_type == '2':
-                        voucher_order_line_id.send_data_to_trust()
-                        voucher_order_line_id.voucher_trans_type = False
-                    if voucher_order_line_id.voucher_trans_type == '3':
-                        voucher_order_line_id.send_data_to_trust()
-                        voucher_order_line_id.voucher_trans_type = False
-                    if voucher_order_line_id.voucher_trans_type == '5':
-                        pass
-                    voucher_order_line_id.create_order_line_trans(res.name, 'AC')
-                elif vals['process_type'] == 'used':
-                    voucher_order_line_id.sudo().write({'state': 'used'})
-                    voucher_order_line_id.send_used_notification_to_trust()
-                    voucher_order_line_id.voucher_trans_type = False
-                    voucher_order_line_id.create_order_line_trans(res.name, 'US')
-                else:
-                    pass
-                    
+            #Process Voucher Order Line Reopen
+            res.process_voucher_order_line(vals) 
+        #Close Voucher Transaction Purchase
         res.trans_close()
         return res
   

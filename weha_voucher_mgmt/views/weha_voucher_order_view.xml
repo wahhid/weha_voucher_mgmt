@@ -104,7 +104,7 @@
                                 <field name="request_date" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="voucher_type" widget="radio" options="{'horizontal': true}" readonly="0"/>
+                                <field name="voucher_type" widget="radio" options="{'horizontal': true}" readonly="1"/>
                                 <field name="voucher_code_id" domain="[('voucher_type','=', voucher_type)]" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="current_stage" invisible="1"/>
                             </group>

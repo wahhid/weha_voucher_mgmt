@@ -316,7 +316,7 @@ class VoucherOrder(models.Model):
     #voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')
     start_number = fields.Integer(string='Start Number', required=True)
     end_number = fields.Integer(string='End Number', required=True)
-    year = fields.Many2one('weha.voucher.year', 'Year', required=True)
+    year = fields.Many2one('weha.voucher.year', 'Year', required=True, default=lambda self: self.env['weha.voucher.year'].get_current_year() and self.env['weha.voucher.year'].get_current_year().id or False)
     
     
     kanban_state = fields.Selection([

@@ -1,5 +1,6 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
+from datetime import datetime, date, timedelta
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -133,6 +134,11 @@ class VoucherPromoLine(models.Model):
 class VoucherYear(models.Model):
     _name = 'weha.voucher.year'
 
+    def get_current_year(self):
+        domain = [
+            ('year','=', int(datetime.now().strftime('%Y')))
+        ]
+        return self.env['weha.voucher.year'].search(domain, limit=1)
 
     @api.constrains('name')
     def _check_name(self):

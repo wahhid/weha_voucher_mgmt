@@ -333,4 +333,3 @@ class WehaWizardIssuingdReceived(models.TransientModel):
     _name = 'weha.wizard.issuing.received'
 
     voucher_issuing_id = fields.Many2one('weha.voucher.issuing','Voucher issuing #', default=lambda self: self._default_voucher_issuing_id(),)
-    

@@ -3,7 +3,7 @@ import tempfile
 import binascii
 import logging
 from datetime import datetime
-from odoo.exceptions import Warning
+from odoo.exceptions import Warning, ValidationError
 from odoo import models, fields, api, exceptions, _
 _logger = logging.getLogger(__name__)
 from io import StringIO
@@ -96,10 +96,18 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
             #else:
             #line = list(map(lambda row:isinstance(row.value, str) and row.value.encode('utf-8') or str(row.value), sheet.row(row_no)))   
             line = sheet.row(row_no)
+            domain = [
+                ('code_sku','=', line[2].value)
+            ]
+            mapping_sku_id = self.env['weha.voucher.mapping.sku'].sudo().search(domain, limit=1)
+            if not mapping_sku_id:
+                raise ValidationError("SKU not found")
+
             values.update( {
                             'voucher_issuing_id': active_id,
                             'employee_nik': line[0].value,
                             'employee_name': line[1].value,
+                            'mapping_sku_id': mapping_sku_id.id, 
                             'sku': line[2].value,
                             'quantity': int(float(line[4].value)),
                             'member_id': line[3].value,

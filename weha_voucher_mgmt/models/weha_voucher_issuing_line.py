@@ -20,7 +20,6 @@ class VoucherIssuingLine(models.Model):
     def trans_close(self):
         super(VoucherIssuingLine, self).write({'state': 'issued'})
 
-
     voucher_issuing_id = fields.Many2one(comodel_name='weha.voucher.issuing', string='Voucher Allocate')
     voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher')
     voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code", related="voucher_order_line_id.voucher_code_id")
@@ -28,7 +27,6 @@ class VoucherIssuingLine(models.Model):
     voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo", related="voucher_order_line_id.voucher_promo_id")
     member_id = fields.Char('Member #', size=20)
     state = fields.Selection([('open','Open'),('issued','Issued'),('cancelled','Cancelled')], 'Status', default='open')
-
 
 class VoucherIssuingEmployeeLine(models.Model):
     _name = 'weha.voucher.issuing.employee.line'
@@ -42,10 +40,18 @@ class VoucherIssuingEmployeeLine(models.Model):
     employee_name = fields.Char("Employee", size=100)
     employee_nik = fields.Char("NIK", size=50)
     member_id = fields.Char("Member #", size=20)
+    mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku', 'Mapping SKU#')
     sku = fields.Char("SKU #", size=20)
     quantity = fields.Integer('Qty')
     file_line_id = fields.Many2one('weha.voucher.issuing.file.line', 'File #')
     state = fields.Selection([('open','Open'),('issued','Issued'),('cancelled','Cancelled')], 'Status', default='open')
+
+class VoucherIssuingEmployeeVoucherLine(models.Model):
+    _name = 'weha.voucher.issuing.employee.voucher.line'
+
+    employee_line_id = fields.Many2one('weha.voucher.issuing.employee.line', 'Employee Line #')
+    voucher_issuing_id = fields.Many2one(comodel_name='weha.voucher.issuing', string='Voucher Allocate')
+    voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher')
 
 
 class VoucherAllocateFileLine(models.Model):

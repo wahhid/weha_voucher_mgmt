@@ -229,9 +229,6 @@ class VMSBookingController(http.Controller):
                 }
                 return valid_response(response_data)
 
-
-        
-
         values = {}
             
         # #Save Voucher Booking Transaction

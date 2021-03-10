@@ -4,13 +4,13 @@
     <data noupdate="1">
 
         <!-- Voucher Order Stages -->
-
+<!-- 
         <record id="voucher_allocate_stage_in_order" model="weha.voucher.allocate.stage">
             <field name="sequence">5</field>
             <field name="name">In Order</field>
             <field name="progress">True</field>
             <field name="next_stage_id" ref="voucher_allocate_stage_receiving"/>
-        </record>
+        </record> -->
 
         <record id="voucher_order_stage_done" model="weha.voucher.order.stage">
             <field name="sequence">4</field>

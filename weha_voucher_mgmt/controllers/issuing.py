@@ -74,16 +74,7 @@ class VMSIssuingContoller(http.Controller):
                 }
                 return valid_response(data)
 
-        # if voucher_type != 'physical':
-        #     return valid_response(
-        #         {
-        #             "err": True,
-        #             "message": "Only Physical Voucher Allowed",
-        #             "data": []
-        #         }
-        #     )
-
-        
+        #Check Store ID
         operating_unit_id = http.request.env['operating.unit'].search([('code','=',store_id)])
         if not operating_unit_id:
             response_data = {
@@ -95,26 +86,28 @@ class VMSIssuingContoller(http.Controller):
             }
             return valid_response(response_data)
 
-        
-
         #Check Vouche by SKU on store
         voucher_eans = []
         is_error = False
         err_message = ''
+
         arr_voucher_ean  = voucher_ean.split('|')
         _logger.info(arr_voucher_ean)
+        #Check Submitted Voucher
         for ean in arr_voucher_ean:
             domain = [
                 ('voucher_ean', '=', ean),
-                ('operating_unit_id', '=', operating_unit_id.id)
+                ('operating_unit_id', '=', operating_unit_id.id),
+                ('voucher_type','=','physical'),
+                ('state', '=', 'open'),
             ]
-
+            _logger.info(domain)
             voucher_ean_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
             if not voucher_ean_id:
                 is_error = True
-                err_message = f'{ean} not found'
+                err_message = f'{ean} not found or already activated or make sure is physical voucher'
                 break
-        
+        #If any error send error Response
         if is_error:
             response_data = {
                 "err": True,
@@ -123,35 +116,36 @@ class VMSIssuingContoller(http.Controller):
                 }
             return valid_response(response_data)
 
-        # if mapping_sku_id.voucher_code_id.voucher_type != 'physical':
-        #     response_data = {
-        #         "err": True,
-        #         "message": "Voucher type not allowed",
-        #         "data": []
-        #     }
-        #     return valid_response(response_data)
-
         values = {}
             
-        # #Save Voucher Booking Transaction
+        # Prepare Vouche Issuing Transaction Data
         voucher_issuing_obj = http.request.env['weha.voucher.issuing']
         values.update({'issuing_date': datetime.now().strftime("%Y-%m-%d")})
         values.update({'operating_unit_id':operating_unit_id.id})
         values.update({'user_id': http.request.env.uid})
         values.update({'ref': ref})
 
-        #Save Data
+        # Create Vouche Issuing Transaction
         result = voucher_issuing_obj.sudo().sudo().create(values)
         
+        #Return Error Response
         if not result:
             data =  {
-                        "err": True,
-                        "message": "Create Failed",
-                        "data": []
-                    }
+                "err": True,
+                "message": "Create Failed",
+                "data": []
+            }
             return valid_response(data)
 
+        #Repeat and Create All Voucher Issuing Line
         for ean in arr_voucher_ean:
+            domain  = [
+                ('voucher_ean', '=', ean),
+                ('operating_unit_id', '=', operating_unit_id.id),
+                ('voucher_type','=','physical'),
+                ('state', '=', 'open'),
+            ]
+            
             voucher_ean_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
             if not voucher_ean_id:
                 _logger.error('Voucher not found')
@@ -162,23 +156,12 @@ class VMSIssuingContoller(http.Controller):
                 }
                 http.request.env['weha.voucher.issuing.line'].sudo().create(vals)
         
+        #Issuing All Voucher
         result.action_issuing_voucher()
+        #Close Voucher Issuing Transaction
         result.trans_close()
-        
-        #Validate Data
-        #result.write({'state','done'})
-        
-        #Prepare Voucher Order Line List
-        #vouchers = result.get_json()
-        
-        #if validate set return_code = Y
 
-        #if not validate set return_code = N
-
-        #if return code not receive by VS send file to FTP
-        #VMSyyyymmdd_Success 
-        #VMSyyyymmdd_Fail 
-    
+        #Return Successfull Response
         data = {
             "err": False,
             "message": message,

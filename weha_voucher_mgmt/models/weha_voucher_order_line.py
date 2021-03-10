@@ -203,8 +203,7 @@ class VoucherOrderLine(models.Model):
             response_json = req.json()
             _logger.info(f'Success : {req.status_code}')
             _logger.info(f'Data: {response_json}')
-            # #content = json.loads(req.content.decode('utf-8'))
-            #headers.update(access-token=content.get('access_token'))
+
         except Exception as err:
             _logger.error(err)  
         finally:
@@ -240,6 +239,48 @@ class VoucherOrderLine(models.Model):
             #headers.update(access-token=content.get('access_token'))
         except Exception as err:
             _logger.info(err)  
+        finally:
+            _logger.info("final") 
+
+    def send_employee_data_to_trust(self):
+        _logger.info("Send Employee Data")
+        trans_line_id = self.get_last_trans_line()
+        _logger.info(trans_line_id.name)
+        if self.voucher_trans_type == '4':
+            voucher_issuing_id = self.env['weha.voucher.issuing'].search([('number','=',trans_line_id.name)], limit=1)
+    
+        api_token = self._auth_trust()
+        headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        base_url = 'http://apiindev.trustranch.co.id'
+        try:
+            vouchers = []
+            vouchers.append(self.voucher_ean + ';' + self.expired_date.strftime('%Y-%m-%d') + ";" + self.voucher_sku)
+            data = {
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'time': datetime.now().strftime('%H:%M:%S'),
+                'receipt': voucher_issuing_id.number,
+                'transaction_id': voucher_issuing_id.number,
+                'cashier_id': voucher_issuing_id.number,
+                'store_id': voucher_issuing_id.number,
+                #'member_id': trans_purchase_id.member_id,
+                'member_id': self.member_id,
+                'vouchers': '|'.join(vouchers)
+            }
+            _logger.info(data)
+            headers = {'Authorization' : 'Bearer ' + api_token}
+            req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+            _logger.info(req.text)
+            if req.status_code != '200':
+                _logger.info(f'Error : {req.status_code}')
+                response_json = req.json()
+                _logger.info(f'Error Message: {response_json}')
+
+            response_json = req.json()
+            _logger.info(f'Success : {req.status_code}')
+            _logger.info(f'Data: {response_json}')
+
+        except Exception as err:
+            _logger.error(err)  
         finally:
             _logger.info("final") 
 
@@ -424,7 +465,7 @@ class VoucherOrderLineTrans(models.Model):
     voucher_order_line_id = fields.Many2one(
         string='Voucher Order Line',
         comodel_name='weha.voucher.order.line',
-        ondelete='restrict', required=True,
+        ondelete='cascade', required=False,
     )
             
     trans_type = fields.Selection(
@@ -441,7 +482,9 @@ class VoucherOrderLineTrans(models.Model):
             ('RS', 'Reserved'), 
             ('US', 'Used'), 
             ('DM', 'Scrap'),
-            ('CL', 'Cancel')
+            ('CL', 'Cancel'),
+            ('RO', 'Re-Open')
+
             ],
         default='OP'
     )
