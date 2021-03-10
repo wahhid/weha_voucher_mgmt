@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+
+        <!-- Voucher Order Stages -->
+
+        <record id="voucher_year_2020" model="weha.voucher.year">
+            <field name="name">2020</field>
+            <field name="year">2020</field>
+        </record>
+
+        <record id="voucher_year_2021" model="weha.voucher.year">
+            <field name="name">2021</field>
+            <field name="year">2021</field>
+        </record>
+
+        <record id="voucher_year_2022" model="weha.voucher.year">
+            <field name="name">2022</field>
+            <field name="year">2022</field>
+        </record>
+
+        <record id="voucher_year_2023" model="weha.voucher.year">
+            <field name="name">2023</field>
+            <field name="year">2023</field>
+        </record>
+
+        <record id="voucher_year_2024" model="weha.voucher.year">
+            <field name="name">2024</field>
+            <field name="year">2024</field>
+        </record>
+
+
+        <record id="voucher_terms_30_days" model="weha.voucher.terms">
+            <field name="name">30 Days</field>
+            <field name="code">15</field>
+            <field name="number_of_days">30</field>
+        </record>
+
+        <record id="voucher_terms_50_days" model="weha.voucher.terms">
+            <field name="name">50 Days</field>
+            <field name="code">30</field>
+            <field name="number_of_days">50</field>
+        </record>
+
+        <record id="voucher_terms_90_days" model="weha.voucher.terms">
+            <field name="name">90 Days</field>
+            <field name="code">90</field>
+            <field name="number_of_days">90</field>
+        </record>
+
+        <record id="operating_unit_0001" model="operating.unit">
+            <field name="name">Ranch Market Pesangrahan</field>
+            <field name="code">1107</field>
+        </record>
+
+        <record id="operating_unit_0002" model="operating.unit">
+            <field name="name">Ranch Market Grand Indonesia</field>
+            <field name="code">1106</field>
+        </record>
+
+        <record id="operating_unit_0003" model="operating.unit">
+            <field name="name">Ranch Market Kelapa Gading</field>
+            <field name="code">2101</field>
+        </record>
+
+        <record id="operating_unit_0004" model="operating.unit">
+            <field name="name">Finance</field>
+            <field name="code">OU02</field>
+        </record>
+
+        <record id="operating_unit_0005" model="operating.unit">
+            <field name="name">HRD</field>
+            <field name="code">OU03</field>
+        </record>
+
+        <record id="operating_unit_0006" model="operating.unit">
+            <field name="name">Marketing</field>
+            <field name="code">OU04</field>
+        </record>
+
+    </data>
+</odoo>

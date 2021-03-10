@@ -16,6 +16,7 @@
         'data/weha_voucher_issuing_data.xml',
         'data/weha_voucher_return_data.xml',
         'data/weha_voucher_api_data.xml',
+        'data/weha_voucher_config_data.xml',
         'data/ir_config_param.xml',
         'security/weha_voucher_security.xml',
         'security/ir.model.access.csv',
