@@ -107,8 +107,8 @@ class VoucherPromo(models.Model):
     end_date = fields.Date('End Date', required=True)
     term = fields.Text('Term and Condition')
     image = fields.Image('Image')
-    
-
+    min_card_payment = fields.Float('Min Payment', default=0.0)
+    voucher_count_limit = fields.Integer('Voucher Count Limit', default=0)
 
 class VoucherPromoLine(models.Model):
     _name = 'weha.voucher.promo.line'

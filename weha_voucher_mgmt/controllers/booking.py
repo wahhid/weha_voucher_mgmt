@@ -182,6 +182,8 @@ class VMSBookingController(http.Controller):
         #Check Vouche by SKU on store
         skus = []
         is_error = False
+        err_message = ''
+
         if ';' in sku:
             arr_skus = sku.split(';')
             _logger.info(arr_skus)
@@ -194,14 +196,39 @@ class VMSBookingController(http.Controller):
                 mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
                 if not mapping_sku_id:
                     is_error = True
+                    err_message = 'Mapping SKU Not found'
                     break
                 if mapping_sku_id.voucher_code_id.voucher_type != 'physical':
                     is_error = True
+                    err_message = 'Voucher not match'
                     break
+
+                current_year = http.request.env['weha.voucher.year'].sudo().get_current_year()
+                voucher_code_id = mapping_sku_id.voucher_code_id
+                domain = [
+                    ('operating_unit_id','=',operating_unit_id.id),
+                    ('voucher_type','=', 'physical'),
+                    ('voucher_code_id', '=', voucher_code_id.id),
+                    ('year_id', '=', current_year.id),
+                    ('state','=', 'open')
+                ]
+                # domain = [
+                #     ('voucher_code_id', '=', voucher_code_id.id),
+                #     ('operating_unit_id', '=', operating_unit_id.id),
+                #     ('is_expired', '=', False),
+                #     ('state', '=', 'open')
+                # ]
+                
+                stock_count  = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
+                if stock_count < int(arr_sku[1]):
+                    is_error = True
+                    err_message = f'Voucher {voucher_code_id.name} not enough'
+                    break
+
             if is_error:
                 response_data = {
                     "err": True,
-                    "message": "SKU not found or Voucher Type not match",
+                    "message": err_message,
                     "data": [
                         {'code': 'N'}
                     ]
@@ -213,6 +240,7 @@ class VMSBookingController(http.Controller):
             domain = [
                 ('code_sku', '=', arr_sku[0]),
             ]
+
             mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
             if not mapping_sku_id:
                 response_data = {
@@ -225,6 +253,25 @@ class VMSBookingController(http.Controller):
                 response_data = {
                     "err": True,
                     "message": "Voucher type not allowed",
+                    "data": []
+                }
+                return valid_response(response_data)
+            
+            current_year = http.request.env['weha.voucher.year'].sudo().get_current_year()
+            voucher_code_id = mapping_sku_id.voucher_code_id
+            domain = [
+                ('operating_unit_id','=',operating_unit_id.id),
+                ('voucher_type','=', 'physical'),
+                ('voucher_code_id', '=', voucher_code_id.id),
+                ('year_id', '=', current_year.id),
+                ('state','=', 'open')
+            ]
+            
+            stock_count  = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
+            if stock_count < int(arr_sku[1]):
+                response_data = {
+                    "err": True,
+                    "message": f'Voucher {voucher_code_id.name} not enough',
                     "data": []
                 }
                 return valid_response(response_data)

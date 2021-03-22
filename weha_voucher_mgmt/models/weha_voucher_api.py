@@ -45,6 +45,7 @@ class VoucherTransPurchase(models.Model):
                 ]
                 mapping_sku_id = self.env['weha.voucher.mapping.sku'].search(domain, limit=1)
                 if mapping_sku_id:
+                    voucher_promo_line_id = self.env['weha.voucher.promo.line'].search([('voucher_mapping_sku_id','=',mapping_sku_id.id)], limit=1)
                     current_year = self.env['weha.voucher.year'].get_current_year()
                     voucher_number_range_id = self.env['weha.voucher.number.ranges'].sudo().search([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id),('year_id','=', current_year.id)], limit=1)
                     _logger.info(voucher_number_range_id)
@@ -55,9 +56,14 @@ class VoucherTransPurchase(models.Model):
                         vals['voucher_terms_id']  = voucher_number_range_id.voucher_code_id.voucher_terms_id.id
                         vals['year_id'] =  voucher_number_range_id.year_id.id
                         vals['voucher_mapping_sku_id'] = mapping_sku_id.id
+                        if voucher_promo_line_id:
+                            vals['voucher_promo_id'] = voucher_promo_line_id.voucher_promo_id.id
                         vals['amount'] = int(vals['quantity']) * voucher_number_range_id.voucher_code_id.voucher_amount
                         self.env['weha.voucher.trans.purchase.sku'].create(vals)
-
+                    else:
+                        _logger.info('Voucher number range id not found')
+                else:
+                    _logger.info('Mapping SKU not found')                    
         else:
             vals = {}
             arr_sku  = self.sku.split('|')
@@ -71,7 +77,8 @@ class VoucherTransPurchase(models.Model):
             ]
             mapping_sku_id = self.env['weha.voucher.mapping.sku'].search(domain, limit=1)
             if mapping_sku_id:
-                voucher_mapping_pos_id = mapping_sku_id.voucher_mapping_pos_id
+                voucher_promo_line_id = self.env['weha.voucher.promo.line'].search([('voucher_mapping_sku_id','=',mapping_sku_id.id)], limit=1)
+                #voucher_mapping_pos_id = mapping_sku_id.voucher_mapping_pos_id
                 #if voucher_mapping_pos_id.pos_trx_type == 'Promo':
                 current_year = self.env['weha.voucher.year'].get_current_year()
                 voucher_number_range_id = self.env['weha.voucher.number.ranges'].sudo().search([('voucher_code_id','=',mapping_sku_id.voucher_code_id.id),('year_id','=', current_year.id)], limit=1)
@@ -83,6 +90,8 @@ class VoucherTransPurchase(models.Model):
                    vals['voucher_terms_id']  = voucher_number_range_id.voucher_code_id.voucher_terms_id.id
                    vals['year_id'] =  voucher_number_range_id.year_id.id
                    vals['voucher_mapping_sku_id'] = mapping_sku_id.id
+                   if voucher_promo_line_id:
+                        vals['voucher_promo_id'] = voucher_promo_line_id.voucher_promo_id.id
                    vals['amount'] = int(vals['quantity']) * voucher_number_range_id.voucher_code_id.voucher_amount
                 self.env['weha.voucher.trans.purchase.sku'].create(vals)
 
@@ -150,7 +159,10 @@ class VoucherTransPurchase(models.Model):
                 vals.update({'bank_category': self.bank_category})
                 if voucher_trans_purchase_sku_id.voucher_promo_id:
                     vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
-                
+                    vals.update({'min_card_payment': voucher_trans_purchase_sku_id.voucher_promo_id.min_card_payment})
+                    vals.update({'voucher_count_limit': voucher_trans_purchase_sku_id.voucher_promo_id.voucher_count_limit})
+
+                #Get Current Year
                 current_year = self.env['weha.voucher.year'].get_current_year()
                 vals.update({'year_id': current_year.id})
                 check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
@@ -519,15 +531,19 @@ class VoucherTransStatus(models.Model):
             if voucher_trans_status_line_id:
                 voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
                 data.update({'amount': voucher_order_line_id.voucher_code_id.voucher_amount})
+                data.update({'tender_type': ''})
+                data.update({'bank_category': ''})
+                data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
+                data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
                 voucher_mapping_sku_id  = self.env['weha.voucher.mapping.sku'].search([('voucher_code_id','=', voucher_order_line_id.voucher_code_id.id)],limit=1)
                 if voucher_mapping_sku_id:    
                     voucher_mapping_pos_id = voucher_mapping_sku_id.voucher_mapping_pos_id
                     if voucher_mapping_pos_id.pos_trx_type == 'Promo':
                         data.update({'tender_type': voucher_order_line_id.tender_type})
                         data.update({'bank_category': voucher_order_line_id.bank_category})
-                data.update({'tender_type': ''})
-                data.update({'bank_category': ''})        
-        return data 
+                        data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
+                        data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
+        return data
                 
     name = fields.Char('Name', )
     trans_date = fields.Datetime("Transaction Date")
@@ -771,11 +787,10 @@ class VoucherTransBooking(models.Model):
                 mapping_sku_id = self.env['weha.voucher.mapping.sku'].search(domain, limit=1)
                 if mapping_sku_id:
                     _logger.info("Mapping SKU Exist")
-                    voucher_mapping_pos_id = mapping_sku_id.voucher_mapping_pos_id
-                    _logger.info(mapping_sku_id.voucher_code_id)
                     vals['voucher_code_id']  = mapping_sku_id.voucher_code_id.id
                     vals['voucher_terms_id']  = mapping_sku_id.voucher_code_id.voucher_terms_id.id
-                    vals['year_id'] = 1
+                    current_year = self.env['weha.voucher.year'].get_current_year()
+                    vals['year_id'] =  current_year.id
                     vals['voucher_mapping_sku_id'] = mapping_sku_id.id
                     vals['amount'] = int(vals['quantity']) * mapping_sku_id.voucher_code_id.voucher_amount
                     self.env['weha.voucher.trans.booking.sku'].create(vals)
@@ -799,7 +814,8 @@ class VoucherTransBooking(models.Model):
                 _logger.info(mapping_sku_id.voucher_code_id)
                 vals['voucher_code_id']  = mapping_sku_id.voucher_code_id.id
                 vals['voucher_terms_id']  = mapping_sku_id.voucher_code_id.voucher_terms_id.id
-                vals['year_id'] = 1
+                current_year = self.env['weha.voucher.year'].get_current_year()
+                vals['year_id'] = current_year.id
                 vals['voucher_mapping_sku_id'] = mapping_sku_id.id
                 vals['amount'] = int(vals['quantity']) * mapping_sku_id.voucher_code_id.voucher_amount
                 self.env['weha.voucher.trans.booking.sku'].create(vals)
@@ -809,12 +825,14 @@ class VoucherTransBooking(models.Model):
         for voucher_trans_booking_sku_id in self.voucher_trans_booking_sku_ids:
             store_id  = voucher_trans_booking_sku_id.voucher_trans_booking_id.store_id
             operating_unit_id = self.env['operating.unit'].search([('code','=', store_id)], limit=1)
+
             for i in range(1,voucher_trans_booking_sku_id.quantity + 1):
+
                 domain = [
                     ('operating_unit_id','=',operating_unit_id.id),
                     ('voucher_type','=', 'physical'),
                     ('voucher_code_id', '=', voucher_trans_booking_sku_id.voucher_code_id.id),
-                    ('voucher_terms_id', '=',  voucher_trans_booking_sku_id.voucher_code_id.voucher_terms_id.id),
+                    #('voucher_terms_id', '=',  voucher_trans_booking_sku_id.voucher_code_id.voucher_terms_id.id),
                     ('year_id', '=', voucher_trans_booking_sku_id.year_id.id),
                     ('state','=', 'open')
                 ]
@@ -831,9 +849,11 @@ class VoucherTransBooking(models.Model):
                     voucher_order_line_id.write(
                         {
                             'member_id': self.member_id,
+                            'booking_expired_date': datetime.now() + timedelta(minutes=5),
                             'state': 'booking'
                         }
                     )
+                    voucher_order_line_id.create_order_line_trans(self.name, 'BO')
 
     def get_json(self):
         vouchers = []

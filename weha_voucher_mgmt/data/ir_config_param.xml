@@ -5,6 +5,11 @@
             <field name="key">access_token_expires_in</field>
             <field name="value">31536000</field>
         </record>
+
+        <record id="voucher_booking_expired" model="ir.config_parameter">
+            <field name="key">voucher_booking_expired</field>
+            <field name="value">5</field>
+        </record>
         
         <record id="crm_api_url" model="ir.config_parameter">
             <field name="key">crm_api_url</field>

@@ -74,6 +74,21 @@ class VoucherOrder(models.Model):
             res = {}
             res['domain']={'voucher_code_id':[('voucher_type', '=', self.voucher_type)]}
     
+    @api.onchange('voucher_code_id')
+    def _voucher_code_onchange(self):
+        if self.year:
+            domain = [
+                ('voucher_type','=', self.voucher_type),
+                ('voucher_code_id','=', self.voucher_code_id.id),
+                ('year_id','=', self.year.id),
+            ]
+            voucher_order_line_id = self.env['weha.voucher.order.line'].search(domain, order="check_number desc", limit=1)
+            _logger.info(voucher_order_line_id)
+            if not voucher_order_line_id:
+                self.start_number = 1
+            else:
+                self.start_number = voucher_order_line_id.check_number + 1
+                
     @api.onchange('year')
     def _onchange_year(self):
         if self.year:

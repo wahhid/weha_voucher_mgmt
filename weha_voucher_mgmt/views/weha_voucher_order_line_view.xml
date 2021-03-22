@@ -52,12 +52,15 @@
                                 <field name="voucher_code_id"/>
                                 <field name="voucher_promo_id"/>
                                 <field name="is_voucher_promo" invisible="1"/>
+
                                 <!--
                                 <field name="tender_type_id"/>
                                 <field name="bank_category_id"/>
                                 -->
                                 <field name="tender_type"/>
                                 <field name="bank_category"/>
+                                <field name="min_card_payment"/>
+                                <field name="voucher_count_limit"/>
                                 <field name="operating_unit_id" />
                                 <field name="check_number"/>
                             </group>
@@ -66,6 +69,7 @@
                                 <field name="member_id"/>
                                 <field name="expired_days"/>
                                 <field name="expired_date"/>
+                                <field name="booking_expired_date" attrs="{'invisible':['state','!=','booking']}"/>
                                 <field name="is_expired"/>
                                 <field name="year_id"/>
                             </group>

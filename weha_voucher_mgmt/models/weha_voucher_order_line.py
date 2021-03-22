@@ -104,6 +104,19 @@ class VoucherOrderLine(models.Model):
         else:
             self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
 
+    def process_voucher_booking(self):
+        cur_date_time = datetime.now()
+        next_date_time = cur_date_time + timedelta(minutes=5)
+        domain = [
+            ('booking_expired_date','<', cur_date_time),
+            ('state','=','booking')
+        ]
+        voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
+        for voucher_order_line_id in  voucher_order_line_ids:
+            #_logger.info(f"Scheduler : {len(voucher_order_line_ids)} vouhcers change to open ")
+            voucher_order_line_id.write({'state': 'open'})
+            voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, "RO")
+
     def postgresql_create(self, vals):
         #Generate 12 Digit
         voucher_12_digit = self.generate_12_numbers(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year_id'), vals.get('check_number'))
@@ -337,7 +350,9 @@ class VoucherOrderLine(models.Model):
     voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo', index=True)
     is_voucher_promo = fields.Boolean('Is Promo Voucher', default=False, readonly=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
-
+    min_card_payment = fields.Float('Min Payment', default=0.0)
+    voucher_count_limit = fields.Integer('Max Voucher Count', default=0)
+    
     #tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type', related='voucher_promo_id.tender_type_id', store=True)
     tender_type = fields.Char('Tender Type', size=20)
     bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category')
@@ -360,6 +375,7 @@ class VoucherOrderLine(models.Model):
     #Expired Date Voucher & Year
     expired_days =fields.Integer('Expired Days', default=0)
     expired_date = fields.Date(string='Expired Date')
+    booking_expired_date = fields.Datetime(string='Booking Expired Date')
     year_id = fields.Many2one('weha.voucher.year',string='Year', index=True)
     
     #Many2one relation
@@ -483,9 +499,9 @@ class VoucherOrderLineTrans(models.Model):
             ('US', 'Used'), 
             ('DM', 'Scrap'),
             ('CL', 'Cancel'),
-            ('RO', 'Re-Open')
-
-            ],
+            ('RO', 'Re-Open'),
+            ('BO', 'Booking'),
+        ],
         default='OP'
     )
 
