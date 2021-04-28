@@ -103,18 +103,20 @@ class VoucherAllocate(models.Model):
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         
     def trans_received(self):
-        #stage_id = self.stage_id.next_stage_id
-        #res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
-        data =  {
-            'activity_type_id': 4,
-            'note': 'Voucher Allocate was received',
-            'res_id': self.id,
-            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_allocate').id,
-            'user_id': self.user_id.id,
-            'date_deadline': datetime.now() + timedelta(days=2),
-            'summary': 'Voucher Allocate was received'
-        }
-        self.send_notification(data)
+        if not self.stage_id.receiving:
+            stage_id = self.stage_id.next_stage_id
+            res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+            data =  {
+                'activity_type_id': 4,
+                'note': 'Voucher Allocate was received',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_allocate').id,
+                'user_id': self.user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Allocate was received'
+            }
+            self.send_notification(data)
+        
 
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
@@ -242,7 +244,7 @@ class VoucherAllocate(models.Model):
             res = super(VoucherAllocate, self).sudo().write({'stage_id': stage_id.id})
         else:
             res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
-        return res
+
         
     def trans_allocate_approval(self):    
         if len(self.voucher_allocate_line_ids) == 0:
