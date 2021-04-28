@@ -5,19 +5,32 @@
 
         <!-- Voucher Request Stage -->
 
+
+        <record id="voucher_request_stage_done" model="weha.voucher.request.stage">
+            <field name="sequence">3</field>
+            <field name="name">Close</field>
+            <field name="closed">True</field>
+            <field name="fold">True</field>
+        </record>
+
+
         <record id="voucher_request_stage_approval_1" model="weha.voucher.request.stage">
             <field name="sequence">2</field>
             <field name="name">Pending Approve 1</field>
             <field name="approval">True</field>
             <field name="fold">True</field>
+            <field name="next_stage_id" ref="voucher_request_stage_done"/>
+
         </record>
 
+        <!--
          <record id="voucher_request_stage_approval_2" model="weha.voucher.request.stage">
             <field name="sequence">3</field>
             <field name="name">Pending Approve 2</field>
             <field name="approval">True</field>
             <field name="fold">True</field>
         </record>
+        -->
 
         <record id="voucher_request_stage_request" model="weha.voucher.request.stage">
             <field name="sequence">1</field>
@@ -26,29 +39,24 @@
             <field name="next_stage_id" ref="voucher_request_stage_approval_1"/>
         </record>
 
-        <record id="voucher_request_stage_done" model="weha.voucher.request.stage">
-            <field name="sequence">5</field>
-            <field name="name">Close</field>
-            <field name="closed">True</field>
-            <field name="fold">True</field>
-        </record>
-
+        <!--
         <record id="voucher_request_stage_open" model="weha.voucher.request.stage">
             <field name="sequence">4</field>
             <field name="name">Ready to Allocate</field>
             <field name="opened">True</field>
             <field name="next_stage_id" ref="voucher_request_stage_done"/>
         </record>
+        -->
 
         <record id="voucher_request_stage_cancelled" model="weha.voucher.request.stage">
-            <field name="sequence">6</field>
+            <field name="sequence">4</field>
             <field name="name">Cancelled</field>
             <field name="cancelled">True</field>
             <field name="fold">True</field>
         </record>
 
         <record id="voucher_request_stage_rejected" model="weha.voucher.request.stage">
-            <field name="sequence">7</field>
+            <field name="sequence">5</field>
             <field name="name">Rejected</field>
             <field name="rejected">True</field>
             <field name="fold">True</field>

@@ -23,5 +23,5 @@ class VoucherScrapLine(models.Model):
     voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code", related="voucher_order_line_id.voucher_code_id")
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
     voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo", related="voucher_order_line_id.voucher_promo_id")
-    state = fields.Selection([('open','Open'),('damaged','Scrap')], 'Status', default='open')
+    state = fields.Selection([('open','Open'),('cancelled','Cancelled'),('damaged','Scrap')], 'Status', default='open')
     

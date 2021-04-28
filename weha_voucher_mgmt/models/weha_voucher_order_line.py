@@ -12,6 +12,7 @@ import json
 import logging
 from random import randrange
 from datetime import datetime, timedelta, date
+import pytz
 from functools import reduce
 
 _logger = logging.getLogger(__name__)
@@ -117,6 +118,21 @@ class VoucherOrderLine(models.Model):
             voucher_order_line_id.write({'state': 'open'})
             voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, "RO")
 
+    def process_voucher_scrap(self):
+        _logger.info("Process Voucher Scrap")
+        cur_date_time = datetime.now()
+        next_date_time = cur_date_time + timedelta(minutes=5)
+        domain = [
+            ('booking_expired_date','<', cur_date_time),
+            ('state','=','activated')
+        ]
+        voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
+        _logger.info(voucher_order_line_ids)
+        for voucher_order_line_id in  voucher_order_line_ids:
+            #_logger.info(f"Scheduler : {len(voucher_order_line_ids)} vouhcers change to open ")
+            voucher_order_line_id.write({'state': 'scrap'})
+            voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, "DM")
+
     def postgresql_create(self, vals):
         #Generate 12 Digit
         voucher_12_digit = self.generate_12_numbers(vals.get('voucher_type'), vals.get('voucher_code_id'), vals.get('year_id'), vals.get('check_number'))
@@ -130,8 +146,8 @@ class VoucherOrderLine(models.Model):
         _logger.info("INSERT")
         strSQL = """INSERT INTO weha_voucher_order_line 
             (voucher_12_digit,voucher_ean, name, operating_unit_id,voucher_type,
-             voucher_order_id,voucher_code_id,voucher_terms_id,year_id,check_number,voucher_amount,state)
-            VALUES ('{}','{}','{}',{},'{}',{},{},{},{},{},{},'{}')""".format(
+             voucher_order_id,voucher_code_id,voucher_terms_id,year_id,check_number,voucher_amount,state,create_date,create_uid)
+            VALUES ('{}','{}','{}',{},'{}',{},{},{},{},{},{},'{}','{}',{}) RETURNING id""".format(
                 vals['voucher_12_digit'],
                 vals['voucher_ean'],
                 vals['name'],
@@ -143,9 +159,86 @@ class VoucherOrderLine(models.Model):
                 vals['year_id'],
                 vals['check_number'],
                 vals['voucher_amount'],
-                'inorder'
+                'inorder',
+                datetime.now().astimezone(pytz.utc),
+                self.env.uid
             )
         self.env.cr.execute(strSQL)
+        voucher_id = self.env.cr.fetchone()[0]
+        voucher_order_name  = vals['voucher_order_name']
+        vals = {}
+        vals.update({'name': voucher_order_name})
+        vals.update({'voucher_order_line_id': voucher_id})
+        vals.update({'trans_date': datetime.now()})
+        vals.update({'trans_type': 'OR'})
+        self.env['weha.voucher.order.line.trans'].sudo().create(vals)
+
+    def postgresql_create_legacy(self, vals):
+        _logger.info("INSERT 1")
+        vals['voucher_12_digit'] = vals['voucher_ean'][:12]
+        vals['name'] = vals['voucher_ean']
+        if vals['expired_date']:
+            strSQL = """INSERT INTO weha_voucher_order_line 
+                (voucher_12_digit,voucher_ean, name, operating_unit_id,voucher_type,
+                voucher_code_id,voucher_terms_id,year_id,voucher_amount,is_legacy,state, create_date, create_uid, voucher_sku, expired_date)
+                VALUES ('{}','{}','{}',{},'{}',{},{},{},{},{},'{}','{}',{},'{}','{}') RETURNING id""".format(
+                    vals['voucher_12_digit'],
+                    vals['voucher_ean'],
+                    vals['name'],
+                    vals['operating_unit_id'],
+                    vals['voucher_type'],
+                    vals['voucher_code_id'],
+                    vals['voucher_terms_id'],
+                    vals['year_id'],
+                    vals['voucher_amount'],
+                    vals['is_legacy'],
+                    vals['state'],
+                    datetime.now().astimezone(pytz.utc),
+                    self.env.uid,
+                    vals['voucher_sku'],
+                    vals['expired_date'] if vals['expired_date'] else 'NULL'
+                )
+        else:
+            strSQL = """INSERT INTO weha_voucher_order_line 
+                (voucher_12_digit,voucher_ean, name, operating_unit_id,voucher_type,
+                voucher_code_id,voucher_terms_id,year_id,voucher_amount,is_legacy,state, create_date, create_uid, voucher_sku)
+                VALUES ('{}','{}','{}',{},'{}',{},{},{},{},{},'{}','{}',{},'{}') RETURNING id""".format(
+                    vals['voucher_12_digit'],
+                    vals['voucher_ean'],
+                    vals['name'],
+                    vals['operating_unit_id'],
+                    vals['voucher_type'],
+                    vals['voucher_code_id'],
+                    vals['voucher_terms_id'],
+                    vals['year_id'],
+                    vals['voucher_amount'],
+                    vals['is_legacy'],
+                    vals['state'],
+                    datetime.now().astimezone(pytz.utc),
+                    self.env.uid,
+                    vals['voucher_sku']
+                )
+        self.env.cr.execute(strSQL)
+        voucher_id = self.env.cr.fetchone()[0]
+
+        strSQL = """INSERT INTO weha_voucher_order_line_trans 
+                (name, voucher_order_line_id, trans_date, trans_type, create_date, create_uid) 
+                VALUES ('{}',{},'{}','{}','{}',{})""".format(
+                    'Import',
+                    voucher_id,
+                    datetime.now(),
+                    'OP',
+                    datetime.now().astimezone(pytz.utc),
+                    self.env.uid,
+                )
+        self.env.cr.execute(strSQL)
+
+        # vals = {}
+        # vals.update({'name': "Import"})
+        # vals.update({'voucher_order_line_id': voucher_id})
+        # vals.update({'trans_date': datetime.now()})
+        # vals.update({'trans_type': 'OP'})
+        # self.env['weha.voucher.order.line.trans'].sudo().create(vals)
 
     def get_voucher_expired(self):
         is_expired = False
@@ -274,7 +367,7 @@ class VoucherOrderLine(models.Model):
                 'receipt': voucher_issuing_id.number,
                 'transaction_id': voucher_issuing_id.number,
                 'cashier_id': voucher_issuing_id.number,
-                'store_id': voucher_issuing_id.number,
+                'store_id': 'H-100',
                 #'member_id': trans_purchase_id.member_id,
                 'member_id': self.member_id,
                 'vouchers': '|'.join(vouchers)
@@ -423,6 +516,7 @@ class VoucherOrderLine(models.Model):
     )
     
     is_expired = fields.Boolean('Is Expired', compute="get_voucher_expired")
+    is_legacy = fields.Boolean('Is Legacy', default=False)
 
     #State Voucher
     state = fields.Selection(
@@ -471,6 +565,21 @@ class VoucherOrderLine(models.Model):
 class VoucherOrderLineTrans(models.Model):
     _name = 'weha.voucher.order.line.trans'
     _order = "trans_date desc"
+
+    def open_form_view(self):
+        self.ensure_one()
+        if self.trans_type == 'US':
+            voucher_trans_status_id = self.env['weha.voucher.trans.status'].search([('name','=', self.name)], limit=1)
+            if voucher_trans_status_id:
+                form_view = self.env.ref('weha_voucher_mgmt.view_weha_voucher_trans_status_form')
+                return {
+                    'name': _('Voucher Transaction - Status'),
+                    'res_model': 'weha.voucher.trans.status',
+                    'res_id': voucher_trans_status_id.id,
+                    'views': [(form_view.id, 'form'), ],
+                    'type': 'ir.actions.act_window',
+                    'target': 'new',
+                }
 
     name = fields.Char(
         string='Voucher Trans ID', readonly=True

@@ -362,7 +362,8 @@ class VMSBookingController(http.Controller):
         domain = [
             ('operating_unit_id','=', operating_unit_id.id),
             ('voucher_ean','=', voucher_ean),
-            ('member_id','=', member_id)
+            ('member_id','=', member_id),
+            ('state','=', 'booking')
         ]
 
         _logger.info(domain)

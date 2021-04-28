@@ -53,6 +53,7 @@
                                 class="btn btn-primary" 
                                 name="trans_request_approval" 
                                 string="Request Approval" 
+                                confirm="Are you sure to process request approval?"
                                 groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button type="object" 
@@ -77,7 +78,7 @@
                                 string="Approve" 
                                 confirm="Are you sure you want to approve?" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager" />
-                        
+                        <!--
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                                 class="btn btn-primary" 
@@ -85,7 +86,7 @@
                                 string="Reject"
                                 confirm="Are you sure you want to reject?" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager,weha_voucher_mgmt.group_voucher_manager, weha_voucher_mgmt.group_voucher_marketing_manager"/>
-                        
+                        -->
                         <button type="object" 
                                  attrs="{'invisible': [('current_stage', 'in', ('opened', 'closed','cancelled','rejected'))]}"
                                  class="btn btn-warning" 

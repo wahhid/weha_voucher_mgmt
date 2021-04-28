@@ -81,7 +81,9 @@ class VoucherOrder(models.Model):
                 ('voucher_type','=', self.voucher_type),
                 ('voucher_code_id','=', self.voucher_code_id.id),
                 ('year_id','=', self.year.id),
+                ('is_legacy','=', False),
             ]
+            _logger.info(domain)
             voucher_order_line_id = self.env['weha.voucher.order.line'].search(domain, order="check_number desc", limit=1)
             _logger.info(voucher_order_line_id)
             if not voucher_order_line_id:
@@ -96,7 +98,9 @@ class VoucherOrder(models.Model):
                 ('voucher_type','=', self.voucher_type),
                 ('voucher_code_id','=', self.voucher_code_id.id),
                 ('year_id','=', self.year.id),
+                ('is_legacy','=', False),
             ]
+            _logger.info(domain)
             voucher_order_line_id = self.env['weha.voucher.order.line'].search(domain, order="check_number desc", limit=1)
             _logger.info(voucher_order_line_id)
             if not voucher_order_line_id:
@@ -162,6 +166,7 @@ class VoucherOrder(models.Model):
             vals.update({'operating_unit_id': self.operating_unit_id.id})
             vals.update({'voucher_type': self.voucher_type})
             vals.update({'voucher_order_id': self.id})
+            vals.update({'voucher_order_name': self.number})
             vals.update({'voucher_code_id': self.voucher_code_id.id})
             vals.update({'voucher_amount': self.voucher_code_id.voucher_amount})
             vals.update({'voucher_terms_id': self.voucher_code_id.voucher_terms_id.id})
@@ -242,11 +247,14 @@ class VoucherOrder(models.Model):
         #self.write({'stage_id': stage})
 
     def trans_close(self):
-        stage_id = self.env['weha.voucher.order.stage'].search([('closed','=', True)], limit=1)
-        if not stage_id:
-            raise ValidationError('Stage closed not found')
-        super(VoucherOrder, self).write({'stage_id': stage_id.id})
-        
+        if self.voucher_request == self.voucher_received:
+            stage_id = self.env['weha.voucher.order.stage'].search([('closed','=', True)], limit=1)
+            if not stage_id:
+                raise ValidationError('Stage closed not found')
+            super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        else:
+            raise ValidationError("Cannot close, Voucher In Order still exist!")
+
     def trans_request_approval(self):    
         _logger.info('Trans Request Approval Process')
         stage_id =  self.stage_id.next_stage_id

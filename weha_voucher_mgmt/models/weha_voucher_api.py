@@ -849,7 +849,7 @@ class VoucherTransBooking(models.Model):
                     voucher_order_line_id.write(
                         {
                             'member_id': self.member_id,
-                            'booking_expired_date': datetime.now() + timedelta(minutes=5),
+                            'booking_expired_date': datetime.now() + timedelta(days=1),
                             'state': 'booking'
                         }
                     )

@@ -24,7 +24,7 @@
                 </group>
                 <notebook>
                     <page name="scan_voucher_return_line" string="Voucher Return Line">
-                        <field name="scan_voucher_return_line_ids">
+                        <field name="scan_voucher_return_line_ids" readonly="1">
                             <tree>
                                 <field name="voucher_order_line_id"/>
                                 <field name="state"/>

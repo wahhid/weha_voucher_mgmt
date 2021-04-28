@@ -103,8 +103,8 @@ class VoucherAllocate(models.Model):
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         
     def trans_received(self):
-        stage_id = self.stage_id.next_stage_id
-        res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+        #stage_id = self.stage_id.next_stage_id
+        #res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
         data =  {
             'activity_type_id': 4,
             'note': 'Voucher Allocate was received',
@@ -159,41 +159,42 @@ class VoucherAllocate(models.Model):
         self.send_notification(data)
     
     def trans_cancelled(self):
-        received = False
-        if self.current_stage in ('progress','receiving'):
-            for voucher_allocate_line_id in self.voucher_allocate_line_ids:
-                if voucher_allocate_line_id.state == 'open':
-                    vals = {}
-                    vals.update({'state': 'cancelled'})
-                    res = voucher_allocate_line_id.write(vals)
+        received = False        
+        for voucher_allocate_line_id in self.voucher_allocate_line_ids:
+            if voucher_allocate_line_id.state == 'open':
+                vals = {}
+                vals.update({'state': 'cancelled'})
+                res = voucher_allocate_line_id.write(vals)
 
-                    vals = {}
-                    vals.update({'operating_unit_id': self.operating_unit_id.id})
-                    vals.update({'state': 'open'})
-                    voucher_allocate_line_id.voucher_order_line_id.write(vals)
+                vals = {}
+                vals.update({'operating_unit_id': self.operating_unit_id.id})
+                vals.update({'state': 'open'})
+                voucher_allocate_line_id.voucher_order_line_id.write(vals)
 
-                    vals = {}
-                    vals.update({'name': self.number})
-                    vals.update({'voucher_order_line_id': voucher_allocate_line_id.voucher_order_line_id.id})
-                    vals.update({'trans_date': datetime.now()})
-                    vals.update({'operating_unit_loc_fr_id': self.source_operating_unit.id})
-                    vals.update({'operating_unit_loc_to_id': self.operating_unit_id.id})
-                    vals.update({'trans_type': 'CL'})
-                    self.env['weha.voucher.order.line.trans'].create(vals)
-                
-                if voucher_allocate_line_id.state == 'received':
-                    received = True
+                vals = {}
+                vals.update({'name': self.number})
+                vals.update({'voucher_order_line_id': voucher_allocate_line_id.voucher_order_line_id.id})
+                vals.update({'trans_date': datetime.now()})
+                vals.update({'operating_unit_loc_fr_id': self.source_operating_unit.id})
+                vals.update({'operating_unit_loc_to_id': self.operating_unit_id.id})
+                vals.update({'trans_type': 'CL'})
+                self.env['weha.voucher.order.line.trans'].create(vals)
+            
+            if voucher_allocate_line_id.state == 'received':
+                received = True
 
         stage_id = self.env['weha.voucher.allocate.stage'].search([('cancelled','=', True)], limit=1)
         
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         
-        if not received:   
+        if not received:
             super(VoucherAllocate, self).write({'stage_id': stage_id.id})
             self.message_post(body="Cancel voucher allocated")
         else:
-            self.is_force_cancelled = True
+            stage_id = self.env['weha.voucher.allocate.stage'].search([('closed','=', True)], limit=1)
+            super(VoucherAllocate, self).write({'stage_id': stage_id.id, 'is_force_cancelled': True})
+            #self.is_force_cancelled = True
             self.message_post(body="Cannot cancel all voucher, There are voucher was received, Please close voucher return and cancel voucher return by managers")
             #raise Warning("Cannot cancel all voucher, There are voucher was received ,  Please close voucher return and cancel voucher return by managers")
             return {
@@ -272,7 +273,7 @@ class VoucherAllocate(models.Model):
     allocate_date = fields.Date('Allocate Date', required=True, default=lambda self: fields.date.today(), readonly=True)
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    source_operating_unit = fields.Many2one('operating.unit','Source Store', required=True)
+    source_operating_unit = fields.Many2one('operating.unit','Request Store', required=True)
     is_request = fields.Boolean('Is Request', default=False)
 
     voucher_type = fields.Selection(
@@ -345,6 +346,12 @@ class VoucherAllocate(models.Model):
 
     @api.model
     def create(self, vals):
+        if 'voucher_promo_id' in vals.keys() and vals.get('voucher_promo_id'):
+            pass 
+        else:
+            if vals.get('expired_days') == 0:
+                raise ValidationError('Expired Days must be greater than zero!')
+
         if vals.get('number', '/') == '/':
             seq = self.env['ir.sequence']
             if 'company_id' in vals:
@@ -359,6 +366,9 @@ class VoucherAllocate(models.Model):
         return res    
     
     def write(self, vals):
+        if 'expired_days' in vals.keys() and vals.get('expired_days') == 0:
+            raise ValidationError('Expired Days must be greater than zero!')
+        
         if 'stage_id' in vals:
             # stage_obj = self.env['weha.voucher.allocate.stage'].browse([vals['stage_id']])        
             if self.stage_id.approval:

@@ -54,7 +54,10 @@ class WeheVoucherRequest(models.Model):
 
     def create_allocate_from_request(self, request_line):
         obj_allocate = self.env['weha.voucher.allocate']
+        company_id = self.env.user.company_id
+        operating_unit_id = self.operating_unit_id
         vals = {}
+        vals.update({'user_id': company_id.res_company_request_allocate_user_id.id})
         vals.update({'source_operating_unit': self.operating_unit_id.id})
         vals.update({'ref': self.number})
         vals.update({'is_request': True})
@@ -62,9 +65,21 @@ class WeheVoucherRequest(models.Model):
         vals.update({'voucher_request_qty': request_line.voucher_qty})
         vals.update({'voucher_code_id': request_line.voucher_code_id.id})
         vals.update({'voucher_terms_id': request_line.voucher_code_id.voucher_terms_id.id})
-        #vals.update({'year_id': request_line.voucher_code_id.year_id.id})
+        vals.update({'year_id': self.env['weha.voucher.year'].get_current_year().id})
         res = obj_allocate.sudo().create(vals)
         _logger.info("str_ean ID = " + str(res))
+        #To Finance User
+        for requester_user_id in company_id.res_company_request_operating_unit.requester_user_ids:
+            data =  {
+                'activity_type_id': 4,
+                'note': 'Voucher Request from ' + operating_unit_id.name,
+                'res_id': res.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_allocate').id,
+                'user_id': requester_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Request from ' + operating_unit_id.name
+            }
+            self.sudo().send_notification(data)
 
         return res
     
@@ -78,6 +93,10 @@ class WeheVoucherRequest(models.Model):
         approval_level = self.stage_id.approval_level
         stage_id = self.stage_id.next_stage_id
         res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
+        
+        #Create Voucher Allocated
+        self.action_voucher_allocate_from_request()
+
         #Create Schedule Activity
         #To Requester
         operating_unit_id = self.operating_unit_id
@@ -93,31 +112,31 @@ class WeheVoucherRequest(models.Model):
                 'summary': 'Voucher Request was approved'
             }).action_feedback()
         #To Finance Manager
-        company_id = self.env.user.company_id
-        for approval_user_id in company_id.res_company_request_operating_unit.approval_user_ids:
-            data =  {
-                'activity_type_id': 4,
-                'note': 'Voucher Request from ' + operating_unit_id.name,
-                'res_id': self.id,
-                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_request').id,
-                'user_id': approval_user_id.id,
-                'date_deadline': datetime.now() + timedelta(days=2),
-                'summary': 'Voucher Request from ' + operating_unit_id.name
-            }
-            self.send_notification(data)
+        # company_id = self.env.user.company_id
+        # for approval_user_id in company_id.res_company_request_operating_unit.approval_user_ids:
+        #     data =  {
+        #         'activity_type_id': 4,
+        #         'note': 'Voucher Request from ' + operating_unit_id.name,
+        #         'res_id': self.id,
+        #         'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_request').id,
+        #         'user_id': approval_user_id.id,
+        #         'date_deadline': datetime.now() + timedelta(days=2),
+        #         'summary': 'Voucher Request from ' + operating_unit_id.name
+        #     }
+        #     self.send_notification(data)
         #To Finance User
-        company_id = self.env.user.company_id
-        for requester_user_id in company_id.res_company_request_operating_unit.requester_user_ids:
-            data =  {
-                'activity_type_id': 4,
-                'note': 'Voucher Request from ' + operating_unit_id.name,
-                'res_id': self.id,
-                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_request').id,
-                'user_id': requester_user_id.id,
-                'date_deadline': datetime.now() + timedelta(days=2),
-                'summary': 'Voucher Request from ' + operating_unit_id.name
-            }
-            self.send_notification(data)
+        # company_id = self.env.user.company_id
+        # for requester_user_id in company_id.res_company_request_operating_unit.requester_user_ids:
+        #     data =  {
+        #         'activity_type_id': 4,
+        #         'note': 'Voucher Request from ' + operating_unit_id.name,
+        #         'res_id': self.id,
+        #         'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_request').id,
+        #         'user_id': requester_user_id.id,
+        #         'date_deadline': datetime.now() + timedelta(days=2),
+        #         'summary': 'Voucher Request from ' + operating_unit_id.name
+        #     }
+        #     self.send_notification(data)
 
     def trans_approve_finance(self):
         stage_id = self.stage_id.next_stage_id
@@ -161,6 +180,8 @@ class WeheVoucherRequest(models.Model):
             }).action_feedback()
 
     def trans_request_approval(self):
+        if len(self.voucher_request_line_ids) == 0:
+            raise ValidationError('Request Line Empty!')
         stage_id = self.stage_id.next_stage_id
         res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
         operating_unit_id = self.operating_unit_id

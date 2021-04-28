@@ -13,7 +13,9 @@
             <field name="arch" type="xml">
                 <tree string="model_tree" create="true" delete="true" edit="true">
                     <field name="code_sku"/>
+                    <!--
                     <field name="voucher_mapping_pos_id"/>
+                    -->
                     <field name="voucher_code_id"/>  
                     <field name="point_redeem"/>
                 </tree>
@@ -36,7 +38,9 @@
                         <group>
                             <group>
                                 <field name="code_sku"/>
+                                <!--
                                 <field name="voucher_mapping_pos_id"/>
+                                -->
                                 <field name="voucher_code_id"/>
                                 <foeld name="point_redeem"/>
                             </group>

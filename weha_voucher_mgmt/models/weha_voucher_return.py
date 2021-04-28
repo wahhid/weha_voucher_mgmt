@@ -171,29 +171,28 @@ class VoucherReturn(models.Model):
 
     def trans_cancelled(self):
         received = False
-        if self.current_stage in ('progress','receiving','closed'):
-            for voucher_return_line_id in self.voucher_return_line_ids:
-                if voucher_return_line_id.state == 'open':
-                    vals = {}
-                    vals.update({'state': 'cancelled'})
-                    res = voucher_return_line_id.write(vals)
+        for voucher_return_line_id in self.voucher_return_line_ids:
+            if voucher_return_line_id.state == 'open':
+                vals = {}
+                vals.update({'state': 'cancelled'})
+                res = voucher_return_line_id.write(vals)
 
-                    vals = {}
-                    vals.update({'operating_unit_id': self.operating_unit_id.id})
-                    vals.update({'state': 'open'})
-                    voucher_return_line_id.voucher_order_line_id.write(vals)
+                vals = {}
+                vals.update({'operating_unit_id': self.operating_unit_id.id})
+                vals.update({'state': 'open'})
+                voucher_return_line_id.voucher_order_line_id.write(vals)
 
-                    vals = {}
-                    vals.update({'name': self.number})
-                    vals.update({'voucher_order_line_id': voucher_return_line_id.voucher_order_line_id.id})
-                    vals.update({'trans_date': datetime.now()})
-                    vals.update({'operating_unit_loc_fr_id': self.source_operating_unit.id})
-                    vals.update({'operating_unit_loc_to_id': self.operating_unit_id.id})
-                    vals.update({'trans_type': 'CL'})
-                    self.env['weha.voucher.order.line.trans'].create(vals)
+                vals = {}
+                vals.update({'name': self.number})
+                vals.update({'voucher_order_line_id': voucher_return_line_id.voucher_order_line_id.id})
+                vals.update({'trans_date': datetime.now()})
+                vals.update({'operating_unit_loc_fr_id': self.source_operating_unit.id})
+                vals.update({'operating_unit_loc_to_id': self.operating_unit_id.id})
+                vals.update({'trans_type': 'CL'})
+                self.env['weha.voucher.order.line.trans'].create(vals)
 
-                if voucher_return_line_id.state == 'received':
-                    received = True
+            if voucher_return_line_id.state == 'received':
+                received = True
 
         stage_id = self.env['weha.voucher.allocate.stage'].search([('cancelled','=', True)], limit=1)
         if not stage_id:
@@ -203,7 +202,8 @@ class VoucherReturn(models.Model):
             super(VoucherReturn, self).write({'stage_id': stage_id.id})
             self.message_post(body="Cancel voucher return")
         else:
-            self.is_force_cancelled = True
+            stage_id = self.env['weha.voucher.allocate.stage'].search([('closed','=', True)], limit=1)
+            super(VoucherAllocate, self).write({'stage_id': stage_id.id, 'is_force_cancelled': True})
             self.message_post(body="Cannot cancel all voucher, There are voucher was received, Please close voucher return and cancel voucher return by managers")
             #raise Warning("Cannot cancel all voucher, There are voucher was received ,  Please close voucher return and cancel voucher return by managers")
             return {

@@ -160,6 +160,10 @@ class VoucherScrap(models.Model):
         if not stage_id:
             raise ValidationError('Stage Cancelled not found')
         super(VoucherScrap, self).write({'stage_id': stage_id.id})
+        #Change Line Status to Cancelled
+        for voucher_scrap_line_received_id  in self.voucher_scrap_line_received_ids:
+            voucher_scrap_line_received_id.state  = 'cancelled'
+        
         
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Number', default="/",readonly=True)

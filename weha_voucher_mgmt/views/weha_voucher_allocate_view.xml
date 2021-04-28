@@ -99,7 +99,7 @@
                                 name="trans_cancelled" 
                                 string="Cancel Allocate" 
                                 confirm="Are you sure you want to cancel voucher allocate?"
-                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
                         
                         <button type="object" 
                                 attrs="{'invisible': ['|',('current_stage', '!=', 'closed'),('is_force_cancelled','=', True)]}"

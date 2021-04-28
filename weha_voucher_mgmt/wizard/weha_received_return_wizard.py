@@ -141,7 +141,9 @@ class WehaWizardScanVoucherReturn(models.TransientModel):
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('voucher_promo_id', '=', voucher_order_line_start_id.voucher_promo_id.id),
                 ('state','=','open'),
-                ('check_number', 'in', tuple(voucher_ranges))
+                #('check_number', 'in', tuple(voucher_ranges))
+                ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
+                ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
             ]
         else:
             domain = [
@@ -149,7 +151,9 @@ class WehaWizardScanVoucherReturn(models.TransientModel):
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('state','=','open'),
-                ('check_number', 'in', tuple(voucher_ranges))
+                #('check_number', 'in', tuple(voucher_ranges))
+                ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
+                ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
             ]
         _logger.info(domain)
 
@@ -300,7 +304,9 @@ class WehaWizardReceivedReturn(models.TransientModel):
                         ('year_id', '=', start_voucher.year_id.id),
                         ('voucher_promo_id', '=', start_voucher.voucher_promo_id.id),
                         ('state', '=', 'intransit'),
-                        ('check_number','in', voucher_range)
+                        #('check_number','in', voucher_range)
+                        ('voucher_12_digit', '>=', start_voucher.voucher_12_digit),
+                        ('voucher_12_digit', '<=', end_voucher.voucher_12_digit),
                     ]
                 else:
                     domain = [
@@ -309,7 +315,9 @@ class WehaWizardReceivedReturn(models.TransientModel):
                         ('operating_unit_id', '=', start_voucher.operating_unit_id.id),
                         ('year_id', '=', start_voucher.year_id.id),
                         ('state', '=', 'intransit'),
-                        ('check_number','in', voucher_range)
+                        #('check_number','in', voucher_range)
+                        ('voucher_12_digit', '>=', start_voucher.voucher_12_digit),
+                        ('voucher_12_digit', '<=', end_voucher.voucher_12_digit),
                     ]
                 voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
                 _logger.info("voucher_order_line_ids")

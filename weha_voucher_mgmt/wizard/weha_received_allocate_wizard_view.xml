@@ -12,6 +12,7 @@
                         <field name="end_number" attrs="{'invisible':[('is_valid','=', False)], 'readonly':[('is_checked','=', True)]}"/>
                         <field name="is_valid" invisible="1"/>
                         <field name="is_checked" invisible="1"/>
+                        <field name="is_legacy" invisible="1"/>
                     </group>
                     <group>
                         <field name="operating_unit_id" />
@@ -24,7 +25,7 @@
                 </group>
                 <notebook>
                     <page name="voucher_order_line" string="Voucher Order Line" attrs="{'invisible':[('is_checked','=', False)]}">
-                        <field name="scan_voucher_allocate_line_ids">
+                        <field name="scan_voucher_allocate_line_ids" readonly="1">
                             <tree decoration-danger="state == 'allocated'" create="false" edit="false" delete="false">
                                 <field name="voucher_order_line_id"/>
                                 <field name="state"/>

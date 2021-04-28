@@ -9,8 +9,22 @@
             <field name="code">model.process_voucher_booking()</field>
             <field eval="True" name="active"/>
             <field name="user_id" ref="base.user_root"/>
-            <field name="interval_number">1</field>
+            <field name="interval_number">5</field>
             <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field eval="False" name="doall"/>
+        </record>
+
+        <!-- Voucher Scrap  Scheduler -->
+        <record forcecreate="True" id="scheduler_voucher_scrap_action" model="ir.cron">
+            <field name="name">Voucher Scrap Process</field>
+            <field name="model_id" ref="model_weha_voucher_order_line"/>
+            <field name="state">code</field>
+            <field name="code">model.process_voucher_scrap()</field>
+            <field eval="True" name="active"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
             <field name="numbercall">-1</field>
             <field eval="False" name="doall"/>
         </record>

@@ -139,14 +139,18 @@ class WizardScanVoucherScrap(models.TransientModel):
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('voucher_promo_id', '=', voucher_order_line_start_id.voucher_promo_id.id),
-                ('check_number', 'in', tuple(voucher_ranges))
+                #('check_number', 'in', tuple(voucher_ranges))
+                ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
+                ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit)
             ]
         else:
             domain = [
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
-                ('check_number', 'in', tuple(voucher_ranges))
+                #('check_number', 'in', tuple(voucher_ranges)),
+                ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
+                ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit)
             ]
         _logger.info(domain)
 
@@ -156,17 +160,28 @@ class WizardScanVoucherScrap(models.TransientModel):
         line_ids = []
         estimate_count = 0
         for voucher_order_line_id in voucher_order_line_ids:
-            #Check Voucher Order Line at other Voucher Allocate
-            is_invalid = self.env['weha.voucher.scrap.line'].check_voucher_order_line(voucher_scrap_id.id, voucher_order_line_id.id)
-            if not is_invalid:
-                _logger.info('Is Invalid')
+            if voucher_order_line_id.state == 'open':
                 estimate_count = estimate_count + 1
                 vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'available'})
                 line_ids.append(vals)
             else:
-                _logger.info('Voucher Order Line was allocate in other transaction')
-                vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'allocated'})
+                estimate_count = estimate_count + 1
+                vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'not_available'})
                 line_ids.append(vals)
+
+            # #Check Voucher Order Line at other Voucher Allocate
+            
+            # is_invalid = self.env['weha.voucher.scrap.line'].check_voucher_order_line(voucher_scrap_id.id, voucher_order_line_id.id)
+            
+            # if is_invalid:
+            #     _logger.info('Is Invalid')
+            #     estimate_count = estimate_count + 1
+            #     vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'available'})
+            #     line_ids.append(vals)
+            # else:
+            #     _logger.info('Voucher Order Line was allocate in other transaction')
+            #     vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'allocated'})
+            #     line_ids.append(vals)
 
         _logger.info(line_ids)
         
@@ -180,7 +195,7 @@ class WizardScanVoucherScrap(models.TransientModel):
             'end_number': self.end_number,
             'is_valid': self.is_valid,
             'is_checked': True,
-            'estimate_total': len(voucher_ranges),
+            'estimate_total': len(line_ids),
         }
         scan_voucher_scrap_id = self.env['weha.wizard.scan.voucher.scrap'].create(vals)
         scan_voucher_scrap_id.write({'estimate_count': estimate_count, 'scan_voucher_scrap_line_ids':line_ids})
@@ -203,7 +218,7 @@ class WizardScanVoucherScrapLine(models.TransientModel):
 
     scan_voucher_scrap_line_id = fields.Many2one("weha.wizard.scan.voucher.scrap", 'Scan Voucher Scrap #')
     voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher Order Line #')
-    state = fields.Selection([('available','Available'),('allocated','Allocated')],'Status', readonly=True)
+    state = fields.Selection([('available','Available'),('not_available','Not Available')],'Status', readonly=True)
     
 
 

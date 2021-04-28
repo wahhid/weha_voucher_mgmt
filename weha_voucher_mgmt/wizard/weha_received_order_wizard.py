@@ -85,6 +85,7 @@ class WehaWizardReceivedOrder(models.TransientModel):
                     ('operating_unit_id', '=', start_voucher.operating_unit_id.id),
                     ('year_id', '=', start_voucher.year_id.id),
                     ('check_number','in', voucher_range)
+                    
                 ]
                 
                 _logger.info(domain)

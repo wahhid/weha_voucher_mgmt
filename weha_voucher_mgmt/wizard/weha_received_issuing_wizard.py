@@ -14,8 +14,6 @@ class WizardScanVoucherIssuing(models.TransientModel):
 
     @api.onchange('start_number', 'end_number')
     def _onchange_voucher(self):     
-
-
         if self.start_number:     
             voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)],limit=1)
             if not voucher_id:
@@ -125,14 +123,18 @@ class WizardScanVoucherIssuing(models.TransientModel):
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('voucher_promo_id', '=', voucher_order_line_start_id.voucher_promo_id.id),
-                ('check_number', 'in', tuple(voucher_ranges))
+                #('check_number', 'in', tuple(voucher_ranges))
+                ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
+                ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
             ]
         else:
             domain = [
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
-                ('check_number', 'in', tuple(voucher_ranges))
+                #('check_number', 'in', tuple(voucher_ranges)),
+                ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
+                ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
             ]
         _logger.info(domain)
 

@@ -73,7 +73,8 @@ class VoucherIssuing(models.Model):
                     vals = {}
                     vals.update({'state': 'activated'})
                     voucher_issuing_line_id.voucher_order_line_id.sudo().write(vals)
-                    voucher_issuing_line_id.voucher_order_line_id.sudo().calculate_expired()
+                    if not voucher_issuing_line_id.voucher_order_line_id.is_voucher_promo:
+                        voucher_issuing_line_id.voucher_order_line_id.sudo().calculate_expired()
 
                     vals = {}
                     vals.update({'name': self.number})

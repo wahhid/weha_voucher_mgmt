@@ -88,7 +88,7 @@
                                 string="Receive Voucher"
                                 class="oe_highlight" 
                                 attrs="{'invisible': [('current_stage','in',('unatteneded','approval','closed','cancelled','rejected'))]}" 
-                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_finance_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button type="action"
                                 class="btn btn-warning"
@@ -334,7 +334,7 @@
             parent="weha_return_main_menu"
             action="action_weha_voucher_return_marketing_act_window" 
             sequence="2"
-            groups="weha_voucher_mgmt.group_voucher_user"/>
+            groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
 
 
         

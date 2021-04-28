@@ -114,3 +114,5 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
                             'file_line_id': file_line_id.id,
                             })
             res = self.env['weha.voucher.issuing.employee.line'].create(values)
+
+

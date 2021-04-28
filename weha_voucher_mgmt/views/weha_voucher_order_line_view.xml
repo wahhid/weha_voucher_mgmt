@@ -67,11 +67,12 @@
                             <group>
                                 <field name="voucher_terms_id"/>
                                 <field name="member_id"/>
-                                <field name="expired_days"/>
+                                <field name="expired_days" invisible="1"/>
                                 <field name="expired_date"/>
                                 <field name="booking_expired_date" attrs="{'invisible':['state','!=','booking']}"/>
                                 <field name="is_expired"/>
                                 <field name="year_id"/>
+                                
                             </group>
                             <group>
                                 <field name="voucher_12_digit"/>
@@ -81,6 +82,8 @@
                             <group>
                                 <field name="voucher_trans_type"/>
                                 <field name="state"/>
+                                <field name="is_legacy"/>
+                                <field name="create_date"/>
                             </group>
                         </group>
                         <notebook colspan="4">
@@ -93,6 +96,7 @@
                                         <field name="operating_unit_loc_fr_id"/>
                                         <field name="operating_unit_loc_to_id"/>
                                         <field name="user_id"/>
+                                        <button name="open_form_view" type="object" string="View" class="oe_highlight"/>
 	                            	</tree>                    	                            	
 	                        	</field>
 	                        </page>	   
