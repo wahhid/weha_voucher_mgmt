@@ -116,18 +116,19 @@ class VoucherReturn(models.Model):
             self.send_notification(data)
     
     def trans_received(self):
-        stage_id = self.stage_id.next_stage_id
-        res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
-        data =  {
-            'activity_type_id': 4,
-            'note': 'Voucher Return was received',
-            'res_id': self.id,
-            'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_return').id,
-            'user_id': self.user_id.id,
-            'date_deadline': datetime.now() + timedelta(days=2),
-            'summary': 'Voucher Return was received'
-        }
-        self.send_notification(data)
+        if not self.stage_id.receiving:
+            stage_id = self.stage_id.next_stage_id
+            res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+            data =  {
+                'activity_type_id': 4,
+                'note': 'Voucher Return was received',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_return').id,
+                'user_id': self.user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Return was received'
+            }
+            self.send_notification(data)
 
     def trans_reject(self):
         stage_id = self.env['weha.voucher.return.stage'].search([('rejected', '=', True)], limit=1)
@@ -148,6 +149,11 @@ class VoucherReturn(models.Model):
             self.send_notification(data)
     
     def trans_close(self):
+        #stage_id = self.stage_id.next_stage_id
+        #res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        
+        if self.voucher_count != self.voucher_received_count:
+            raise ValidationError("Receiving not completed")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
 
@@ -209,14 +215,7 @@ class VoucherReturn(models.Model):
             return {
 		        'warning': {'title': "Warning", 'message': "Cannot cancel all voucher, There are voucher was received, Please close voucher return and cancel voucher return by managers"},
 		    }
-        # if not received:
-        #     stage_id = self.env['weha.voucher.return.stage'].search([('cancelled','=', True)], limit=1)
-        #     if not stage_id:
-        #         raise ValidationError('Stage Cancelled not found')
-        #     super(VoucherReturn, self).write({'stage_id': stage_id.id})
-        # else:
-        #     raise Warning("Cannot cancel all voucher, There are voucher was received \n Please close voucher return and cancel voucher return by managers")
-    
+     
     def trans_force_cancelled_approval(self):
         super(VoucherReturn, self).write({'is_force_cancelled': True})
 

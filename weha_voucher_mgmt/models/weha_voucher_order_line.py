@@ -579,6 +579,9 @@ class VoucherOrderLineTrans(models.Model):
                     'views': [(form_view.id, 'form'), ],
                     'type': 'ir.actions.act_window',
                     'target': 'new',
+                    'store':False,
+                    'create':False,
+                    'edit':False  
                 }
 
     name = fields.Char(
