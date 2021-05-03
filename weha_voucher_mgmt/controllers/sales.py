@@ -82,6 +82,17 @@ class VMSSalesController(http.Controller):
                     "data": []
                 }
                 return valid_response(data)
+        
+        operating_unit_id = http.request.env['operating.unit'].search([('code','=', store_id)],limit=1)
+
+        if not operating_unit_id:
+            return valid_response(
+                {
+                    "err": True,
+                    "message": "Operating Unit not found!",
+                    "data": []
+                }
+            )
 
         if voucher_type != '1':
             return valid_response(
