@@ -100,8 +100,8 @@ class VoucherTransPurchase(models.Model):
 
         payload='barcode=3000030930&password=weha.ID!!2020'
         headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)

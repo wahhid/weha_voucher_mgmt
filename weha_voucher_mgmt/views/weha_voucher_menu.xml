@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <odoo>
-    <data noupdate="0">
+    <data>
 
         <!-- <record id="weha_voucher_dashboard_action" model="ir.actions.act_window">
             <field name="name">Dashboard</field>
@@ -33,7 +33,7 @@
 
          <menuitem id="weha_voucher_reporting_main_menu" name="Reporting"
             parent="weha_voucher_mgmt_main_menu" sequence="30"
-            groups="group_voucher_manager"/>
+            groups="group_voucher_manager,group_voucher_finance_user"/>
 
         <menuitem id="weha_voucher_import_main_menu" name="Import"
             parent="weha_voucher_mgmt_main_menu" sequence="32"
@@ -41,11 +41,11 @@
 
         <menuitem id="weha_voucher_config_main_menu" name="Configuration"
             parent="weha_voucher_mgmt_main_menu" sequence="35"
-            groups="group_voucher_manager"/>
+            groups="group_voucher_finance_user"/>
 
         <menuitem id="weha_voucher_stages_main_menu" name="Stages"
             parent="weha_voucher_config_main_menu" sequence="36"
-            groups="group_voucher_manager"/>
+            groups="group_voucher_finance_user"/>
 
  
     </data>
