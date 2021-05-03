@@ -183,11 +183,13 @@ class VoucherTransPurchase(models.Model):
 
     def issuing_voucher(self):
         seq = self.env['ir.sequence']
+        operating_unit_id = self.env['operating.unit'].search([('code','=', self.store_id)],limit=1)
+
         for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
             for i in range(1,voucher_trans_purchase_sku_id.quantity + 1):
                 vals = {}
                 vals.update({'member_id': self.member_id})
-                vals.update({'operating_unit_id': 3})
+                vals.update({'operating_unit_id': operating_unit_id.id})
                 vals.update({'voucher_type': 'electronic'})
                 vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
                 vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
