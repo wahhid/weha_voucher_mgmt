@@ -7,7 +7,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//notebook/page" position="inside">
                     <field name="token_ids">
-                        <tree create="false">
+                        <tree create="true" edit="true" delete="true">
                             <field name="token"/>
                         </tree>
                     </field>
