@@ -232,7 +232,7 @@ class VoucherTransPurchase(models.Model):
     store_id = fields.Char("Store #", size=10)
     member_id = fields.Char("Member #", size=20)
     sku = fields.Char("SKU", size=255)
-    ref = fields.Char(string='Source Document', required=True)
+    ref = fields.Char(string='Source Document', required=False)
 
     # additional field for bank promo    
     tender_type = fields.Char('Tender Type')
