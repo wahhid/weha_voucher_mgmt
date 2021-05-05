@@ -257,21 +257,28 @@ class VMSStatusController(http.Controller):
         if result:
             if process_type == 'reserved':
                 add_data = result.get_json()
-                data = {
-                    "err": False,
-                    "message": "Create Successfully",
-                    "data": [
-                        {
-                            'code': 'Y',
-                            'transaction_id': result.id,
-                            'amount': add_data['amount'],
-                            'tender_type': add_data['tender_type'],
-                            'bank_category': add_data['bank_category'],
-                            'min_card_payment': add_data['min_card_payment'],
-                            'max_vchr_count': add_data['voucher_count_limit'],
-                        }
-                    ]
-                }
+                if not add_data['err']:
+                    data = {
+                        "err": False,
+                        "message": "Create Successfully",
+                        "data": [
+                            {
+                                'code': 'Y',
+                                'transaction_id': result.id,
+                                'amount': add_data['amount'],
+                                'tender_type': add_data['tender_type'],
+                                'bank_category': add_data['bank_category'],
+                                'min_card_payment': add_data['min_card_payment'],
+                                'max_vchr_count': add_data['voucher_count_limit'],
+                            }
+                        ]
+                    }
+                else:
+                    data = {
+                        "err": True,
+                        "message": add_data['message'],
+                        "data": []
+                    }
             if process_type == 'used':
                 data = {
                     "err": False,
@@ -284,16 +291,24 @@ class VMSStatusController(http.Controller):
                     ]
                 }          
             if process_type == 'activated':
-                data = {
-                    "err": False,
-                    "message": "Create Successfully",
-                    "data": [
-                        {
-                            'code': 'Y',
-                            'transaction_id': result.id,
-                        }
-                    ]
-                }
+                add_data = result.get_json()
+                if not add_data['err']:
+                    data = {
+                        "err": False,
+                        "message": "Create Successfully",
+                        "data": [
+                            {
+                                'code': 'Y',
+                                'transaction_id': result.id,
+                            }
+                        ]
+                    }
+                else:
+                    data = {
+                        "err": True,
+                        "message": add_data['message'],
+                        "data": []
+                    }
             if process_type == 'reopen':
                 data = {
                     "err": False,

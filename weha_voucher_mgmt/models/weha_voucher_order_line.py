@@ -253,34 +253,36 @@ class VoucherOrderLine(models.Model):
         return trans_line_id
 
     def _auth_trust(self):
-        url = "http://apiindev.trustranch.co.id/login"
+        try:
+            url = "http://apiindev.trustranch.co.id/login"
+            payload='barcode=3000030930&password=weha.ID!!2020'
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+            response = requests.request("POST", url, headers=headers, data=payload)
+            str_json_data  = response.text.replace("'"," ")
+            json_data = json.loads(str_json_data)
+            _logger.info(json_data['data']['api_token'])
+            return json_data['data']['api_token']
+        except Exception as err:
+            return False
 
-        payload='barcode=3000030930&password=weha.ID!!2020'
-        headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        }
-
-        response = requests.request("POST", url, headers=headers, data=payload)
-        #json_data = json.loads(response.text)
-        str_json_data  = response.text.replace("'"," ")
-        json_data = json.loads(str_json_data)
-        #_logger.info(response.text)
-        _logger.info(json_data['data']['api_token'])
-        return json_data['data']['api_token']
-
+    #API for Sales
     def send_data_to_trust(self):
         _logger.info("Send Data")
         trans_line_id = self.get_last_trans_line()
         _logger.info(trans_line_id.name)
-        if self.voucher_trans_type == '1':
+        if self.voucher_trans_type in ('1','2','3'):
             trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
-        if self.voucher_trans_type == '2':
-            trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
-        if self.voucher_trans_type == '3':
-            trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
-    
+
         api_token = self._auth_trust()
+        if not api_token:
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Authentication"
+            self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+            return True, "Error CRM"
+
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://apiindev.trustranch.co.id'
         try:
@@ -293,28 +295,55 @@ class VoucherOrderLine(models.Model):
                 'transaction_id': trans_purchase_id.t_id,
                 'cashier_id': trans_purchase_id.cashier_id,
                 'store_id': trans_purchase_id.store_id,
-                #'member_id': trans_purchase_id.member_id,
                 'member_id': self.member_id,
                 'vouchers': '|'.join(vouchers)
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
             req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
-            _logger.info(req.text)
-            if req.status_code != '200':
-                _logger.info(f'Error : {req.status_code}')
+            if req.status_code == 200:
+                #Success
                 response_json = req.json()
-                _logger.info(f'Error Message: {response_json}')
+                self.is_send_to_crm = True
+                self.message_post(body="Send Notification to CRM Successfully")
+                return False, "Success"                
+            else:
+                #Error
+                _logger.info(f'Error : {req.status_code}')
+                if req.json():
+                    response_json = req.json()                
+                    _logger.info(f'Error Message: {response_json["message"]}')
+                    self.is_send_to_crm = False
+                    self.send_to_crm_message = response_json["message"]
+                    self.message_post(body=response_json["message"])
+                else:
+                    self.is_send_to_crm = False
+                    self.send_to_crm_message = f'Error : {req.status_code}'
 
-            response_json = req.json()
-            _logger.info(f'Success : {req.status_code}')
-            _logger.info(f'Data: {response_json}')
+                return True, "Error CRM"
 
-        except Exception as err:
-            _logger.error(err)  
-        finally:
-            _logger.info("final") 
+        except requests.exceptions.Timeout:
+            # Maybe set up for a retry, or continue in a retry loop
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error "
+            self.message_post(body="Send Notification to CRM Failed (Timeout)")
+            return True, "Error CRM"
+        except requests.exceptions.TooManyRedirects:
+            # Tell the user their URL was bad and try a different one
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Too Many Redirects"
+            self.message_post(body="Send Notification to CRM Failed (TooManyRedirects)")
+            return True, "Error CRM"
+        except requests.exceptions.RequestException as e:
+            _logger.info(err)
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Request"
+            self.message_post(body=err)
+            self.message_post(body="Send Notification to CRM Failed (Exception)")
+            return True, "Error CRM"
+ 
 
+    #API for Used
     def send_used_notification_to_trust(self):  
         _logger.info("Send Used Notifcation")
         
@@ -323,8 +352,14 @@ class VoucherOrderLine(models.Model):
 
         if self.voucher_trans_type == '5':
             trans_status_id = self.env['weha.voucher.trans.status'].search([('name','=',trans_line_id.name)], limit=1)
-    
+
         api_token = self._auth_trust()
+        if not api_token:
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Authentication"
+            self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+            return True, "Error CRM"
+
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://apiindev.trustranch.co.id'
         try:
@@ -332,22 +367,43 @@ class VoucherOrderLine(models.Model):
             vouchers.append(self.voucher_ean)
             data = {
                 'store_id': trans_status_id.store_id,
-                #'member_id': trans_status_id.member_id,
                 'member_id': self.member_id,
                 'vouchers': '|'.join(vouchers)
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
             req = requests.post('{}/vms/use-voucher'.format(base_url), headers=headers ,data=data)
-            _logger.info(req.text)
+            if req.status_code == 200:
+                #Success
+                response_json = req.json()
+                self.is_send_to_crm = True
+                self.message_post(body="Send Notification to CRM Successfully")
+                return False, "Success"                
+            else:
+                #Error
+                _logger.info(f'Error : {req.status_code}')
+                if req.json():
+                    response_json = req.json()                
+                    _logger.info(f'Error Message: {response_json["message"]}')
+                    self.is_send_to_crm = False
+                    self.send_to_crm_message = response_json["message"]
+                    self.message_post(body=response_json["message"])
+                else:
+                    self.is_send_to_crm = False
+                    self.send_to_crm_message = f'Error : {req.status_code}'
+
+                return True, "Error CRM"
+
             
-            #content = json.loads(req.content.decode('utf-8'))
-            #headers.update(access-token=content.get('access_token'))
         except Exception as err:
             _logger.info(err)  
-        finally:
-            _logger.info("final") 
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Request"
+            self.message_post(body=err)
+            self.message_post(body="Send Notification to CRM Failed (Exception)")
+            return True, "Error CRM"
 
+    #API for Employee Voucher
     def send_employee_data_to_trust(self):
         _logger.info("Send Employee Data")
         trans_line_id = self.get_last_trans_line()
@@ -387,8 +443,7 @@ class VoucherOrderLine(models.Model):
 
         except Exception as err:
             _logger.error(err)  
-        finally:
-            _logger.info("final") 
+
 
     @api.model
     def create_order_line_trans(self, name, trans_type):
@@ -437,21 +492,22 @@ class VoucherOrderLine(models.Model):
     voucher_code = fields.Char(string='Voucher Code')
     voucher_code_id = fields.Many2one(comodel_name='weha.voucher.code', string='Voucher Code ID', index=True)
     voucher_amount = fields.Float("Amount", related="voucher_code_id.voucher_amount", store=True)
+    
     #Voucher Term (Expired Date)
     voucher_terms_id = fields.Many2one(comodel_name='weha.voucher.terms', string='Voucher Terms', index=True)
+    
     #Voucher Promo
     voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo', index=True)
     is_voucher_promo = fields.Boolean('Is Promo Voucher', default=False, readonly=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
     min_card_payment = fields.Float('Min Payment', default=0.0)
     voucher_count_limit = fields.Integer('Max Voucher Count', default=0)
-    
     #tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type', related='voucher_promo_id.tender_type_id', store=True)
     tender_type = fields.Char('Tender Type', size=20)
     bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category')
-
     #bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category', related='voucher_promo_id.bank_category_id', store=True)
     bank_category = fields.Char('Bank Category', size=20)
+
     #Check Number Voucher
     check_number = fields.Integer(string='Check Number', group_operator=False)
     #Voucher 12 Digit
@@ -471,6 +527,11 @@ class VoucherOrderLine(models.Model):
     booking_expired_date = fields.Datetime(string='Booking Expired Date')
     year_id = fields.Many2one('weha.voucher.year',string='Year', index=True)
     
+    #Send CRM Status
+    is_send_to_crm = fields.Boolean('Send to CRM', default=False)
+    send_to_crm_retry_count = fields.Integer('Send to CRM Retry', default=0)
+    send_to_crm_message = fields.Char("Send to CRM Message", size=255)
+
     #Many2one relation
     voucher_order_id = fields.Many2one(
         string='Voucher Order',

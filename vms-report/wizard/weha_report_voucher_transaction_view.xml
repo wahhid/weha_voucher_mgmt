@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <odoo>
-    <record id="view_wizard_weha_voucher_stock_report" model="ir.ui.view">
-        <field name="name">weha.voucher.stock.report.form.view</field>
-        <field name="model">weha.voucher.stock.report</field>
+    <record id="view_wizard_weha_voucher_transaction_report" model="ir.ui.view">
+        <field name="name">wizard.weha.voucher.transaction.report.form</field>
+        <field name="model">wizard.weha.voucher.transaction.detail</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <form string="Stock Voucher">
+            <form string="Voucher Transaction">
                 <group>
                     <group>
+                        <field name="state"/>
                         <field name="date_start"/>
                         <field name="date_end"/>
-                        <field name="state"/>
                     </group>
 
-                    <field name="operating_unit_ids" widget="many2many_tags"  options="{'no_create_edit': True}"/>
+                    <field name="operating_unit_ids" widget="many2many_tags"/>
 
                 </group>
                 <footer>

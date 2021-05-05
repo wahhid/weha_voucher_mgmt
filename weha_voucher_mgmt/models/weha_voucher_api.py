@@ -216,13 +216,10 @@ class VoucherTransPurchase(models.Model):
 
     def get_json(self):
         vouchers = []
-        #for voucher_trans_purchase_line_id in result.voucher_trans_purchase_line_ids:
-        #    vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
         for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
             lines = []
             for  voucher_trans_purchase_line_id in voucher_trans_purchase_sku_id.voucher_trans_purchase_line_ids:
                 lines.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean + "|" + voucher_trans_purchase_line_id.voucher_order_line_id.expired_date.strftime("%Y-%m-%d"))
-                #lines.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean)
             vouchers.append({'sku': voucher_trans_purchase_sku_id.sku, 'vouchers' : lines})
         return vouchers
 
@@ -285,9 +282,10 @@ class VoucherTransPurchase(models.Model):
         #Reserved Voucher
         if res.voucher_type == '4':
             for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
-                voucher_trans_purchase_line_id.voucher_order_line_id.sudo().write({'state': 'activated'})
-                voucher_trans_purchase_line_id.voucher_order_line_id.send_data_to_trust()
-                voucher_trans_purchase_line_id.voucher_order_line_id.voucher_trans_type = False
+                err , message = voucher_trans_purchase_line_id.voucher_order_line_id.send_data_to_trust()
+                if not err:
+                    voucher_trans_purchase_line_id.voucher_order_line_id.sudo().write({'state': 'activated'})
+                    voucher_trans_purchase_line_id.voucher_order_line_id.voucher_trans_type = False
         else:
             res.reserved_voucher()  
 
@@ -421,37 +419,6 @@ class VoucherTransStatus(models.Model):
     def trans_close(self):
         super(VoucherTransStatus, self).sudo().write({'state': 'done'})
 
-    def send_data_to_trust(self):
-        api_token = self._auth_trust()
-        headers = {'content-type': 'text/plain', 'charset':'utf-8'}
-        base_url = 'http://apiindev.trustranch.co.id'
-        try:
-            vouchers = []
-            for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
-                vouchers.append(voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean + ';' + voucher_trans_purchase_line_id.voucher_order_line_id.expired_date.strftime('%Y-%m-%d')) 
-            
-            data = {
-                'date': self.trans_date.strftime('%Y-%m-%d'),
-                'time': self.trans_date.strftime('%H:%M:%S'),
-                'receipt': self.receipt_number,
-                'transactionId': self.t_id,
-                'cashierId': self.cashier_id,
-                'storeId': self.store_id,
-                'memberId': self.member_id,
-                'vouchers': '|'.join(vouchers)
-            }
-            _logger.info(data)
-            headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/get-voucher'.format(base_url), headers=headers ,data=data)
-            _logger.info(req.text)
-            
-            #content = json.loads(req.content.decode('utf-8'))
-            #headers.update(access-token=content.get('access_token'))
-        except Exception as err:
-            _logger.info(err)  
-        finally:
-            _logger.info("final")  
-
     def process_voucher_order_line(self, vals):
         arr_ean = vals['voucher_ean'].split('|')
         _logger.info(arr_ean)
@@ -494,28 +461,41 @@ class VoucherTransStatus(models.Model):
                         voucher_order_line_id.create_order_line_trans(self.name, 'RS')
                     elif vals['process_type'] == 'activated':
                         _logger.info(vals['process_type'])
-                        voucher_order_line_id.sudo().write({'state': 'activated'})
                         if voucher_order_line_id.voucher_trans_type == '1':
-                            voucher_order_line_id.send_data_to_trust()
-                            voucher_order_line_id.voucher_trans_type = False
+                            err, message = voucher_order_line_id.send_data_to_trust()
+                            if not err:
+                                voucher_order_line_id.sudo().write({'state': 'activated'})
+                                voucher_order_line_id.voucher_trans_type = False
+                                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
                         if voucher_order_line_id.voucher_trans_type == '2':
-                            voucher_order_line_id.send_data_to_trust()
-                            voucher_order_line_id.voucher_trans_type = False
+                            err, message = voucher_order_line_id.send_data_to_trust()
+                            if not err:
+                                voucher_order_line_id.sudo().write({'state': 'activated'})
+                                voucher_order_line_id.voucher_trans_type = False
+                                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+
                         if voucher_order_line_id.voucher_trans_type == '3':
-                            voucher_order_line_id.send_data_to_trust()
-                            voucher_order_line_id.voucher_trans_type = False
+                            err, message = voucher_order_line_id.send_data_to_trust()
+                            if not err:
+                                voucher_order_line_id.sudo().write({'state': 'activated'})
+                                voucher_order_line_id.voucher_trans_type = False
+                                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
                         if voucher_order_line_id.voucher_trans_type == '4':
-                            voucher_order_line_id.send_data_to_trust()
-                            voucher_order_line_id.voucher_trans_type = False
+                            err, message = voucher_order_line_id.send_data_to_trust()
+                            if not err:
+                                voucher_order_line_id.sudo().write({'state': 'activated'})
+                                voucher_order_line_id.voucher_trans_type = False
+                                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
                         if voucher_order_line_id.voucher_trans_type == '5':
-                            pass
-                        voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+                            pass                    
                     elif vals['process_type'] == 'used':
                         _logger.info(vals['process_type'])
-                        voucher_order_line_id.sudo().write({'state': 'used'})
-                        voucher_order_line_id.send_used_notification_to_trust()
-                        voucher_order_line_id.voucher_trans_type = False
-                        voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                        err, message = voucher_order_line_id.send_used_notification_to_trust()
+                        if not err:
+                            voucher_order_line_id.voucher_trans_type = False
+                            voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                            voucher_order_line_id.sudo().write({'state': 'used'})
+
                     elif vals['process_type'] == 'reopen':
                         _logger.info(vals['process_type'])
                         voucher_order_line_id.sudo().write({'state': 'open'})
@@ -533,19 +513,34 @@ class VoucherTransStatus(models.Model):
             voucher_trans_status_line_id = self.voucher_trans_status_line_ids and self.voucher_trans_status_line_ids[0] or False
             if voucher_trans_status_line_id:
                 voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
-                data.update({'amount': voucher_order_line_id.voucher_code_id.voucher_amount})
-                data.update({'tender_type': ''})
-                data.update({'bank_category': ''})
-                data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
-                data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
-                voucher_mapping_sku_id  = self.env['weha.voucher.mapping.sku'].search([('voucher_code_id','=', voucher_order_line_id.voucher_code_id.id)],limit=1)
-                if voucher_mapping_sku_id:    
-                    voucher_mapping_pos_id = voucher_mapping_sku_id.voucher_mapping_pos_id
-                    if voucher_mapping_pos_id.pos_trx_type == 'Promo':
-                        data.update({'tender_type': voucher_order_line_id.tender_type})
-                        data.update({'bank_category': voucher_order_line_id.bank_category})
-                        data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
-                        data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
+                if voucher_order_line_id.is_send_to_crm:
+                    data.update({'err': False})
+                    data.update({'amount': voucher_order_line_id.voucher_code_id.voucher_amount})
+                    data.update({'tender_type': ''})
+                    data.update({'bank_category': ''})
+                    data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
+                    data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
+                    voucher_mapping_sku_id  = self.env['weha.voucher.mapping.sku'].search([('voucher_code_id','=', voucher_order_line_id.voucher_code_id.id)],limit=1)
+                    if voucher_mapping_sku_id:    
+                        voucher_mapping_pos_id = voucher_mapping_sku_id.voucher_mapping_pos_id
+                        if voucher_mapping_pos_id.pos_trx_type == 'Promo':
+                            data.update({'tender_type': voucher_order_line_id.tender_type})
+                            data.update({'bank_category': voucher_order_line_id.bank_category})
+                            data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
+                            data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
+                else:
+                    data.update({'err': True})
+                    data.update({'message': voucher_order_line_id.send_to_crm_message})
+        if self.process_type == 'activated':
+            voucher_trans_status_line_id = self.voucher_trans_status_line_ids and self.voucher_trans_status_line_ids[0] or False
+            if voucher_trans_status_line_id:
+                voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
+                if voucher_order_line_id.is_send_to_crm:
+                    data.update({'err': False})
+                    data.update({'message': ""})
+                else:
+                    data.update({'err': True})
+                    data.update({'message': voucher_order_line_id.send_to_crm_message})
         return data
                 
     name = fields.Char('Name', )

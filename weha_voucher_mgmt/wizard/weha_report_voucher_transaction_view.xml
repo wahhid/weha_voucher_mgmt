@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <odoo>
-    <record id="view_wizard_weha_voucher_stock_report" model="ir.ui.view">
-        <field name="name">weha.voucher.stock.report.form.view</field>
-        <field name="model">weha.voucher.stock.report</field>
+    <record id="view_wizard_weha_voucher_transaction_report" model="ir.ui.view">
+        <field name="name">wizard.weha.voucher.transaction.report.form</field>
+        <field name="model">wizard.weha.voucher.transaction.detail</field>
         <field name="type">form</field>
         <field name="arch" type="xml">
-            <form string="Stock Voucher">
+            <form string="Voucher Transaction">
                 <group>
                     <group>
                         <field name="date_start"/>
@@ -17,24 +17,24 @@
 
                 </group>
                 <footer>
-                    <button name="print_report_pdf" string="PrintToPDF" type="object" class="btn-primary"/>
+                    <button name="print_report_pdf" string="Print PDF" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-default" special="cancel" />
                 </footer>
             </form>
         </field>
     </record>
 
-    <record id="act_open_report_voucher_stock_wizard" model="ir.actions.act_window">
-        <field name="name">Stock Voucher</field>
-        <field name="res_model">weha.voucher.stock.report</field>
+    <record id="act_open_report_voucher_transaction_detail_wizard" model="ir.actions.act_window">
+        <field name="name">Voucher Transaction Detail</field>
+        <field name="res_model">wizard.weha.voucher.transaction.detail</field>
         <field name="type">ir.actions.act_window</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
 
     <menuitem 
-            id="weha_voucher_stock_report_menu"
-            name="Stock Voucher"
+            id="weha_voucher_transaction_detail_report_menu"
+            name="Voucher Transaction Detail"
             parent="weha_voucher_reporting_main_menu"
-            action="act_open_report_voucher_stock_wizard" sequence="34"/>
+            action="act_open_report_voucher_transaction_detail_wizard" sequence="35"/>
 </odoo>

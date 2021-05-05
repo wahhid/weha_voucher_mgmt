@@ -60,8 +60,6 @@ class VMSSalesController(http.Controller):
         store_id = post['store_id'] or False  if 'store_id' in post else False
         member_id = post['member_id'] or False  if 'member_id' in post else False
         sku = post['sku'] or False  if 'sku' in post else False
-        #quantity = post['quantity'] or False  if 'quantity' in post else False
-        #amount = post['amount'] or False  if 'amount' in post else False
         voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
 
         _fields_includes_in_body = all([date, 
@@ -72,9 +70,8 @@ class VMSSalesController(http.Controller):
                                         store_id,
                                         member_id,
                                         sku,
-                                        #quantity,
-                                        #amount,
                                         voucher_type])
+
         if not _fields_includes_in_body:
                 data =  {
                     "err": True,
@@ -127,11 +124,6 @@ class VMSSalesController(http.Controller):
             if not mapping_sku_id:
                 is_available = False
         
-        #domain = [
-        #    ('code_sku', '=', sku),
-        #]
-
-
         if not is_available:
             response_data = {
                 "err": True,
@@ -149,7 +141,6 @@ class VMSSalesController(http.Controller):
         # #Save Voucher Purchase Transaction
         voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
         str_trans_date = date  +  " "  + time + ":00"
-        #trans_data = datetime.strptime()
         values.update({'trans_date': str_trans_date})
         values.update({'receipt_number': receipt_number})
         values.update({'t_id': t_id})
@@ -170,9 +161,7 @@ class VMSSalesController(http.Controller):
                     }
             return valid_response(data)
 
-        #Validate Data
-        #result.write({'state','done'})
-        
+
         #Prepare Voucher Order Line List
         vouchers = result.get_json()
         

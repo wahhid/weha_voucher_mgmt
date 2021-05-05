@@ -50,9 +50,9 @@
                         <th class="text-left" style="width: 15%">Promo</th>
                         <th class="text-left" style="width: 15%">Status</th>
                         <th class="text-left" style="width: 15%">Voucher Trans ID</th>
-						<th class="text-left" style="width: 15%">Loc.From</th>
-						<th class="text-left" style="width: 15%">Loc.To</th>
-						<th class="text-left" style="width: 15%">Trans Type</th>
+                        <th class="text-left" style="width: 15%">Loc.From</th>
+                        <th class="text-left" style="width: 15%">Loc.To</th>
+                        <th class="text-left" style="width: 15%">Trans Type</th>
                     </thead>
                     <tbody>
                         <t t-set="amount_total" t-value="0"/>
@@ -82,17 +82,17 @@
                                 <td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
                                     <span t-esc="doc['state']"/>
                                 </td >
-								<td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
+                                <td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
                                     <span t-esc="doc['voucher_trans_id']"/>
                                 </td >
-								<td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
+                                <td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
                                     <span t-esc="doc['loc_fr']"/>
                                 </td >
-								<td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
+                                <td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
                                     <span t-esc="doc['loc_to']"/>
                                 </td >
-								<td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
-									<t t-set="values" t-value="dict([('OP','Open'),('AC','Activated'), ('RT','Return'), ('US','Used'),('DM','Damage'),(False,False)])"/>
+                                <td class="text-left" style="white-space:nowrap;margin:0px;padding:0px;">
+                                    <t t-set="values" t-value="dict([('OP','Open'),('AC','Activated'), ('RT','Return'), ('US','Used'),('DM','Damage'),(False,False)])"/>
                                     <t t-esc="values[doc['trans_type']]"/>
                                 </td >
                             </tr>

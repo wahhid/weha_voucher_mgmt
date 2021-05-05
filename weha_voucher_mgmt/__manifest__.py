@@ -33,6 +33,7 @@
         'wizard/weha_received_issuing_wizard_view.xml',
         'wizard/weha_import_voucher_issuing_wizard_view.xml',
         'wizard/weha_report_voucher_stock_wizard_view.xml',
+        'wizard/weha_report_voucher_transaction_view.xml',
         'wizard/weha_received_order_wizard_view.xml',
         'wizard/weha_return_reason_wizard_view.xml',
         'wizard/weha_import_voucher_legacy_issuing_wizard_view.xml',
@@ -78,6 +79,8 @@
         'views/weha_voucher_dashboard_view.xml',   
         'views/weha_voucher_api_view.xml',
         'report/weha_report_voucher_stock_template.xml',
+        'report/weha_report_voucher_transaction_template.xml',
+        
     ],
     "depends": [
         'base',
