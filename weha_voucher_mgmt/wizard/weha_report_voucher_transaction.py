@@ -46,3 +46,17 @@ class WizardVoucherTransactionDetail(models.TransientModel):
         }
 
         return self.env.ref('weha_voucher_mgmt.weha_voucher_transaction_detail').report_action(self, data=data)
+
+    def print_report_excel(self): 
+        data = {
+            'ids': self.ids,
+            'model':'wizard.weha.voucher.transaction.detail',
+            'form': {
+                'state': self.state,
+                'date_start': self.date_start,
+                'date_end': self.date_end,
+                'operating_unit_ids': tuple(self.operating_unit_ids.ids),
+            },
+
+        }
+        return self.env.ref('weha_voucher_mgmt.weha_voucher_transaction_detail_xlsx').report_action(self, data=data)

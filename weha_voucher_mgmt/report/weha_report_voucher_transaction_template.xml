@@ -27,6 +27,15 @@
         menu="False"/>
     />
 
+    <report
+        id="weha_voucher_transaction_detail_xlsx"
+        string="Print Voucher Transaction Detail (XLSX)"
+        model="weha.voucher.order.line"
+        report_type="xlsx"
+        name="weha_voucher_mgmt.weha_voucher_transaction_detail_xlsx"
+        file="weha_voucher_mgmt.weha_voucher_transaction_detail_xlsx"/>
+    />
+
     <template id="weha_voucher_transaction_detail_view">
         <t t-call="web.html_container">
             <div class="header text-center" style="border-bottom: 2px solid black">
@@ -116,5 +125,7 @@
             </div>
         </t>
     </template>
+
+    
 
 </odoo>

@@ -22,7 +22,7 @@ access_weha_voucher_allocate_stage_marketing_user,weha.voucher.allocate.stage.ma
 access_weha_voucher_allocate_stage_hrd_user,weha.voucher.allocate.stage.hrd_user,model_weha_voucher_allocate_stage,group_voucher_hrd_user,1,0,0,0
 
 access_weha_voucher_issuing_stage_user,weha.voucher.issuing.stage.user,model_weha_voucher_issuing_stage,group_voucher_user,1,1,1,0
-access_weha_voucher_issuing_stage_finance_user,weha.voucher.issuing.stage.finance.user,model_weha_voucher_issuing_stage,group_voucher_user,1,1,1,1
+access_weha_voucher_issuing_stage_finance_user,weha.voucher.issuing.stage.finance.user,model_weha_voucher_issuing_stage,group_voucher_finance_user,1,1,1,1
 access_weha_voucher_issuing_stage_marketing_user,weha.voucher.issuing.stage.marketing.user,model_weha_voucher_issuing_stage,group_voucher_marketing_user,1,1,1,0
 access_weha_voucher_issuing_stage_hrd_user,weha.voucher.issuing.stage.hrd.user,model_weha_voucher_issuing_stage,group_voucher_hrd_user,1,1,1,0
 
