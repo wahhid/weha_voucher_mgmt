@@ -123,7 +123,7 @@
                          <notebook colspan="4">
                             <page string="Issued Lines" attrs="{'invisible':[('is_employee','=', True)]}">
 	                        	<field name="voucher_issuing_line_ids" widget="one2many_list" nolabel="0" attrs="{'readonly':[('current_stage','!=', 'unattended')]}">
-	                            	<tree string="Issued Lines">
+	                            	<tree string="Issued Lines" create="false" edit="false">
 	                            	    <field name="voucher_order_line_id" /> 
                                         <field name="voucher_code_id"/>
                                         <field name="year_id"/>

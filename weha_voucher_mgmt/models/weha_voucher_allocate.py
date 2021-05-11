@@ -284,7 +284,8 @@ class VoucherAllocate(models.Model):
         default='physical'
     )
 
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True, readonly=False)
+    voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku','Mapping SKU #', required=True)
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True, related="voucher_mapping_sku_id.voucher_code_id", store=True)
     voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', related="voucher_code_id.voucher_terms_id")
     year_id = fields.Many2one('weha.voucher.year','Year', required=True, readonly=False)
     

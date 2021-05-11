@@ -81,7 +81,7 @@ class VoucherMappingSku(models.Model):
         size=20,
         required=True
     )
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False)
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
     voucher_mapping_pos_id = fields.Many2one('weha.voucher.mapping.pos', 'Voucher Mapping POS Id', required=False)
     point_redeem = fields.Integer('Point Redeem')
     term = fields.Text('Term and Condition')
@@ -115,12 +115,18 @@ class VoucherPromoLine(models.Model):
 
     def get_usage_quota(self):
         for data in self:
-            strSQL = """SELECT sum(amount) FROM weha_voucher_trans_purchase_sku WHERE voucher_mapping_sku_id={}""".format(data.voucher_mapping_sku_id.id)
-            _logger.info(strSQL)
-            self.env.cr.execute(strSQL)
-            row = self.env.cr.fetchone()
-            if row:
-                data.current_amount = row[0]
+            if data.voucher_mapping_sku_id.code_sku:
+                strSQL = """SELECT sum(b.voucher_amount) FROM weha_voucher_order_line a 
+                            LEFT JOIN weha_voucher_code b ON b.id = a.voucher_code_id
+                            WHERE a.voucher_promo_id={} AND a.voucher_sku='{}' AND a.state in ('activated','used')""".format(data.voucher_promo_id.id, data.voucher_mapping_sku_id.code_sku) 
+                #strSQL = """SELECT sum(amount) FROM weha_voucher_trans_purchase_sku WHERE voucher_mapping_sku_id={}""".format(data.voucher_mapping_sku_id.id)
+                _logger.info(strSQL)
+                self.env.cr.execute(strSQL)
+                row = self.env.cr.fetchone()
+                if row:
+                    data.current_amount = row[0]
+                else:
+                    data.current_amount = 0.0
             else:
                 data.current_amount = 0.0
 

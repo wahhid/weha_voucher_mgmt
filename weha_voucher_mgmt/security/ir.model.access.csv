@@ -170,7 +170,7 @@ access_weha_voucher_promo_hrd_user,weha.voucher.promo.hrd.user,model_weha_vouche
 
 
 access_weha_voucher_promo_line_user,weha.voucher.promo.line.user,model_weha_voucher_promo_line,group_voucher_user,1,0,0,0
-access_weha_voucher_promo_line_finance_user,weha.voucher.promo.line.finance.user,model_weha_voucher_promo_line,group_voucher_finance_user,1,1,1,0
+access_weha_voucher_promo_line_finance_user,weha.voucher.promo.line.finance.user,model_weha_voucher_promo_line,group_voucher_finance_user,1,1,1,1
 access_weha_voucher_promo_line_marketing_user,weha.voucher.promo.line.marketing.user,model_weha_voucher_promo_line,group_voucher_marketing_user,1,1,1,0
 access_weha_voucher_promo_line_api_user,weha.voucher.promo.line.api.user,model_weha_voucher_promo_line,group_voucher_api_user,1,0,0,0
 access_weha_voucher_promo_line_hrd_user,weha.voucher.promo.line.hrd.user,model_weha_voucher_promo_line,group_voucher_hrd_user,1,0,0,0

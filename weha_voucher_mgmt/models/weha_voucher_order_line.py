@@ -123,7 +123,7 @@ class VoucherOrderLine(models.Model):
         cur_date_time = datetime.now()
         next_date_time = cur_date_time + timedelta(minutes=5)
         domain = [
-            ('booking_expired_date','<', cur_date_time),
+            ('expired_date','<', cur_date_time),
             ('state','=','activated')
         ]
         voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
@@ -146,14 +146,15 @@ class VoucherOrderLine(models.Model):
         _logger.info("INSERT")
         strSQL = """INSERT INTO weha_voucher_order_line 
             (voucher_12_digit,voucher_ean, name, operating_unit_id,voucher_type,
-             voucher_order_id,voucher_code_id,voucher_terms_id,year_id,check_number,voucher_amount,state,create_date,create_uid)
-            VALUES ('{}','{}','{}',{},'{}',{},{},{},{},{},{},'{}','{}',{}) RETURNING id""".format(
+             voucher_order_id, voucher_sku, voucher_code_id,voucher_terms_id,year_id,check_number,voucher_amount,state,create_date,create_uid)
+            VALUES ('{}','{}','{}',{},'{}',{},'{}',{},{},{},{},{},'{}','{}',{}) RETURNING id""".format(
                 vals['voucher_12_digit'],
                 vals['voucher_ean'],
                 vals['name'],
                 vals['operating_unit_id'],
                 vals['voucher_type'],
                 vals['voucher_order_id'],
+                vals['voucher_sku'],
                 vals['voucher_code_id'],
                 vals['voucher_terms_id'],
                 vals['year_id'],

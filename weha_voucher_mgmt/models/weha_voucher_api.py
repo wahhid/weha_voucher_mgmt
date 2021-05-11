@@ -473,7 +473,6 @@ class VoucherTransStatus(models.Model):
                                 voucher_order_line_id.sudo().write({'state': 'activated'})
                                 voucher_order_line_id.voucher_trans_type = False
                                 voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-
                         if voucher_order_line_id.voucher_trans_type == '3':
                             err, message = voucher_order_line_id.send_data_to_trust()
                             if not err:
@@ -490,8 +489,13 @@ class VoucherTransStatus(models.Model):
                             pass                    
                     elif vals['process_type'] == 'used':
                         _logger.info(vals['process_type'])
-                        err, message = voucher_order_line_id.send_used_notification_to_trust()
-                        if not err:
+                        if voucher_order_line_id.voucher_code_id.voucher_type == 'electronic':
+                            err, message = voucher_order_line_id.send_used_notification_to_trust()
+                            if not err:
+                                voucher_order_line_id.voucher_trans_type = False
+                                voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                                voucher_order_line_id.sudo().write({'state': 'used'})
+                        else:
                             voucher_order_line_id.voucher_trans_type = False
                             voucher_order_line_id.create_order_line_trans(self.name, 'US')
                             voucher_order_line_id.sudo().write({'state': 'used'})
@@ -633,16 +637,20 @@ class VoucherTransFTP(models.Model):
     def process_ftp(self):
         _logger.info("Process FTP")
         self.ftp_url = self.env.ref(ftp_url).sudo().value
+        _logger.info(self.ftp_url)
         self.ftp_username = self.env.ref(ftp_username).sudo().value
+        _logger.info(self.ftp_username)
         self.ftp_password = self.env.ref(ftp_password).sudo().value
+        _logger.info(self.ftp_password)
         #Connect To FTP Server
         ftp = FTP()
         ftp.connect(self.ftp_url, 21)
         ftp.login(self.ftp_username, self.ftp_password)
-        ftp.cwd('fail')
+        ftp.set_pasv(False)
+        #ftp.cwd('fail')
         _logger.info(ftp.pwd())
         files = []
-        ftp.dir(files.append)  # Takes a callback for each file
+        #ftp.dir(files.append)  # Takes a callback for each file
         for file_name in ftp.nlst():
             _logger.info(file_name)
             try:
@@ -653,7 +661,7 @@ class VoucherTransFTP(models.Model):
                 with open("/tmp/" + file_name, 'wb') as local_file:  # Open local file for writing
                     response = ftp.retrbinary('RETR ' + file_name, file_csv.write)
                     if response.startswith('226'):  # Transfer complete
-                        print('Transfer complete')
+                        print('Transfer complete - ' + file_name)
                         ftp.rename(file_name, "old/" + file_name)
                         #Create Ir Attachment
                         data = file_csv.getvalue()
@@ -664,21 +672,12 @@ class VoucherTransFTP(models.Model):
                         _logger.info(vals)
                         #Create Trans Ftp
                         res = self.env['weha.voucher.trans.ftp'].create(vals)
-                        #attachment_id = self.env['ir.attachment'].sudo().create({
-                        #            'name': file_name,
-                        #            'datas': base64.b64encode(data),
-                        #            'store_fname': file_name,
-                        #            'type': 'binary',
-                        #            'res_model': 'weha.voucher.trans.ftp',
-                        #            'res_id': res.id
-                        #})
-                        #res.write({'attachment_id': attachment_id.id})
-                        keys = ['date', 'time','receipt_number','t_id','cashier_id','store_id', 'sku', 'qty', 'amount', 'voucher_type', 'member_id', 'status']                    
+                        keys = ['date', 'time','receipt_number','t_id','cashier_id','store_id','api_name', 'sku', 'voucher_ean', 'qty', 'amount', 'voucher_type', 'member_id', 'status']                    
                         data = base64.decodebytes(res.file_csv)
                         file_input = io.StringIO(data.decode("utf-8"))
                         file_input.seek(0)
                         reader_info = []
-                        reader = csv.reader(file_input, delimiter=';')
+                        reader = csv.reader(file_input, delimiter=',')
                         try:
                             reader_info.extend(reader)
                         except Exception:
@@ -692,10 +691,49 @@ class VoucherTransFTP(models.Model):
                                     continue
                                 else:
                                     _logger.info(values)
-                                    if values['voucher_type'] == '1':
+                                    if values['api_name'] == 'API#1':
+                                        _logger.info('API#1')
+                                        if values['voucher_type'] == '1':
+                                            vals = {}
+                                            # #Save Voucher Purchase Transaction
+                                            voucher_trans_purchase_obj = self.env['weha.voucher.trans.purchase']
+                                            trans_date = values['date']  +  " "  + values['time'] + ":00"
+                                            vals.update({'trans_date': trans_date})
+                                            vals.update({'receipt_number': values['receipt_number']})
+                                            vals.update({'t_id': values['t_id']})
+                                            vals.update({'cashier_id': values['cashier_id']})
+                                            vals.update({'store_id': values['store_id']})
+                                            vals.update({'member_id': values['member_id']})
+                                            vals.update({'sku': values['sku'] + "|" + values['qty']})
+                                            vals.update({'voucher_type': values['voucher_type']})        
+                                            #Save Data
+                                            trans_purchase_id = voucher_trans_purchase_obj.sudo().create(vals)
+                                            if not trans_purchase_id:
+                                                _logger.info("error")  
+                                            else:
+                                                res.write({'trans_purchase_id': trans_purchase_id.id, "voucher_type": values['voucher_type']})
+                                                #Save Voucher Status Transaction
+                                                vals = {}
+                                                voucher_trans_status_obj = self.env['weha.voucher.trans.status']
+                                                trans_date = values['date']  +  " "  + values['time'] + ":00"
+                                                vals.update({'trans_date': trans_date})
+                                                vals.update({'receipt_number': values['receipt_number']})
+                                                vals.update({'t_id': values['t_id']})
+                                                vals.update({'cashier_id': values['cashier_id']})
+                                                vals.update({'store_id': values['store_id']})
+                                                vals.update({'member_id': values['member_id']})
+                                                voucher_eans = ""
+                                                for voucher_trans_purchase_line_id in trans_purchase_id.voucher_trans_purchase_line_ids:
+                                                    voucher_eans = voucher_eans + "|" + voucher_trans_purchase_line_id.voucher_order_line_id.voucher_ean
+                                                vals.update({'voucher_ean': voucher_eans})
+                                                vals.update({'process_type': "activated"})
+                                                trans_status_id = voucher_trans_status_obj.sudo().create(vals)
+
+                                    if values['api_name'] == 'API#4':
+                                        _logger.info('API#4')
+                                        #Save Voucher Status Transaction
                                         vals = {}
-                                        # #Save Voucher Purchase Transaction
-                                        voucher_trans_purchase_obj = self.env['weha.voucher.trans.purchase']
+                                        voucher_trans_status_obj = self.env['weha.voucher.trans.status']
                                         trans_date = values['date']  +  " "  + values['time'] + ":00"
                                         vals.update({'trans_date': trans_date})
                                         vals.update({'receipt_number': values['receipt_number']})
@@ -703,27 +741,12 @@ class VoucherTransFTP(models.Model):
                                         vals.update({'cashier_id': values['cashier_id']})
                                         vals.update({'store_id': values['store_id']})
                                         vals.update({'member_id': values['member_id']})
-                                        vals.update({'sku': values['sku'] + "|" + values['qty']})
-                                        vals.update({'voucher_type': values['voucher_type']})        
-
-                                        #Save Data
-                                        trans_purchase_id = voucher_trans_purchase_obj.sudo().create(vals)
-                                        if not trans_purchase_id:
-                                            _logger.info("error")              
-                                        res.write({'trans_purchase_id': trans_purchase_id.id, "voucher_type": values['voucher_type']})
-                                    #res = self.env['weha.voucher.issuing.employee.line'].create(values)
+                                        vals.update({'voucher_ean': values['voucher_ean']})
+                                        vals.update({'process_type': "activated"})
+                                        trans_status_id = voucher_trans_status_obj.sudo().create(vals)                                        
                     else:
                         print('Error transferring. Local file may be incomplete or corrupt.')
-            #f = open("demofile.txt", "r")
-            
-            #data = f.read()
-            # request.env['ir.attachment'].sudo().create({
-            #             'name': f.filename,
-            #             'datas': base64.b64encode(data),
-            #             'datas_fname': f.filename,
-            #             'res_model': 'weha.voucher.trans.ftp',
-            #             'res_id': res.id
-            # })
+        #Close FTP Connection
         ftp.close()        
 
     name = fields.Char('Name', )

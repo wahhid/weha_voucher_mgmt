@@ -167,6 +167,7 @@ class VoucherOrder(models.Model):
             vals.update({'voucher_type': self.voucher_type})
             vals.update({'voucher_order_id': self.id})
             vals.update({'voucher_order_name': self.number})
+            vals.update({'voucher_sku': self.voucher_mapping_sku_id.code_sku})
             vals.update({'voucher_code_id': self.voucher_code_id.id})
             vals.update({'voucher_amount': self.voucher_code_id.voucher_amount})
             vals.update({'voucher_terms_id': self.voucher_code_id.voucher_terms_id.id})
@@ -315,7 +316,8 @@ class VoucherOrder(models.Model):
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
     )
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
+    voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku','Mapping SKU #',  required=True)
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True, related="voucher_mapping_sku_id.voucher_code_id", store=True)
     
     stage_id = fields.Many2one(
         'weha.voucher.order.stage',

@@ -159,7 +159,8 @@
                         </group>
                         <group>
                             <group string="Voucher Detail">
-                                <field name="voucher_code_id" domain="[('voucher_type','=','physical')]"/>
+                                <field name="voucher_mapping_sku_id"  domain="[('voucher_code_id.voucher_type','=', 'physical')]"/>
+                                <field name="voucher_code_id"/>
                                 <field name="voucher_terms_id"/>
                                 <field name="expired_days" attrs="{'invisible': [('is_voucher_promo','=', True)], 'required': [('is_voucher_promo','=', False)]}"/>
                                 <field name="year_id"/>     

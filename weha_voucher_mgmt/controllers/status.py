@@ -50,6 +50,7 @@ class VMSStatusController(http.Controller):
     @http.route("/api/vms/v1.0/status", type="http", auth="none", methods=["POST"], csrf=False, cors="*")
     def vssales(self, **post):
         
+        #Process Fields
         trans_date = post['date'] or False if 'date' in post else False
         trans_time = post['time'] or False if 'time' in post else False
         receipt_number = post['receipt_number'] or False if 'receipt_number' in post else False
@@ -58,31 +59,30 @@ class VMSStatusController(http.Controller):
         store_id = post['store_id'] or False  if 'store_id' in post else False
         member_id = post['member_id'] or False  if 'member_id' in post else False
         voucher_eans = post['voucher_ean'] or False if 'voucher_ean' in post else False
-        #voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
         process_type = post['process_type'] or False if 'process_type' in post else False
         void = post['void'] or False if 'void' in post else False
         
-
+        #Check Field Process Type
         if not process_type:
             data =  {
                 "err": True,
-                "message": "Missing fields",
+                "message": "Missing Process Type Fields",
                 "data": []
             }
             return valid_response(data)
             
+        #Check Field for Reserved
         if process_type == 'reserved':
             _logger.info("reserved")
             _fields_includes_in_body = all([trans_date, 
                                             trans_time, 
-                                            #receipt_number,  optional
                                             t_id, 
                                             cashier_id, 
                                             store_id,
-                                            # member_id, optional
                                             voucher_eans,
                                             process_type
                                             ])
+        #Check Field for Used
         if process_type == 'used':
             _logger.info("used")
             _fields_includes_in_body = all([trans_date, 
@@ -91,10 +91,10 @@ class VMSStatusController(http.Controller):
                                             t_id, 
                                             cashier_id, 
                                             store_id,
-                                            #member_id, optional
                                             voucher_eans,
                                             process_type
                                             ])
+        #Check Field for Activated
         if process_type == 'activated':
             _logger.info("activated")
             _fields_includes_in_body = all([trans_date, 
@@ -103,10 +103,10 @@ class VMSStatusController(http.Controller):
                                             t_id, 
                                             cashier_id, 
                                             store_id,
-                                            #member_id, optional
                                             voucher_eans,
                                             process_type
                                             ])
+        #Check Field for Re-Open
         if process_type == 'reopen':
             _logger.info("Re-Open")
             _fields_includes_in_body = all([trans_date, 
@@ -190,17 +190,7 @@ class VMSStatusController(http.Controller):
 
                 voucher_order_line_ids.append(voucher_order_line_id)  
         elif process_type == 'reopen':
-            # if store_id:
-            #     operating_unit_id = http.request.env['operating.unit'].search([('code','=',store_id)])
-
             for voucher_ean in arr_ean:
-            #     if store_id:
-            #         domain = [
-            #             ('voucher_ean', '=', voucher_ean),
-            #             ('operating_unit_id','=', operating_unit_id.id),
-            #             ('state', 'in', ['reserved','activated','used'])
-            #         ]
-            #     else:
                 domain = [
                     ('voucher_ean', '=', voucher_ean),
                     ('state', 'in', ['reserved','activated','used'])
