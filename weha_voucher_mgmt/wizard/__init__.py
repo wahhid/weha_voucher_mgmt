@@ -12,4 +12,5 @@ from . import weha_report_voucher_stock_wizard
 from . import weha_received_order_wizard
 from . import weha_return_reason_wizard
 from . import weha_import_voucher_legacy_issuing_wizard
+from . import weha_import_voucher_allocate_wizard
 from . import weha_report_voucher_transaction

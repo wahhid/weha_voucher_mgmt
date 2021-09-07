@@ -164,6 +164,139 @@ class VMSSalesController(http.Controller):
 
         #Prepare Voucher Order Line List
         vouchers = result.get_json()
+    
+        data = {
+            "err": False,
+            "message": message,
+            "data": [
+                {
+                    'code': 'Y',
+                    'vouchers': vouchers
+                }
+            ]
+        }
+        return valid_response(data)
+
+
+
+    @validate_token
+    @http.route("/api/vms/v2.0/sales", type="http", auth="none", methods=["POST"], csrf=False)
+    def vssales2(self, **post):
+        message = "Create Successfully"
+        date = post['date'] or False if 'date' in post else False
+        time = post['time'] or False if 'time' in post else False
+        receipt_number = post['receipt_number'] or False if 'receipt_number' in post else False
+        t_id = post['t_id'] or False if 't_id' in post else False
+        cashier_id = post['cashier_id'] or False  if 'cashier_id' in post else False
+        store_id = post['store_id'] or False  if 'store_id' in post else False
+        member_id = post['member_id'] or False  if 'member_id' in post else False
+        sku = post['sku'] or False  if 'sku' in post else False
+        voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
+        voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
+
+        
+        _fields_includes_in_body = all([date, 
+                                        time, 
+                                        receipt_number, 
+                                        t_id, 
+                                        cashier_id, 
+                                        store_id,
+                                        member_id,
+                                        sku,
+                                        voucher_type])
+
+        if not _fields_includes_in_body:
+                data =  {
+                    "err": True,
+                    "message": "Missing fields",
+                    "data": []
+                }
+                return valid_response(data)
+        
+        operating_unit_id = http.request.env['operating.unit'].search([('code','=', store_id)],limit=1)
+
+        if not operating_unit_id:
+            return valid_response(
+                {
+                    "err": True,
+                    "message": "Operating Unit not found!",
+                    "data": []
+                }
+            )
+
+        if voucher_type != '1':
+            return valid_response(
+                {
+                    "err": True,
+                    "message": "Invalid Transaction",
+                    "data": []
+                }
+            )
+
+        skus = []
+        is_available = True
+        if ';' in sku:
+            arr_skus = sku.split(';')
+            _logger.info(arr_skus)
+            for str_sku in arr_skus:
+                arr_sku  = str_sku.split('|')
+                _logger.info(arr_sku)
+                domain = [
+                    ('code_sku', '=', arr_sku[0]),
+                ]
+                mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
+                if not mapping_sku_id:
+                    is_available = False
+        else:
+            arr_sku  = sku.split('|')
+            _logger.info(arr_sku)
+            domain = [
+                ('code_sku', '=', arr_sku[0]),
+            ]
+            mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
+            if not mapping_sku_id:
+                is_available = False
+        
+        if not is_available:
+            response_data = {
+                "err": True,
+                "message": "SKU not found",
+                "data": [
+                    {'code': 'N'}
+                ]
+            }
+            return valid_response(response_data)
+
+        
+
+        values = {}
+            
+        # #Save Voucher Purchase Transaction
+        voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
+        str_trans_date = date  +  " "  + time + ":00"
+        values.update({'trans_date': str_trans_date})
+        values.update({'receipt_number': receipt_number})
+        values.update({'t_id': t_id})
+        values.update({'cashier_id': cashier_id})
+        values.update({'store_id': store_id})
+        values.update({'member_id': member_id})
+        values.update({'sku': sku})
+        values.update({'voucher_type': voucher_type})        
+
+        #Save Data
+        result = voucher_trans_purchase_obj.sudo().create(values)
+        
+        if not result:
+            data =  {
+                        "err": True,
+                        "message": "Create Failed",
+                        "data": []
+                    }
+            return valid_response(data)
+
+
+        #Prepare Voucher Order Line List
+        batch_id = result.get_json_v2()
         
         #if validate set return_code = Y
 
@@ -179,8 +312,7 @@ class VMSSalesController(http.Controller):
             "data": [
                 {
                     'code': 'Y',
-                    'transaction_id': result.id,
-                    'vouchers': vouchers
+                    'batch_id': result.batch_id
                 }
             ]
         }

@@ -11,6 +11,8 @@ import csv
 import logging
 import io
 import json
+import string
+import random
 
 _logger = logging.getLogger(__name__)
 
@@ -27,7 +29,7 @@ class VoucherTransPurchase(models.Model):
     def trans_close(self):
         super(VoucherTransPurchase, self).write({'state': 'done'})
 
-    def complete_sku(self):
+    def process_and_complete_sku(self):
         mapping_sku = []
         if ';' in self.sku:
             arr_skus = self.sku.split(';')
@@ -143,21 +145,24 @@ class VoucherTransPurchase(models.Model):
         finally:
             _logger.info("final")  
 
-    def reserved_voucher(self):
+    def create_and_reserved_voucher(self):
         seq = self.env['ir.sequence']
         operating_unit_id = self.env['operating.unit'].search([('code','=', self.store_id)],limit=1)
         for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
             for i in range(1,voucher_trans_purchase_sku_id.quantity + 1):
                 vals = {}
+                vals.update({'batch_id': self.batch_id})
                 vals.update({'member_id': self.member_id})
                 vals.update({'operating_unit_id': operating_unit_id.id})
                 vals.update({'voucher_type': 'electronic'})
                 vals.update({'voucher_sku': voucher_trans_purchase_sku_id.sku})
+                #Set Voucher Trans Type for API#4 and Empty after API#4 confirm
                 vals.update({'voucher_trans_type': self.voucher_type})
                 vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
                 vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
                 vals.update({'tender_type': self.tender_type})
                 vals.update({'bank_category': self.bank_category})
+                #Voucher Promo Process
                 if voucher_trans_purchase_sku_id.voucher_promo_id:
                     vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
                     vals.update({'min_card_payment': voucher_trans_purchase_sku_id.voucher_promo_id.min_card_payment})
@@ -166,8 +171,11 @@ class VoucherTransPurchase(models.Model):
                 #Get Current Year
                 current_year = self.env['weha.voucher.year'].get_current_year()
                 vals.update({'year_id': current_year.id})
+
                 check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
                 vals.update({'check_number': check_number})
+
+                #Create Voucher Order Line
                 voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
                 if not voucher_order_line_id:
                     raise ValidationError("Can't Generate voucher order line, contact administrator!")
@@ -181,38 +189,39 @@ class VoucherTransPurchase(models.Model):
                 }
                 self.env['weha.voucher.trans.purchase.line'].create(vals)
 
-    def issuing_voucher(self):
-        seq = self.env['ir.sequence']
-        operating_unit_id = self.env['operating.unit'].search([('code','=', self.store_id)],limit=1)
+    # Check for Remove
+    # def issuing_voucher(self):
+    #     seq = self.env['ir.sequence']
+    #     operating_unit_id = self.env['operating.unit'].search([('code','=', self.store_id)],limit=1)
 
-        for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
-            for i in range(1,voucher_trans_purchase_sku_id.quantity + 1):
-                vals = {}
-                vals.update({'member_id': self.member_id})
-                vals.update({'operating_unit_id': operating_unit_id.id})
-                vals.update({'voucher_type': 'electronic'})
-                vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
-                vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
-                vals.update({'tender_type': self.tender_type})
-                vals.update({'bank_category': self.bank_category})
-                if voucher_trans_purchase_sku_id.voucher_promo_id:
-                    vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
+    #     for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
+    #         for i in range(1,voucher_trans_purchase_sku_id.quantity + 1):
+    #             vals = {}
+    #             vals.update({'member_id': self.member_id})
+    #             vals.update({'operating_unit_id': operating_unit_id.id})
+    #             vals.update({'voucher_type': 'electronic'})
+    #             vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
+    #             vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
+    #             vals.update({'tender_type': self.tender_type})
+    #             vals.update({'bank_category': self.bank_category})
+    #             if voucher_trans_purchase_sku_id.voucher_promo_id:
+    #                 vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
                 
-                vals.update({'year_id': voucher_trans_purchase_sku_id.year_id.id})
-                check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
-                vals.update({'check_number': check_number})
-                voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
-                if not voucher_order_line_id:
-                    raise ValidationError("Can't Generate voucher order line, contact administrator!")
-                voucher_order_line_id.write({'state': 'activated'})
-                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+    #             vals.update({'year_id': voucher_trans_purchase_sku_id.year_id.id})
+    #             check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
+    #             vals.update({'check_number': check_number})
+    #             voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
+    #             if not voucher_order_line_id:
+    #                 raise ValidationError("Can't Generate voucher order line, contact administrator!")
+    #             voucher_order_line_id.write({'state': 'activated'})
+    #             voucher_order_line_id.create_order_line_trans(self.name, 'AC')
 
-                vals = {
-                    'voucher_trans_purchase_id': self.id,
-                    'voucher_trans_purchase_sku_id': voucher_trans_purchase_sku_id.id,
-                    'voucher_order_line_id': voucher_order_line_id.id
-                }
-                self.env['weha.voucher.trans.purchase.line'].create(vals)
+    #             vals = {
+    #                 'voucher_trans_purchase_id': self.id,
+    #                 'voucher_trans_purchase_sku_id': voucher_trans_purchase_sku_id.id,
+    #                 'voucher_order_line_id': voucher_order_line_id.id
+    #             }
+    #             self.env['weha.voucher.trans.purchase.line'].create(vals)
 
     def get_json(self):
         vouchers = []
@@ -223,7 +232,12 @@ class VoucherTransPurchase(models.Model):
             vouchers.append({'sku': voucher_trans_purchase_sku_id.sku, 'vouchers' : lines})
         return vouchers
 
+
+    def get_json_v2(self):
+        return {'batch_id', self.batch_id}
+
     name = fields.Char('Name', )
+    batch_id = fields.Char('Batch #', size=10, readonly=True)
     trans_type = fields.Char('Trans Type', size=10)
     trans_date = fields.Datetime("Transaction Date")
     receipt_number = fields.Char("Receipt #", size=10)
@@ -273,22 +287,28 @@ class VoucherTransPurchase(models.Model):
             seq = seq.with_context(force_company=vals['company_id'])
         vals['name'] = seq.next_by_code('weha.voucher.trans.purchase.sequence') or '/'
         
+        batch_id = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+        _logger.info(batch_id)
+        vals['batch_id'] = batch_id
+        
         #Create Trans
         res = super(VoucherTransPurchase, self).create(vals)
 
-        #Complete SKU List
-        res.complete_sku()
+        #Process SKU List
+        res.process_and_complete_sku()
 
         #Reserved Voucher
         if res.voucher_type == '4':
+            #if voucher for employee
             for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
                 err , message = voucher_trans_purchase_line_id.voucher_order_line_id.send_data_to_trust()
                 if not err:
                     voucher_trans_purchase_line_id.voucher_order_line_id.sudo().write({'state': 'activated'})
                     voucher_trans_purchase_line_id.voucher_order_line_id.voucher_trans_type = False
         else:
-            res.reserved_voucher()  
+            res.create_and_reserved_voucher()  
 
+        #Close Purchase Transaction
         res.trans_close()
 
         return res    
@@ -486,7 +506,9 @@ class VoucherTransStatus(models.Model):
                                 voucher_order_line_id.voucher_trans_type = False
                                 voucher_order_line_id.create_order_line_trans(self.name, 'AC')
                         if voucher_order_line_id.voucher_trans_type == '5':
-                            pass                    
+                            voucher_order_line_id.sudo().write({'state': 'activated'})
+                            voucher_order_line_id.voucher_trans_type = False
+                            voucher_order_line_id.create_order_line_trans(self.name, 'AC')                    
                     elif vals['process_type'] == 'used':
                         _logger.info(vals['process_type'])
                         if voucher_order_line_id.voucher_code_id.voucher_type == 'electronic':
@@ -499,7 +521,6 @@ class VoucherTransStatus(models.Model):
                             voucher_order_line_id.voucher_trans_type = False
                             voucher_order_line_id.create_order_line_trans(self.name, 'US')
                             voucher_order_line_id.sudo().write({'state': 'used'})
-
                     elif vals['process_type'] == 'reopen':
                         _logger.info(vals['process_type'])
                         voucher_order_line_id.sudo().write({'state': 'open'})
@@ -594,17 +615,13 @@ class VoucherTransStatus(models.Model):
         vals['name'] = seq.next_by_code('weha.voucher.trans.status.sequence') or '/'
 
         res = super(VoucherTransStatus, self).create(vals)
-
-        # arr_voucher_ean = vals['voucher_ean'].split("|")
-        # voucher_ean_ids = []
-        # for voucher_ean in arr_voucher_ean:
-
        
         if vals['process_type'] in ('reserved', 'activated', 'used'):
             res.process_voucher_order_line(vals) 
         else:
             #Process Voucher Order Line Reopen
             res.process_voucher_order_line(vals) 
+        
         #Close Voucher Transaction Purchase
         res.trans_close()
         return res

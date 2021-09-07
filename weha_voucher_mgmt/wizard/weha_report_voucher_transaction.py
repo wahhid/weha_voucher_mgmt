@@ -8,6 +8,7 @@ class WizardVoucherTransactionDetail(models.TransientModel):
 
     date_start = fields.Date('Start Date', required=True)
     date_end = fields.Date('End Date', required=True)
+    voucher_promo_ids = fields.Many2many('weha.voucher.promo','voucher_transaction_detail_promos', required=False)
     operating_unit_ids = fields.Many2many('operating.unit', 'voucher_transaction_detail_operating_units', required=True,
                                       default=lambda s: s.env['operating.unit'].search([]))
     
@@ -40,7 +41,8 @@ class WizardVoucherTransactionDetail(models.TransientModel):
                 'state': self.state,
                 'date_start': self.date_start,
                 'date_end': self.date_end,
-                'operating_unit_ids': tuple(self.operating_unit_ids.ids),
+                'voucher_promo_ids': self.voucher_promo_ids[0].id if len(self.voucher_promo_ids) == 1 else tuple(self.voucher_promo_ids.ids),
+                'operating_unit_ids': self.operating_unit_ids[0].id if len(self.operating_unit_ids) == 1 else tuple(self.operating_unit_ids.ids), 
             },
 
         }

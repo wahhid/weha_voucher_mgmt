@@ -98,6 +98,7 @@ class VoucherPromo(models.Model):
             data.current_amount = amount
 
     name = fields.Char("Name", size=200, required=True)
+    code = fields.Char("Code", size=10, required=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
     bank_category_id = fields.Many2one('weha.voucher.bank.category', 'Bank Category')
     voucher_promo_line_ids = fields.One2many('weha.voucher.promo.line','voucher_promo_id','Lines')

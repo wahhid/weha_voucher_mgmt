@@ -128,6 +128,7 @@
                                 <field name="voucher_count"/>
                                 <field name="current_stage" invisible="1"/>
                                 <field name="remark" widget="textarea"/>
+                                <field name="voucher_promo_id"/>
                             </group>
                         </group>
 
@@ -137,8 +138,17 @@
                                     <tree string="Request Lines" editable="bottom">
                                         <field name="voucher_code_id"  domain="[('voucher_type', '=', 'physical')]"/>
                                         <field name="voucher_qty"/>
+                                        <field name="voucher_amount"/>
+                                        <field name="total_amount"/>
                                     </tree>
                                 </field>
+                                <group class="oe_subtotal_footer oe_right" colspan="2" name="voucher_request_total">
+                                    <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                        <label for="voucher_total_amount" />
+                                    </div>
+                                    <field name="voucher_total_amount" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                                <div class="oe_clear"/>
                             </page>
                             <!--
                             <page string="Request Allocate Lines">

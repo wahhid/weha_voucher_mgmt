@@ -23,6 +23,7 @@ class ReportVoucherTransactionDetailXlsx(models.AbstractModel):
         date_start = data['form']['date_start']
         date_end = data['form']['date_end']
         operating_unit_ids = data['form']['operating_unit_ids']
+        voucher_promo_ids = data['form']['voucher_promo_ids']
         date_start_obj = datetime.strptime(date_start, DATE_FORMAT)
         _logger.info(date_start_obj)
         date_end_obj = datetime.strptime(date_end, DATE_FORMAT)
@@ -30,20 +31,39 @@ class ReportVoucherTransactionDetailXlsx(models.AbstractModel):
 
         docs = {}
         if state == 'US':
-            strSQL = """
-                SELECT a.trans_date, d.name as operating_unit_name, 
-                       b.voucher_sku, e.name as voucher_name,
-                       c.receipt_number, c.t_id, c.member_id, f.name as promo_name, b.voucher_ean,
-                       e.voucher_amount
-                FROM weha_voucher_order_line_trans a
-                LEFT JOIN weha_voucher_order_line b ON b.id = a.voucher_order_line_id
-                LEFT JOIN weha_voucher_trans_status c ON c.name = a.name
-                LEFT JOIN operating_unit d ON d.code = c.store_id
-                LEFT JOIN weha_voucher_code e ON e.id = b.voucher_code_id
-                LEFT JOIN weha_voucher_promo f ON f.id = b.voucher_promo_id
-                WHERE trans_type='{}' AND DATE(a.trans_date) BETWEEN '{}' AND '{}'
-                ORDER BY d.name, a.trans_date
-            """.format(state, date_start, date_end)
+            if voucher_promo_ids:
+                strSQL = """
+                    SELECT a.trans_date, d.name as operating_unit_name, 
+                        b.voucher_sku, e.name as voucher_name,
+                        c.receipt_number, c.t_id, c.member_id, f.name as promo_name, b.voucher_ean,
+                        e.voucher_amount
+                    FROM weha_voucher_order_line_trans a
+                    LEFT JOIN weha_voucher_order_line b ON b.id = a.voucher_order_line_id
+                    LEFT JOIN weha_voucher_trans_status c ON c.name = a.name
+                    LEFT JOIN operating_unit d ON d.code = c.store_id
+                    LEFT JOIN weha_voucher_code e ON e.id = b.voucher_code_id
+                    LEFT JOIN weha_voucher_promo f ON f.id = b.voucher_promo_id
+                    WHERE trans_type='{}' AND DATE(a.trans_date) BETWEEN '{}' AND '{}'
+                    AND b.operating_unit_id in {} AND b.voucher_promo_id in {}
+                    ORDER BY d.name, a.trans_date
+                """.format(state, date_start, date_end, tuple(operating_unit_ids), tuple(voucher_promo_ids))
+            else:
+                 strSQL = """
+                    SELECT a.trans_date, d.name as operating_unit_name, 
+                        b.voucher_sku, e.name as voucher_name,
+                        c.receipt_number, c.t_id, c.member_id, f.name as promo_name, b.voucher_ean,
+                        e.voucher_amount
+                    FROM weha_voucher_order_line_trans a
+                    LEFT JOIN weha_voucher_order_line b ON b.id = a.voucher_order_line_id
+                    LEFT JOIN weha_voucher_trans_status c ON c.name = a.name
+                    LEFT JOIN operating_unit d ON d.code = c.store_id
+                    LEFT JOIN weha_voucher_code e ON e.id = b.voucher_code_id
+                    LEFT JOIN weha_voucher_promo f ON f.id = b.voucher_promo_id
+                    WHERE trans_type='{}' AND DATE(a.trans_date) BETWEEN '{}' AND '{}'
+                    AND b.operating_unit_id in {}
+                    ORDER BY d.name, a.trans_date
+                """.format(state, date_start, date_end, tuple(operating_unit_ids))
+
         _logger.info(strSQL)
     
         self.env.cr.execute(strSQL)
@@ -68,18 +88,34 @@ class ReportVoucherTransactionDetailXlsx(models.AbstractModel):
         docs.update({'detail': detail})
 
         if state == 'US':
-            strSQL = """
-                SELECT DATE(a.trans_date), d.name as operating_unit_name, 
-                       b.voucher_sku, e.name as voucher_name, count(*) as trans_count, sum(e.voucher_amount)
-                FROM weha_voucher_order_line_trans a
-                LEFT JOIN weha_voucher_order_line b ON b.id = a.voucher_order_line_id
-                LEFT JOIN weha_voucher_trans_status c ON c.name = a.name
-                LEFT JOIN operating_unit d ON d.code = c.store_id
-                LEFT JOIN weha_voucher_code e ON e.id = b.voucher_code_id
-                WHERE trans_type='{}' AND DATE(a.trans_date) BETWEEN '{}' AND '{}'
-                GROUP BY d.name, DATE(a.trans_date), b.voucher_sku, e.name
-                ORDER BY d.name, DATE(a.trans_date)
-            """.format(state, date_start, date_end)
+            if voucher_promo_ids:
+                strSQL = """
+                    SELECT DATE(a.trans_date), d.name as operating_unit_name, 
+                        b.voucher_sku, e.name as voucher_name, count(*) as trans_count, sum(e.voucher_amount)
+                    FROM weha_voucher_order_line_trans a
+                    LEFT JOIN weha_voucher_order_line b ON b.id = a.voucher_order_line_id
+                    LEFT JOIN weha_voucher_trans_status c ON c.name = a.name
+                    LEFT JOIN operating_unit d ON d.code = c.store_id
+                    LEFT JOIN weha_voucher_code e ON e.id = b.voucher_code_id
+                    WHERE trans_type='{}' AND DATE(a.trans_date) BETWEEN '{}' AND '{}'
+                    AND b.operating_unit_id in {} AND b.voucher_promo_id in {}
+                    GROUP BY d.name, DATE(a.trans_date), b.voucher_sku, e.name
+                    ORDER BY d.name, DATE(a.trans_date)
+                """.format(state, date_start, date_end, tuple(operating_unit_ids), tuple(voucher_promo_ids))
+            else:
+                strSQL = """
+                    SELECT DATE(a.trans_date), d.name as operating_unit_name, 
+                        b.voucher_sku, e.name as voucher_name, count(*) as trans_count, sum(e.voucher_amount)
+                    FROM weha_voucher_order_line_trans a
+                    LEFT JOIN weha_voucher_order_line b ON b.id = a.voucher_order_line_id
+                    LEFT JOIN weha_voucher_trans_status c ON c.name = a.name
+                    LEFT JOIN operating_unit d ON d.code = c.store_id
+                    LEFT JOIN weha_voucher_code e ON e.id = b.voucher_code_id
+                    WHERE trans_type='{}' AND DATE(a.trans_date) BETWEEN '{}' AND '{}'
+                    AND b.operating_unit_id in {}
+                    GROUP BY d.name, DATE(a.trans_date), b.voucher_sku, e.name
+                    ORDER BY d.name, DATE(a.trans_date)
+                """.format(state, date_start, date_end, tuple(operating_unit_ids))
         _logger.info(strSQL)
         
         self.env.cr.execute(strSQL)
@@ -123,8 +159,33 @@ class ReportVoucherTransactionDetailXlsx(models.AbstractModel):
         for key in keys:
             sheet.write(row, col, key)
             col = col + 1
-    
 
+        for detail in docs['detail']:
+            row = row + 1
+            sheet.write(row, 0, row)
+            sheet.write(row, 1, detail['trans_date'])
+            sheet.write(row, 2, detail['trans_time'])
+            sheet.write(row, 3, detail['operating_unit_name'])
+            sheet.write(row, 4, detail['voucher_sku'])
+            sheet.write(row, 5, detail['voucher_name'])
+            sheet.write(row, 6, detail['receipt_number'])
+            sheet.write(row, 7, detail['t_id'])
+            sheet.write(row, 8, detail['member_id'])
+            sheet.write(row, 9, detail['promo_name'])
+            sheet.write(row, 10, detail['voucher_ean'])
+            sheet.write(row, 11, detail['voucher_amount'])
+        
+        row = row + 3
+        sheet.write(row, 0, "Summary Transaction")
+        for summary in docs['summary']:            
+            row = row + 1
+            sheet.write(row, 0, row)
+            sheet.write(row, 1, summary['operating_unit_name'])
+            sheet.write(row, 2, summary['trans_date'])
+            sheet.write(row, 4, summary['voucher_sku'])
+            sheet.write(row, 5, summary['voucher_name'])
+            sheet.write(row, 10, summary['trans_count'])
+            sheet.write(row, 11, summary['voucher_amount'])
 
 
     

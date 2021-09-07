@@ -7,9 +7,16 @@ _logger = logging.getLogger(__name__)
 class VoucherRequestLine(models.Model):
     _name = 'weha.voucher.request.line'
     
+    def calculate_total(self):
+        for row in self:
+            row.total_amount = row.voucher_amount * row.voucher_qty
+
+
     voucher_request_id = fields.Many2one(comodel_name='weha.voucher.request', string='Voucher Request')
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True, readonly=False)
+    voucher_amount = fields.Float('Amount', related='voucher_code_id.voucher_amount', readonly=True)
     voucher_qty = fields.Integer(string='Quantity Ordered', required=True)
+    total_amount = fields.Float('Total', readonly=True, compute="calculate_total")
     _sql_constraints = [
         ('voucher_code_unique', 'unique (voucher_code_id)', 'Voucher Code already exist!')
     ]

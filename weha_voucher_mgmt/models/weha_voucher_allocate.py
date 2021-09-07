@@ -117,7 +117,6 @@ class VoucherAllocate(models.Model):
             }
             self.send_notification(data)
         
-
     def trans_approve(self):
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
@@ -244,9 +243,13 @@ class VoucherAllocate(models.Model):
             res = super(VoucherAllocate, self).sudo().write({'stage_id': stage_id.id})
         else:
             res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
-
         
     def trans_allocate_approval(self):    
+
+        if not self.voucher_promo_id:
+            if self.expired_days == 0:
+                raise ValidationError("Please set expired days!")
+
         if len(self.voucher_allocate_line_ids) == 0:
             raise ValidationError("No Voucher Allocated")
         #if self.is_request:
@@ -268,7 +271,11 @@ class VoucherAllocate(models.Model):
             }
             self.send_notification(data)
 
-    
+    def print_voucher_allocate_approval(self):
+        print_count = self.print_count
+        self.print_count = print_count + 1
+        return self.env.ref('weha_voucher_mgmt.action_report_voucher_allocate_approval').report_action(self)
+
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Allocate Number', default="/",readonly=True)
     ref = fields.Char(string='Source Document', required=True)
@@ -346,6 +353,8 @@ class VoucherAllocate(models.Model):
     voucher_received_count = fields.Integer('Voucher Received', compute="_calculate_voucher_received", store=False)
 
     is_force_cancelled = fields.Boolean('Force Cancelled', default=False)
+
+    print_count = fields.Integer('Print #', default=0, readonly=True)
 
     @api.model
     def create(self, vals):

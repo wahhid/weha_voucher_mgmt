@@ -333,7 +333,7 @@ class VoucherIssuing(models.Model):
     issuing_date = fields.Date('Order Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
-    is_employee = fields.Boolean('Is Employee', default=False)    
+    is_employee = fields.Boolean('Is Employee', default=False, readonly=True)    
 
     #kanban
     stage_id = fields.Many2one(
@@ -359,6 +359,11 @@ class VoucherIssuing(models.Model):
     estimate_voucher_count = fields.Integer('Voucher #', default=0)
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=False)
     
+    cc_number = fields.Char('CC Number',size=100)
+    member_id = fields.Char('Member ID',size=100)
+    total_transaction = fields.Float('Total Transaction', default=0.0)
+    
+
     voucher_issuing_line_ids = fields.One2many(
         comodel_name='weha.voucher.issuing.line', 
         inverse_name='voucher_issuing_id', 
@@ -379,6 +384,11 @@ class VoucherIssuing(models.Model):
 
     @api.model
     def create(self, vals):
+        if 'cc_number' in vals.keys():
+            if vals['cc_number']:
+                if len(vals['cc_number']) != 8:
+                    raise ValidationError("CC Number must be 8 digit!")
+                    
         if vals.get('number', '/') == '/':
             seq = self.env['ir.sequence']
             if 'company_id' in vals:
@@ -389,6 +399,11 @@ class VoucherIssuing(models.Model):
         return res    
     
     def write(self, vals):
+        if 'cc_number' in vals.keys():
+            if vals['cc_number']:
+                if len(vals['cc_number']) != 8:
+                    raise ValidationError("CC Number must be 8 digit!")
+                    
         if 'stage_id' in vals:
             stage_obj = self.env['weha.voucher.issuing.stage'].browse([vals['stage_id']])
             if stage_obj.unattended:

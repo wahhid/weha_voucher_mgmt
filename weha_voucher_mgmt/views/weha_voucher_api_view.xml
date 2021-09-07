@@ -12,6 +12,7 @@
             <field name="arch" type="xml">
                 <tree string="Purchase" create="false" delete="false" edit="false">
                     <field name="name" />
+                    <field name="batch_id"/>
                     <field name="trans_date" />
                     <field name="voucher_type" />
                     <field name="state" />
@@ -42,6 +43,7 @@
                         </div>
                         <group>
                             <group>
+                                <field name="batch_id"/>
                                 <field name="trans_date"/>
                                 <field name="trans_type"/>
                                 <field name="t_id"/>

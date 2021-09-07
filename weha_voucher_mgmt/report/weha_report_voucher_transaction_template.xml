@@ -25,7 +25,6 @@
         name="weha_voucher_mgmt.weha_voucher_transaction_detail_view"
         paperformat="paperformat_voucher_transaction_detail_report"
         menu="False"/>
-    />
 
     <report
         id="weha_voucher_transaction_detail_xlsx"
@@ -97,6 +96,7 @@
                                 <td class="text-left"></td>
                                 <td class="text-left"><span t-esc="doc['voucher_sku']"/></td>
                                 <td class="text-left"><span t-esc="doc['voucher_name']"/></td>
+                                <td class="text-left"></td>
                                 <td class="text-left"></td>
                                 <td class="text-left"></td>
                                 <td class="text-left"></td>

@@ -36,7 +36,7 @@ except ImportError:
 class weha_wizard_import_voucher_legacy_issuing(models.TransientModel):
     _name= "weha.wizard.import.voucher.legacy.issuing"
 
-    year = fields.Many2one('weha.voucher.year', 'Year', requird=True)
+    year = fields.Many2one('weha.voucher.year', 'Year', required=True)
     file = fields.Binary('File')
     filename = fields.Char('Filename', size=200)
     is_valid = fields.Boolean("Valid", default=False)

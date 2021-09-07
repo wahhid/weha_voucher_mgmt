@@ -44,6 +44,13 @@ class WeheVoucherRequest(models.Model):
                 voucher_count += line_id.voucher_qty
         self.voucher_count = voucher_count
     
+    def _calculate_voucher_total_amount(self):
+        voucher_total_amount = 0
+        for row in self:
+            for line_id in row.line_ids:
+                voucher_total_amount = voucher_total_amount +  line_id.total_amount
+            row.voucher_total_amount = voucher_total_amount
+
     def send_notification(self, data):
         self.env['mail.activity'].create(data).action_feedback()
 
@@ -66,6 +73,7 @@ class WeheVoucherRequest(models.Model):
         vals.update({'voucher_code_id': request_line.voucher_code_id.id})
         vals.update({'voucher_terms_id': request_line.voucher_code_id.voucher_terms_id.id})
         vals.update({'year_id': self.env['weha.voucher.year'].get_current_year().id})
+        vals.update({'voucher_promo_id': self.voucher_promo_id.id})
         res = obj_allocate.sudo().create(vals)
         _logger.info("str_ean ID = " + str(res))
         #To Finance User
@@ -229,7 +237,7 @@ class WeheVoucherRequest(models.Model):
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Request number', default="/",readonly=True)
-    ref = fields.Char(string='Source Document', required=True)
+    ref = fields.Char(string='Source Document', required=False)
     date_request = fields.Date('Date Request', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', 'Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
@@ -238,8 +246,10 @@ class WeheVoucherRequest(models.Model):
         string='Voucher Type',
         selection=[('physical', 'Physical'), ('electronic', 'Electronic')],
         default='physical'
-    )    
+    )
+    voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')    
     remark = fields.Char('Remark', size=200)
+    voucher_total_amount = fields.Float("Total", compute="_calculate_voucher_total_amount", readonly=True)
 
     #Relation
     voucher_request_line_ids = fields.One2many(

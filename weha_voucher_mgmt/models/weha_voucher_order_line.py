@@ -25,6 +25,9 @@ class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
+    crm_url = "weha_voucher_mgmt.crm_url"
+    crm_username = "weha_voucher_mgmt.crm_username"
+    crm_password = "weha_voucher_mgmt.crm_password"
 
     def calc_check_digit(self, number):
         """Calculate the EAN check digit for 13-digit numbers. The number passed
@@ -267,6 +270,7 @@ class VoucherOrderLine(models.Model):
             _logger.info(json_data['data']['api_token'])
             return json_data['data']['api_token']
         except Exception as err:
+            _logger.info(err)
             return False
 
     #API for Sales
@@ -307,10 +311,12 @@ class VoucherOrderLine(models.Model):
                 response_json = req.json()
                 self.is_send_to_crm = True
                 self.message_post(body="Send Notification to CRM Successfully")
+                _logger.info("Send Notification to CRM Successfully")
                 return False, "Success"                
             else:
                 #Error
                 _logger.info(f'Error : {req.status_code}')
+                _logger.info("Send Notification to CRM Error")
                 if req.json():
                     response_json = req.json()                
                     _logger.info(f'Error Message: {response_json["message"]}')
@@ -336,14 +342,13 @@ class VoucherOrderLine(models.Model):
             self.message_post(body="Send Notification to CRM Failed (TooManyRedirects)")
             return True, "Error CRM"
         except requests.exceptions.RequestException as e:
-            _logger.info(err)
+            _logger.info(e)
             self.is_send_to_crm = False
             self.send_to_crm_message = "Error Request"
-            self.message_post(body=err)
+            self.message_post(body=e)
             self.message_post(body="Send Notification to CRM Failed (Exception)")
             return True, "Error CRM"
  
-
     #API for Used
     def send_used_notification_to_trust(self):  
         _logger.info("Send Used Notifcation")
@@ -460,6 +465,8 @@ class VoucherOrderLine(models.Model):
                 raise ValidationError("Can't create voucher order line trans, contact administrator!")
 
     name = fields.Char('Name', )
+    batch_id = fields.Char('Batch #', size=10, readonly=True)
+
     
     #Customer Code
     customer_id = fields.Many2one('res.partner', 'Customer')

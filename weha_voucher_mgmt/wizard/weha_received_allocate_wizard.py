@@ -158,43 +158,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
             ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
         ]
 
-        # OLD METHOD
-        # if not voucher_order_line_start_id.is_legacy:
-        #     #Get Voucher Range
-        #     voucher_ranges = range(start_check_number, end_check_number + 1)
-        #     _logger.info(voucher_ranges)  
-
-        #     # domain = [
-        #     #     ('voucher_type','=','physical'),
-        #     #     ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
-        #     #     ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-        #     #     ('year_id','=', voucher_order_line_start_id.year_id.id),
-        #     #     ('state', '=', 'open'),
-        #     #     ('check_number', 'in', tuple(voucher_ranges))
-        #     # ]
-
-        #     domain = [
-        #         ('voucher_type','=','physical'),
-        #         ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
-        #         ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-        #         ('year_id','=', voucher_order_line_start_id.year_id.id),
-        #         ('state', '=', 'open'),
-        #         ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
-        #         ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
-        #     ]
-
-
-        # else:
-        #     domain = [
-        #         ('voucher_type','=','physical'),
-        #         ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
-        #         ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-        #         ('year_id','=', voucher_order_line_start_id.year_id.id),
-        #         ('state', '=', 'open'),
-        #         ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
-        #         ('voucher_12_digit', '<=', voucher_order_line_start_id.voucher_12_digit),
-        #     ]
-
+        
         _logger.info(domain)
 
         voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)

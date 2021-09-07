@@ -145,19 +145,9 @@ class VMSRedeemController(http.Controller):
         #Save Data
         result = voucher_trans_purchase_obj.sudo().create(values)
         
-        #Validate Data
-        #result.sudo().write({'state','done'})
-        
         #Prepare Voucher Order Line List
         vouchers = result.get_json()
         
-        #if validate set return_code = Y
-
-        #if not validate set return_code = N
-
-        #if return code not receive by VS send file to FTP
-        #VMSyyyymmdd_Success 
-        #VMSyyyymmdd_Fail 
     
         data = {
             "err": False,

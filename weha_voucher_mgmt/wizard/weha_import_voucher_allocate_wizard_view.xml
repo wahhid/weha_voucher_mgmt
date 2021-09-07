@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+     <record id="import_voucher_allocate_wizard" model="ir.ui.view">
+        <field name="name">Import Voucher Allocate</field>
+        <field name="model">weha.wizard.import.voucher.allocate</field>
+        <field name="arch" type="xml">
+            <form string="Import Voucher Lines">
+                <group>
+                    <field name="file" filename="filename" attrs="{'invisible':[('is_valid','=', True)]}"/>
+                    <field name="filename" attrs="{'invisible':[('is_valid','=', False)]}" readonly="1"/>
+                    <field name="is_valid" invisible="1"/>
+                </group>
+                <notebook>
+                    <page name="voucher_allocate_line" string="Voucher Allocate Line" attrs="{'invisible':[('is_valid','=', False)]}">
+                        <field name="voucher_allocate_line_ids" readonly="1">
+                            <tree create="false" edit="false" delete="false" colors="red:states=='not_valid'">
+                                <!--
+                                <field name="sku"/>
+                                -->
+                                <field name="mapping_sku_id"/>
+                                <!--
+                                <field name="operating_unit_code"/>
+                                -->
+                                <field name="operating_unit_id"/>
+                                <!--
+                                <field name="start_range"/>
+                                <field name="end_range"/>
+                                <field name="promo_code"/>
+                                -->
+                                <field name="voucher_promo_id"/>
+                                <field name="voucher_count"/>
+                                <field name="state"/>
+                            </tree> 
+                        </field>
+                    </page>
+                </notebook>
+                <footer>    
+                    <button name="import_file" string="Process" type="object" class="btn-primary" attrs="{'invisible':[('is_valid','=', True)]}"/>
+                    <button name="confirm" string="Confirm" type="object" class="btn-primary" attrs="{'invisible':[('is_valid','=', False)]}"/>
+                    or
+                    <button name="cancel" string="Cancel" class="oe_link"  special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+   
+
+    
+    <record id="action_import_voucher_allocate_wizard" model="ir.actions.act_window">
+        <field name="name">Import Voucher Allocate</field>
+        <field name="res_model">weha.wizard.import.voucher.allocate</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    
+    <menuitem 
+        id="weha_import_voucher_allocate_menu" 
+        name="Import Voucher Allocate" 
+        parent="weha_voucher_import_main_menu"
+        action="action_import_voucher_allocate_wizard" 
+        sequence="99"
+        groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
+        
+  
+    <record id="import_voucher_allocate_line_wizard" model="ir.ui.view">
+        <field name="name">Import Voucher Allocate Line</field>
+        <field name="model">weha.wizard.import.voucher.allocate.line</field>
+        <field name="arch" type="xml">
+            <form string="Import Voucher Lines">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <group>
+                    <group>
+                        <field name="operating_unit_id"/>
+                        <field name="mapping_sku_id"/>
+                    </group>
+                    <group>
+                        <field name="start_range"/>
+                        <field name="end_range"/>
+                        <field name="voucher_count"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="voucher_allocate_line_voucher_ids">
+                        <tree>
+                            <field name="voucher_order_line_id"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                </group>
+            </form>
+        </field>
+    </record>
+  
+  </data>
+</odoo>

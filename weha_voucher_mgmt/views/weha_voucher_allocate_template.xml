@@ -149,5 +149,166 @@
             </t>
         </template>
 
+        <template id="voucher_allocate_approval_external_layout">
+            <!-- Multicompany -->
+            <t t-if="not o" t-set="o" t-value="doc"/>
+
+            <t t-if="not company">
+                <!-- Multicompany -->
+                <t t-if="company_id">
+                    <t t-set="company" t-value="company_id"/>
+                </t>
+                <t t-elif="o and 'company_id' in o">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                </t>
+                <t t-else="else">
+                    <t t-set="company" t-value="res_company"/>
+                </t>
+            </t>
+
+            <t t-call="weha_voucher_mgmt.voucher_allocate_approval_external_layout_header"/>
+            <t t-raw="0" />
+            <t t-call="weha_voucher_mgmt.voucher_allocate_approval_external_layout_footer"/>
+        </template>
+    
+        <template id="voucher_allocate_approval_external_layout_header">
+            <div class="header">
+                <div class="row">
+                    <div class="col-3">
+                        <div class="row">
+                            <span><![CDATA[&nbsp;]]></span>
+                        </div>
+                        <img src='/weha_voucher_mgmt/static/src/img/logo.png' style="max-height: 60px;"/>
+                    </div>
+                    <div class="col-9">
+                        <div class="row">
+                            <span>
+                                <strong>VOUCHER ALLOCATE FORM</strong>
+                            </span>
+                        </div>
+                        <div class="row">
+                            <span t-esc="company.name"/>
+                        </div>
+                        <div class="row">
+                            <span t-esc="company.street"/>
+                        </div>
+                        <div class="row">
+                            <span>NPWP : </span>
+                            <span t-esc="company.vat"/>
+                        </div>
+                        <div class="row">
+                            <span t-esc="o.create_uid.name"/>
+                            <span>/</span>
+                            <span class="page"/>
+                            <span >of</span>
+                            <span class="topage"/>
+                            <span ></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="voucher_allocate_approval_external_layout_footer">
+            <div class="footer">
+            </div>
+        </template>
+
+        <template id="report_voucher_allocate_approval_document">
+            <t t-call="weha_voucher_mgmt.voucher_allocate_approval_external_layout">
+                <div class="row">
+                    <table width="100%" style="border-collapse: collapse;border-spacing: 0;">
+                        <tr><td colspan="2" style="background-color:black; color:white; border: 1px solid black;">GENERAL INFORMATION</td></tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Date Allocate</td>
+                            <td style="border: 1px solid black;"><span t-field="o.allocate_date"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Requester</td>
+                            <td style="border: 1px solid black;"><span t-field="o.user_id"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Store</td>
+                            <td style="border: 1px solid black;"><span t-field="o.user_id"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Request Store</td>
+                            <td style="border: 1px solid black;"><span t-field="o.user_id"/></td>
+                        </tr>
+                        <tr ><td colspan="2" style="background-color:black; color:white;border: 1px solid black;">VOUCHER DETAIL</td></tr>
+                        <tr>
+                            <td style="border: 1px solid black;">SKU</td>
+                            <td style="border: 1px solid black;"><span t-field="o.voucher_mapping_sku_id"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Voucher Code</td>
+                            <td style="border: 1px solid black;"><span t-field="o.voucher_code_id"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Voucher Terms</td>
+                            <td style="border: 1px solid black;"><span t-field="o.voucher_terms_id"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Year</td>
+                            <td style="border: 1px solid black;"><span t-field="o.year_id"/></td>
+                        </tr>
+                        <tr ><td colspan="2" style="background-color:black; color:white;border: 1px solid black;">VOUCHER ALLOCATE INFORMATION</td></tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Referal</td>
+                            <td style="border: 1px solid black;"><span t-field="o.ref"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black;">Voucher Count</td>
+                            <td style="border: 1px solid black;"><span t-field="o.voucher_count"/></td>
+                        </tr>
+                    </table>
+                </div>
+                <br/>
+                <br/>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="row">
+                            <span><![CDATA[&nbsp;]]></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="row">
+                            <span>Approved By</span>
+                        </div>
+                        <div class="row">
+                            <span><![CDATA[&nbsp;]]></span>
+                        </div>
+                        <div class="row">
+                            <span><![CDATA[&nbsp;]]></span>
+                        </div>
+                        <div class="row">
+                            <span><![CDATA[&nbsp;]]></span>
+                        </div>
+                        <div class="row">
+                            <span><![CDATA[&nbsp;]]></span>
+                        </div>
+                        <div class="row">
+                            <span><![CDATA[&nbsp;]]></span>
+                        </div>
+                        <div class="row">
+                            <span style="font-size:9px">
+                                <strong>(...................)</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+
+        <template id="report_voucher_allocate_approval">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="weha_voucher_mgmt.report_voucher_allocate_approval_document"/>
+                </t>
+            </t>
+        </template>
+
+
+
     </data>
 </odoo>

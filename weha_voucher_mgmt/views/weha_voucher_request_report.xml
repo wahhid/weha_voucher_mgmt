@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report
+            string="Request Receipt"
+            id="action_report_voucher_request_receipt"
+            model="weha.voucher.request"
+            report_type="qweb-pdf"
+            name="weha_voucher_mgmt.report_voucher_request_receipt"
+            file="weha_voucher_mgmt.report_voucher_request_receipt"
+        />
+    </data>
+</odoo>

@@ -53,6 +53,14 @@
                                 name="trans_allocate_approval" 
                                 string="Request Approval" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
+                        
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                class="btn btn-primary" 
+                                name="print_voucher_allocate_approval" 
+                                string="Print Request Approval" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
+               
                         <button type="action" 
                                 attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                                 class="btn btn-primary" 
@@ -144,9 +152,10 @@
                                 <field name="allocate_date" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
+
                                 <field name="source_operating_unit" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
-                                
                                 <field name="current_stage" invisible="1"/>
+                                <field name="print_count"/>
                             </group>
                             <group string="Voucher Allocate Information">
                                 <field name="ref" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
@@ -209,7 +218,7 @@
             <field name="name">weha.voucher.allocate.kanban</field>
             <field name="model">weha.voucher.allocate</field>
             <field name="arch" type="xml">
-                <kanban class="o_kanban_mobile" archivable="false"  default_group_by="stage_id" >
+                <kanban class="o_kanban_mobile" archivable="false"  default_group_by="stage_id" disable_sort_column='true' disable_sort_record='true' disable_drag_drop_record='true' >
                     <field name="number"/>
                     <field name="user_id"/>
                     <field name="operating_unit_id"/>

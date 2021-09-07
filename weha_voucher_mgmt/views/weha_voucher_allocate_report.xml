@@ -10,5 +10,14 @@
             file="weha_voucher_mgmt.report_voucher_allocate_delivery_receipt"
         />
 
+        <report
+            string="Allocate Appproval"
+            id="action_report_voucher_allocate_approval"
+            model="weha.voucher.allocate"
+            report_type="qweb-pdf"
+            name="weha_voucher_mgmt.report_voucher_allocate_approval"
+            file="weha_voucher_mgmt.report_voucher_allocate_approval"
+            menu="False"
+        />
     </data>
 </odoo>

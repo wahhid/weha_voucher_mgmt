@@ -118,6 +118,9 @@
                                 <field name="estimate_voucher_count"/>
                                 -->
                                 <field name="current_stage" invisible="1"/>
+                                <field name="cc_number"/>
+                                <field name="member_id"/>
+                                <field name="total_transaction"/>
                             </group>
                         </group>
                          <notebook colspan="4">
