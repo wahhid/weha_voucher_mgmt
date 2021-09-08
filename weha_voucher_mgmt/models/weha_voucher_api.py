@@ -475,59 +475,63 @@ class VoucherTransStatus(models.Model):
                 }
                 result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
                 if result:
-                    if vals['process_type'] == 'reserved':
-                        _logger.info(vals['process_type'])
-                        voucher_order_line_id.sudo().write({'voucher_trans_type': '5','state': 'reserved'})
-                        voucher_order_line_id.create_order_line_trans(self.name, 'RS')
-                    elif vals['process_type'] == 'activated':
-                        _logger.info(vals['process_type'])
-                        if voucher_order_line_id.voucher_trans_type == '1':
-                            err, message = voucher_order_line_id.send_data_to_trust()
-                            if not err:
-                                voucher_order_line_id.sudo().write({'state': 'activated'})
-                                voucher_order_line_id.voucher_trans_type = False
-                                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        if voucher_order_line_id.voucher_trans_type == '2':
-                            err, message = voucher_order_line_id.send_data_to_trust()
-                            if not err:
-                                voucher_order_line_id.sudo().write({'state': 'activated'})
-                                voucher_order_line_id.voucher_trans_type = False
-                                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        if voucher_order_line_id.voucher_trans_type == '3':
-                            err, message = voucher_order_line_id.send_data_to_trust()
-                            if not err:
-                                voucher_order_line_id.sudo().write({'state': 'activated'})
-                                voucher_order_line_id.voucher_trans_type = False
-                                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        if voucher_order_line_id.voucher_trans_type == '4':
-                            err, message = voucher_order_line_id.send_data_to_trust()
-                            if not err:
-                                voucher_order_line_id.sudo().write({'state': 'activated'})
-                                voucher_order_line_id.voucher_trans_type = False
-                                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        if voucher_order_line_id.voucher_trans_type == '5':
-                            voucher_order_line_id.sudo().write({'state': 'activated'})
-                            voucher_order_line_id.voucher_trans_type = False
-                            voucher_order_line_id.create_order_line_trans(self.name, 'AC')                    
-                    elif vals['process_type'] == 'used':
-                        _logger.info(vals['process_type'])
-                        if voucher_order_line_id.voucher_code_id.voucher_type == 'electronic':
-                            err, message = voucher_order_line_id.send_used_notification_to_trust()
-                            if not err:
-                                voucher_order_line_id.voucher_trans_type = False
-                                voucher_order_line_id.create_order_line_trans(self.name, 'US')
-                                voucher_order_line_id.sudo().write({'state': 'used'})
-                        else:
-                            voucher_order_line_id.voucher_trans_type = False
-                            voucher_order_line_id.create_order_line_trans(self.name, 'US')
-                            voucher_order_line_id.sudo().write({'state': 'used'})
-                    elif vals['process_type'] == 'reopen':
-                        _logger.info(vals['process_type'])
-                        voucher_order_line_id.sudo().write({'state': 'open'})
-                        voucher_order_line_id.create_order_line_trans(self.name, 'RO')
-                        pass
-                    else:
-                        pass
+                    _logger.info('')
+                    # if vals['process_type'] == 'reserved':
+                    #     _logger.info(vals['process_type'])
+                    #     voucher_order_line_id.sudo().write({'voucher_trans_type': '5','state': 'reserved'})
+                    #     voucher_order_line_id.create_order_line_trans(self.name, 'RS')
+                    # elif vals['process_type'] == 'activated':
+                    #     _logger.info(vals['process_type'])
+                    #     if voucher_order_line_id.voucher_trans_type == '1':
+                    #         err, message = voucher_order_line_id.send_data_to_trust()
+                    #         if not err:
+                    #             voucher_order_line_id.sudo().write({'state': 'activated'})
+                    #             voucher_order_line_id.voucher_trans_type = False
+                    #             voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+                    #     if voucher_order_line_id.voucher_trans_type == '2':
+                    #         err, message = voucher_order_line_id.send_data_to_trust()
+                    #         if not err:
+                    #             voucher_order_line_id.sudo().write({'state': 'activated'})
+                    #             voucher_order_line_id.voucher_trans_type = False
+                    #             voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+                    #     if voucher_order_line_id.voucher_trans_type == '3':
+                    #         err, message = voucher_order_line_id.send_data_to_trust()
+                    #         if not err:
+                    #             voucher_order_line_id.sudo().write({'state': 'activated'})
+                    #             voucher_order_line_id.voucher_trans_type = False
+                    #             voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+                    #     if voucher_order_line_id.voucher_trans_type == '4':
+                    #         err, message = voucher_order_line_id.send_data_to_trust()
+                    #         if not err:
+                    #             voucher_order_line_id.sudo().write({'state': 'activated'})
+                    #             voucher_order_line_id.voucher_trans_type = False
+                    #             voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+                    #     if voucher_order_line_id.voucher_trans_type == '5':
+                    #         voucher_order_line_id.sudo().write({'state': 'activated'})
+                    #         voucher_order_line_id.voucher_trans_type = False
+                    #         voucher_order_line_id.create_order_line_trans(self.name, 'AC')                    
+                    # elif vals['process_type'] == 'used':
+                    #     _logger.info(vals['process_type'])
+                    #     if voucher_order_line_id.voucher_code_id.voucher_type == 'electronic':
+                    #         err, message = voucher_order_line_id.send_used_notification_to_trust()
+                    #         if not err:
+                    #             voucher_order_line_id.voucher_trans_type = False
+                    #             voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                    #             voucher_order_line_id.sudo().write({'state': 'used'})
+                    #     else:
+                    #         voucher_order_line_id.voucher_trans_type = False
+                    #         voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                    #         voucher_order_line_id.sudo().write({'state': 'used'})
+                    # elif vals['process_type'] == 'reopen':
+                    #     _logger.info(vals['process_type'])
+                    #     voucher_order_line_id.sudo().write({'state': 'open'})
+                    #     voucher_order_line_id.create_order_line_trans(self.name, 'RO')
+                    #     pass
+                    # else:
+                    #     pass
+
+    def send_to_trust(self, vals):
+        pass 
 
     def procces_voucher_order_line_reopen(self, voucher_ean):
         pass                
@@ -617,7 +621,10 @@ class VoucherTransStatus(models.Model):
         res = super(VoucherTransStatus, self).create(vals)
        
         if vals['process_type'] in ('reserved', 'activated', 'used'):
+            #Complete Voucher Order Line
             res.process_voucher_order_line(vals) 
+            #Send to Trust
+            res.send_to_trust(vals)
         else:
             #Process Voucher Order Line Reopen
             res.process_voucher_order_line(vals) 

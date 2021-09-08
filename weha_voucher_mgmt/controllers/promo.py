@@ -3,6 +3,7 @@ import ast
 import functools
 import logging
 import json
+from datetime import datetime, date
 import werkzeug.wrappers
 from odoo.exceptions import AccessError
 from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response
@@ -120,6 +121,12 @@ class VMSPromoController(http.Controller):
             if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + total_amount:
                 message = "Quota Exceeded"
                 is_available = False
+
+            current_date = datetime.now().strftime('%Y-%m-%d')
+            current_date = datetime.strptime(current_date, '%Y-%m-%d')
+            if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
+                message = "Promo Expired"
+                is_available = False
                 
         else:
             arr_sku  = sku.split('|')
@@ -143,6 +150,11 @@ class VMSPromoController(http.Controller):
                 sku_message = "Quota Exceeded"
                 is_available = False
             
+            current_date = datetime.now().strftime('%Y-%m-%d')
+            current_date = datetime.strptime(current_date, '%Y-%m-%d')
+            if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
+                message = "Promo Expired"
+                is_available = False
             
         if not is_available:
             response_data = {
