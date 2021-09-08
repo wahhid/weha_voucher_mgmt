@@ -3,7 +3,8 @@ import ast
 import functools
 import logging
 import json
-from datetime import datetime, date
+from datetime import datetime
+from datetime import date as dt
 import werkzeug.wrappers
 from odoo.exceptions import AccessError
 from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response
@@ -94,7 +95,7 @@ class VMSPromoController(http.Controller):
         
         skus = []
         is_available = True
-        sku_message = 'SKU not found'
+        message = 'SKU not found'
         if ';' in sku:
             arr_skus = sku.split(';')
             _logger.info(arr_skus)
@@ -114,6 +115,7 @@ class VMSPromoController(http.Controller):
                 ]
                 voucher_promo_line_id = http.request.env['weha.voucher.promo.line'].search(domain, limit=1)
                 if not voucher_promo_line_id:
+                    message = "SKU not found"
                     is_available = False
 
                 total_amount =  int(arr_sku[1]) * mapping_sku_id.voucher_code_id.voucher_amount
@@ -122,12 +124,11 @@ class VMSPromoController(http.Controller):
                 message = "Quota Exceeded"
                 is_available = False
 
-            current_date = datetime.now().strftime('%Y-%m-%d')
-            current_date = datetime.strptime(current_date, '%Y-%m-%d')
+            current_date = dt.today()
             if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
                 message = "Promo Expired"
                 is_available = False
-                
+
         else:
             arr_sku  = sku.split('|')
             _logger.info(arr_sku)
@@ -136,6 +137,7 @@ class VMSPromoController(http.Controller):
             ]
             mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
             if not mapping_sku_id:
+                message = "SKU not found"
                 is_available = False
 
             domain = [
@@ -150,8 +152,7 @@ class VMSPromoController(http.Controller):
                 sku_message = "Quota Exceeded"
                 is_available = False
             
-            current_date = datetime.now().strftime('%Y-%m-%d')
-            current_date = datetime.strptime(current_date, '%Y-%m-%d')
+            current_date = dt.today()
             if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
                 message = "Promo Expired"
                 is_available = False
@@ -159,7 +160,7 @@ class VMSPromoController(http.Controller):
         if not is_available:
             response_data = {
                 "err": True,
-                "message": sku_message,
+                "message": message,
                 "data": [
                     {'code': 'N'}
                 ]
