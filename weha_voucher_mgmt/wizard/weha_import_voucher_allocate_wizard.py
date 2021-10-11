@@ -158,7 +158,10 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                     voucher = line[2].value
                     if type(voucher) == float:
                         voucher = str(int(voucher))
-                    line_vals.update({(operating_unit_id.id, mapping_sku_id.id, voucher_promo_id.id):[voucher]})       
+                    if not voucher_promo_id:                    
+                        line_vals.update({(operating_unit_id.id, mapping_sku_id.id, False):[voucher]})       
+                    else:
+                        line_vals.update({(operating_unit_id.id, mapping_sku_id.id, voucher_promo_id.id):[voucher]})       
               
         _logger.info(line_vals)
 
@@ -171,7 +174,8 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                     domain  = [
                         ('voucher_type','=','physical'),
                         ('voucher_code_id','=', mapping_sku_id.voucher_code_id.id),
-                        ('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
+                        #('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
+                        #('operating_unit_id', '=', key[0]),
                         ('voucher_ean','=', voucher_id),
                         ('year_id','=', current_year.id),
                         ('state','=','open')
@@ -180,10 +184,11 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                     domain  = [
                         ('voucher_type','=','physical'),
                         ('voucher_code_id','=', mapping_sku_id.voucher_code_id.id),
-                        ('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
+                        #('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
+                        #('operating_unit_id', '=', key[0]),
                         ('voucher_ean','=', voucher_id),
                         ('year_id','=', current_year.id),
-                        #('voucher_promo_id','=', voucher_promo_id.id),
+                        ('voucher_promo_id','=', key[2]),
                         ('state','=','open')
                     ]
                 _logger.info(domain)

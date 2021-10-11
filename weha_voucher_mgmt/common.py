@@ -2,7 +2,7 @@ import logging
 import datetime
 import json
 import ast
-
+import requests
 import werkzeug.wrappers
 
 _logger = logging.getLogger(__name__)
@@ -59,3 +59,96 @@ def extract_arguments(payloads, offset=0, limit=0, order=None):
     filters = [domain, fields, offset, limit, order]
 
     return filters
+
+def auth_trust(self):
+    try:
+        url = "http://apiindev.trustranch.co.id/login"
+        payload='barcode=3000030930&password=weha.ID!!2020'
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        str_json_data  = response.text.replace("'"," ")
+        json_data = json.loads(str_json_data)
+        _logger.info(json_data['data']['api_token'])
+        return json_data['data']['api_token']
+    except Exception as err:
+        _logger.info(err)
+        return False
+
+#API for Sales
+def send_data_to_trust(self):
+    _logger.info("Send Data")
+    trans_line_id = self.get_last_trans_line()
+    _logger.info(trans_line_id.name)
+    if self.voucher_trans_type in ('1','2','3'):
+        trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
+
+    api_token = self._auth_trust()
+    if not api_token:
+        self.is_send_to_crm = False
+        self.send_to_crm_message = "Error Authentication"
+        self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+        return True, "Error CRM"
+
+    headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+    base_url = 'http://apiindev.trustranch.co.id'
+    try:
+        vouchers = []
+        vouchers.append(self.voucher_ean + ';' + self.expired_date.strftime('%Y-%m-%d') + ";" + self.voucher_sku)
+        data = {
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'time': datetime.now().strftime('%H:%M:%S'),
+            'receipt': trans_purchase_id.receipt_number,
+            'transaction_id': trans_purchase_id.t_id,
+            'cashier_id': trans_purchase_id.cashier_id,
+            'store_id': trans_purchase_id.store_id,
+            'member_id': self.member_id,
+            'vouchers': '|'.join(vouchers)
+        }
+        _logger.info(data)
+        headers = {'Authorization' : 'Bearer ' + api_token}
+        req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+        if req.status_code == 200:
+            #Success
+            response_json = req.json()
+            self.is_send_to_crm = True
+            self.message_post(body="Send Notification to CRM Successfully")
+            _logger.info("Send Notification to CRM Successfully")
+            return False, "Success"                
+        else:
+            #Error
+            _logger.info(f'Error : {req.status_code}')
+            _logger.info("Send Notification to CRM Error")
+            if req.json():
+                response_json = req.json()                
+                _logger.info(f'Error Message: {response_json["message"]}')
+                self.is_send_to_crm = False
+                self.send_to_crm_message = response_json["message"]
+                self.message_post(body=response_json["message"])
+            else:
+                self.is_send_to_crm = False
+                self.send_to_crm_message = f'Error : {req.status_code}'
+
+            return True, "Error CRM"
+
+    except requests.exceptions.Timeout:
+        # Maybe set up for a retry, or continue in a retry loop
+        self.is_send_to_crm = False
+        self.send_to_crm_message = "Error "
+        self.message_post(body="Send Notification to CRM Failed (Timeout)")
+        return True, "Error CRM"
+    except requests.exceptions.TooManyRedirects:
+        # Tell the user their URL was bad and try a different one
+        self.is_send_to_crm = False
+        self.send_to_crm_message = "Error Too Many Redirects"
+        self.message_post(body="Send Notification to CRM Failed (TooManyRedirects)")
+        return True, "Error CRM"
+    except requests.exceptions.RequestException as e:
+        _logger.info(e)
+        self.is_send_to_crm = False
+        self.send_to_crm_message = "Error Request"
+        self.message_post(body=e)
+        self.message_post(body="Send Notification to CRM Failed (Exception)")
+        return True, "Error CRM"

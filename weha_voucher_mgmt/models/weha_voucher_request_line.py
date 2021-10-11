@@ -13,7 +13,9 @@ class VoucherRequestLine(models.Model):
 
 
     voucher_request_id = fields.Many2one(comodel_name='weha.voucher.request', string='Voucher Request')
-    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True, readonly=False)
+    voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku','Mapping SKU #',  required=True)
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True, related="voucher_mapping_sku_id.voucher_code_id", store=True)
+    #voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True, readonly=False)
     voucher_amount = fields.Float('Amount', related='voucher_code_id.voucher_amount', readonly=True)
     voucher_qty = fields.Integer(string='Quantity Ordered', required=True)
     total_amount = fields.Float('Total', readonly=True, compute="calculate_total")

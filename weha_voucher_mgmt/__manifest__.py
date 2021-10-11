@@ -59,6 +59,7 @@
         'views/weha_voucher_stock_transfer_view.xml',
         'views/weha_voucher_stock_transfer_line_view.xml',
         'views/weha_voucher_config_code_view.xml',
+        'views/weha_voucher_transaction_type_view.xml',
         'views/weha_voucher_config_mapping_pos_view.xml',
         'views/weha_voucher_config_mapping_sku_view.xml',
         'views/weha_voucher_config_location_view.xml',

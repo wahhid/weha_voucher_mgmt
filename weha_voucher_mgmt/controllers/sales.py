@@ -192,7 +192,6 @@ class VMSSalesController(http.Controller):
         member_id = post['member_id'] or False  if 'member_id' in post else False
         sku = post['sku'] or False  if 'sku' in post else False
         voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
-        voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
 
         
         _fields_includes_in_body = all([date, 

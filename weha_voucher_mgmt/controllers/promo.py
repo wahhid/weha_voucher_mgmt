@@ -95,7 +95,7 @@ class VMSPromoController(http.Controller):
         
         skus = []
         is_available = True
-        message = 'SKU not found'
+        message = 'No Error'
         if ';' in sku:
             arr_skus = sku.split(';')
             _logger.info(arr_skus)
@@ -109,24 +109,33 @@ class VMSPromoController(http.Controller):
                 mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
                 if not mapping_sku_id:
                     is_available = False
+                    message = "SKU not found"
+                
+                current_date = dt.today()
+                _logger.info(current_date)
                 
                 domain = [
-                    ('voucher_mapping_sku_id', '=' , mapping_sku_id.id)
+                    ('voucher_mapping_sku_id', '=' , mapping_sku_id.id),
+                    ('voucher_promo_id.start_date', '>=',  '2021-09-16' ),
+                    ('voucher_promo_id.end_date', '<=', '2021-09-16')
                 ]
+
+                _logger.info(domain)
+
                 voucher_promo_line_id = http.request.env['weha.voucher.promo.line'].search(domain, limit=1)
                 if not voucher_promo_line_id:
-                    message = "SKU not found"
+                    message = "Promo not found"
                     is_available = False
 
+                _logger.info(voucher_promo_line_id.voucher_promo_id.end_date)
+                if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
+                    message = "Promo Expired"
+                    is_available = False  
+
                 total_amount =  int(arr_sku[1]) * mapping_sku_id.voucher_code_id.voucher_amount
-                
+              
             if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + total_amount:
                 message = "Quota Exceeded"
-                is_available = False
-
-            current_date = dt.today()
-            if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
-                message = "Promo Expired"
                 is_available = False
 
         else:
@@ -140,23 +149,33 @@ class VMSPromoController(http.Controller):
                 message = "SKU not found"
                 is_available = False
 
+            current_date = dt.today()
+            _logger.info(current_date)
+
             domain = [
-                    ('voucher_mapping_sku_id', '=' , mapping_sku_id.id)
+                    ('voucher_mapping_sku_id', '=' , mapping_sku_id.id),
+                    ('voucher_promo_id.start_date', '<=',  current_date),
+                    ('voucher_promo_id.end_date', '>=', current_date)
             ]
+
+            _logger.info(domain)
             voucher_promo_line_id = http.request.env['weha.voucher.promo.line'].search(domain, limit=1)
+            _logger.info(voucher_promo_line_id)
+            _logger.info(voucher_promo_line_id.voucher_promo_id)
             if not voucher_promo_line_id:
                 is_available = False
-            
-            total_amount =  int(arr_sku[1]) * mapping_sku_id.voucher_code_id.voucher_amount
-            if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + total_amount:
-                sku_message = "Quota Exceeded"
-                is_available = False
-            
-            current_date = dt.today()
-            if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
-                message = "Promo Expired"
-                is_available = False
-            
+                message = "Promo not found or Already Expired"
+            else:
+                # current_date = dt.today()
+                # if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
+                #     message = "Promo Expired"
+                #     is_available = False
+                
+                total_amount =  int(arr_sku[1]) * mapping_sku_id.voucher_code_id.voucher_amount
+                if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + total_amount:
+                    message = "Quota Exceeded"
+                    is_available = False
+                
         if not is_available:
             response_data = {
                 "err": True,

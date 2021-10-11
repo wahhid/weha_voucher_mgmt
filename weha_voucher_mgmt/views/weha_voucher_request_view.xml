@@ -136,7 +136,8 @@
                             <page string="Vouchers">
                                 <field name="voucher_request_line_ids" widget="many2one_clickable">
                                     <tree string="Request Lines" editable="bottom">
-                                        <field name="voucher_code_id"  domain="[('voucher_type', '=', 'physical')]"/>
+                                        <field name="voucher_mapping_sku_id"/>
+                                        <field name="voucher_code_id"/>
                                         <field name="voucher_qty"/>
                                         <field name="voucher_amount"/>
                                         <field name="total_amount"/>

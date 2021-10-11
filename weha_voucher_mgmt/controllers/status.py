@@ -136,7 +136,7 @@ class VMSStatusController(http.Controller):
             for voucher_ean in arr_ean:
                 domain = [
                     ('voucher_ean', '=', voucher_ean),
-                    ('state', '=', 'activated')
+                    ('state', '=', 'activated','used','scrap')
                 ]
                 _logger.info(domain)
                 voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
@@ -150,6 +150,10 @@ class VMSStatusController(http.Controller):
                         is_available = False
                         err_message = f'Voucher {voucher_ean} was used' 
                         break
+                    elif voucher_order_line_id.state == 'scrap':
+                        is_available = False
+                        err_message = f'Voucher {voucher_ean} was expired' 
+                        break
                     else:
                         is_available = False
                         err_message = f'Voucher {voucher_ean} not found' 
@@ -159,6 +163,7 @@ class VMSStatusController(http.Controller):
                     is_available = False
                     err_message = f'Voucher {voucher_ean} expired' 
                     break
+                
                 #Add Voucher Order Line to List
                 voucher_order_line_ids.append(voucher_order_line_id)    
         elif process_type == 'used':
@@ -425,16 +430,18 @@ class VMSStatusController(http.Controller):
             arr_ean = voucher_eans.split('|')
 
         if process_type in 'reserved':
+            #Non Batch
+            #Reserver For Payment
             for voucher_ean in arr_ean:
                 domain = [
                     ('voucher_ean', '=', voucher_ean),
-                    ('state', '=', 'activated')
+                    ('state', 'in', ['activated','used','scrap'])
                 ]
                 _logger.info(domain)
                 voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
                 if not voucher_order_line_id:
                     is_available = False
-                    err_message = f'Voucher {voucher_ean} not found' 
+                    err_message = f'Voucher {voucher_ean} not found 1' 
                     break
                 #Check For Used
                 if voucher_order_line_id.state != 'activated':
@@ -442,18 +449,30 @@ class VMSStatusController(http.Controller):
                         is_available = False
                         err_message = f'Voucher {voucher_ean} was used' 
                         break
+                    elif voucher_order_line_id.state == 'scrap':
+                        is_available = False
+                        err_message = f'Voucher {voucher_ean} was expired' 
+                        break
                     else:
                         is_available = False
                         err_message = f'Voucher {voucher_ean} not found' 
                         break
+
                 #Check Voucher Expired Date
+                if not voucher_order_line_id.expired_date:
+                    is_available = False
+                    err_message = f'Voucher {voucher_ean} expired date not exist' 
+                    break
+
                 if voucher_order_line_id.expired_date <= date.today():
                     is_available = False
-                    err_message = f'Voucher {voucher_ean} expired' 
+                    err_message = f'Voucher {voucher_ean} was expired' 
                     break
                 #Add Voucher Order Line to List
                 voucher_order_line_ids.append(voucher_order_line_id)    
         elif process_type == 'used':
+            #Not Batch
+            #User for Payment After Reserved
             for voucher_ean in arr_ean:
                 domain = [
                     ('voucher_ean', '=', voucher_ean),
@@ -468,7 +487,19 @@ class VMSStatusController(http.Controller):
 
                 voucher_order_line_ids.append(voucher_order_line_id)  
         elif process_type == 'activated':
+            #Batch
+            #Activate After Sales
             if batch_id:
+                #Check Voucher Status by Batch ID
+                domain = [
+                    ('batch_id', '=', batch_id)
+                ]
+                trans_status_id = http.request.env['weha.voucher.trans.status'].sudo().search(domain, limit=1)
+                if trans_status_id:
+                    is_available = False
+                    err_message = f'Transaction Already Process' 
+
+                #Check Voucher Trans Purchase
                 domain = [
                     ('batch_id', '=', batch_id)
                 ]
@@ -503,9 +534,10 @@ class VMSStatusController(http.Controller):
                         err_message = f'Voucher {voucher_ean} not found' 
                         break
 
-                    voucher_order_line_ids.append(voucher_order_line_id)  
-
+                    voucher_order_line_ids.append(voucher_order_line_id)
             else:
+                #Non Batch
+                #Activate for Cancel Payment
                 for voucher_ean in arr_ean:
                     domain = [
                         ('voucher_ean', '=', voucher_ean),
@@ -520,6 +552,7 @@ class VMSStatusController(http.Controller):
                         break
 
                     voucher_order_line_ids.append(voucher_order_line_id)  
+                    
         elif process_type == 'reopen':
             for voucher_ean in arr_ean:
                 domain = [
@@ -559,6 +592,7 @@ class VMSStatusController(http.Controller):
         # #Save Voucher Status Transaction
         voucher_trans_status_obj = http.request.env['weha.voucher.trans.status']
         trans_date = trans_date  +  " "  + trans_time + ":00"
+        values.update({'batch_id': batch_id})
         values.update({'trans_date': trans_date})
         values.update({'receipt_number': receipt_number})
         values.update({'t_id': t_id})
@@ -612,24 +646,44 @@ class VMSStatusController(http.Controller):
                     ]
                 }          
             if process_type == 'activated':
-                add_data = result.get_json()
-                if not add_data['err']:
-                    data = {
-                        "err": False,
-                        "message": "Create Successfully",
-                        "data": [
-                            {
-                                'code': 'Y',
-                                'transaction_id': result.id,
-                            }
-                        ]
-                    }
+                if batch_id:
+                    add_data = result.get_json_batch()
+                    if not add_data['err']:
+                        data = {
+                            "err": False,
+                            "message": "Create Successfully",
+                            "data": [
+                                {
+                                    'code': 'Y',
+                                    'transaction_id': result.id,
+                                }
+                            ]
+                        }
+                    else:
+                        data = {
+                            "err": True,
+                            "message": add_data['message'],
+                            "data": []
+                        }
                 else:
-                    data = {
-                        "err": True,
-                        "message": add_data['message'],
-                        "data": []
-                    }
+                    add_data = result.get_json()
+                    if not add_data['err']:
+                        data = {
+                            "err": False,
+                            "message": "Create Successfully",
+                            "data": [
+                                {
+                                    'code': 'Y',
+                                    'transaction_id': result.id,
+                                }
+                            ]
+                        }
+                    else:
+                        data = {
+                            "err": True,
+                            "message": add_data['message'],
+                            "data": []
+                        }
             if process_type == 'reopen':
                 data = {
                     "err": False,

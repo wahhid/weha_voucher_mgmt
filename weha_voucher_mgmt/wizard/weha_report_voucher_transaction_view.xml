@@ -10,7 +10,7 @@
                     <group>
                         <field name="date_start"/>
                         <field name="date_end"/>
-                        <field name="state"/>
+                        <field name="transaction_type_ids" widget="many2many_tags"  options="{'no_create_edit': True}"/>
                     </group>
                     <group>
                         <field name="voucher_promo_ids" widget="many2many_tags"  options="{'no_create_edit': True}"/>

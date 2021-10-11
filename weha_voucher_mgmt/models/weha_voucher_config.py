@@ -116,7 +116,7 @@ class VoucherPromoLine(models.Model):
 
     def get_usage_quota(self):
         for data in self:
-            if data.voucher_mapping_sku_id.code_sku:
+            if data.voucher_mapping_sku_id:
                 strSQL = """SELECT sum(b.voucher_amount) FROM weha_voucher_order_line a 
                             LEFT JOIN weha_voucher_code b ON b.id = a.voucher_code_id
                             WHERE a.voucher_promo_id={} AND a.voucher_sku='{}' AND a.state in ('activated','used')""".format(data.voucher_promo_id.id, data.voucher_mapping_sku_id.code_sku) 

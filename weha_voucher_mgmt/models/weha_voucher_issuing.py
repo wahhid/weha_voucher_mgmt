@@ -224,9 +224,9 @@ class VoucherIssuing(models.Model):
         else:  
             for voucher_issuing_employee_line_id in self.voucher_issuing_employee_line_ids:
                 values = {}
-                    
+                        
                 # #Save Voucher Purchase Transaction
-                voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
+                voucher_trans_purchase_obj = self.env['weha.voucher.trans.purchase']
                 trans_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 values.update({'trans_date': trans_date})
                 values.update({'receipt_number': ''})

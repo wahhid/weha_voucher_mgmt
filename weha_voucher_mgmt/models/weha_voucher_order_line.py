@@ -450,7 +450,6 @@ class VoucherOrderLine(models.Model):
         except Exception as err:
             _logger.error(err)  
 
-
     @api.model
     def create_order_line_trans(self, name, trans_type):
         for row in self:
@@ -693,3 +692,10 @@ class VoucherOrderLineTrans(models.Model):
 
     #User    
     user_id = fields.Many2one('res.users', 'User')
+
+
+class VoucherTransactionType(models.Model):
+    _name = "weha.voucher.transaction.type"
+
+    name = fields.Char('Name', size=50)
+    code = fields.Char('Code', size=10)

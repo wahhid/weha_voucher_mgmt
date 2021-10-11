@@ -244,7 +244,8 @@
                 </p>
             </field>
         </record>
-    
+
+        <!--
         <menuitem 
             id="weha_voucher_trans_payment_menu" 
             name="Payment" 
@@ -252,6 +253,7 @@
             action="action_weha_voucher_trans_payment" 
             sequence="14"
              groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+        -->
 
         <!-- Tree view for voucher trans status -->
         <record id="view_weha_voucher_trans_status_tree" model="ir.ui.view">
@@ -262,7 +264,7 @@
             <field name="priority" eval="16" />
             <field name="active" eval="True" />
             <field name="arch" type="xml">
-                <tree string="Purchase" create="false" delete="false" edit="false">
+                <tree string="Status" create="false" delete="false" edit="false">
                     <field name="name" />
                     <field name="trans_date" />
                     <field name="member_id"/>
@@ -304,6 +306,9 @@
                                 <field name="process_type"/>
                                 <field name="void"/>
                             </group>
+                            <group>
+                                <field name="batch_id"/>
+                            </group>
                         </group>
                         <notebook colspan="4">
                             <page string="Voucher Lines">
@@ -343,7 +348,7 @@
         <!-- Main window action for voucher request -->
         <record id="action_weha_voucher_trans_status" model="ir.actions.act_window">
             <field name="type">ir.actions.act_window</field>
-            <field name="name">Voucher Payment</field>
+            <field name="name">Voucher Status</field>
             <field name="res_model">weha.voucher.trans.status</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[]</field>

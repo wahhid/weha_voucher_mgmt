@@ -28,5 +28,78 @@
             <field name="numbercall">-1</field>
             <field eval="False" name="doall"/>
         </record>
+
+    </data>
+
+    <data noupdate="0">
+        <record id="weha_voucher_transaction_type_order" model="weha.voucher.transaction.type">
+            <field name="name">Order</field>
+            <field name="code">OR</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_open" model="weha.voucher.transaction.type">
+            <field name="name">Open</field>
+            <field name="code">OP</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_received" model="weha.voucher.transaction.type">
+            <field name="name">Received</field>
+            <field name="code">RV</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_delivery" model="weha.voucher.transaction.type">
+            <field name="name">Delivery</field>
+            <field name="code">DV</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_stock_transfer" model="weha.voucher.transaction.type">
+            <field name="name">Stock Transfer</field>
+            <field name="code">ST</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_issued_customer" model="weha.voucher.transaction.type">
+            <field name="name">Issued Customer</field>
+            <field name="code">IC</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_return" model="weha.voucher.transaction.type">
+            <field name="name">Return</field>
+            <field name="code">RT</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_activated" model="weha.voucher.transaction.type">
+            <field name="name">Activated</field>
+            <field name="code">AC</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_reserved" model="weha.voucher.transaction.type">
+            <field name="name">Reserved</field>
+            <field name="code">RS</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_used" model="weha.voucher.transaction.type">
+            <field name="name">Used</field>
+            <field name="code">US</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_scrap" model="weha.voucher.transaction.type">
+            <field name="name">Scrap</field>
+            <field name="code">DM</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_cancel" model="weha.voucher.transaction.type">
+            <field name="name">Cancel</field>
+            <field name="code">CL</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_reopen" model="weha.voucher.transaction.type">
+            <field name="name">Re-Open</field>
+            <field name="code">RO</field>
+        </record>
+
+        <record id="weha_voucher_transaction_type_booking" model="weha.voucher.transaction.type">
+            <field name="name">Booking</field>
+            <field name="code">BO</field>
+        </record>
     </data>
 </odoo>

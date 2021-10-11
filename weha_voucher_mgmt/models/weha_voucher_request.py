@@ -72,8 +72,13 @@ class WeheVoucherRequest(models.Model):
         vals.update({'voucher_request_qty': request_line.voucher_qty})
         vals.update({'voucher_code_id': request_line.voucher_code_id.id})
         vals.update({'voucher_terms_id': request_line.voucher_code_id.voucher_terms_id.id})
+        vals.update({'voucher_mapping_sku_id': request_line.voucher_mapping_sku_id.id})
         vals.update({'year_id': self.env['weha.voucher.year'].get_current_year().id})
-        vals.update({'voucher_promo_id': self.voucher_promo_id.id})
+        #vals.update({'voucher_promo_id': self.voucher_promo_id.id})
+        if self.voucher_promo_id:
+            vals.update({'voucher_promo_id': self.voucher_promo_id.id})
+        else:
+            vals.update({'voucher_promo_id': False})
         res = obj_allocate.sudo().create(vals)
         _logger.info("str_ean ID = " + str(res))
         #To Finance User
