@@ -119,26 +119,39 @@ class VoucherTransPurchase(models.Model):
                 _logger.info("Mappign SKU not Found")
 
     def _auth_trust(self):
-        url = "http://apiindev.trustranch.co.id/login"
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('crm_api_url')
+        _logger.info(crm_api_url)
+        crm_api_username = config_parameter_obj.get_param('crm_api_username')
+        crm_api_password = config_parameter_obj.get_param('crm_api_password')
 
-        payload='barcode=3000030930&password=weha.ID!!2020'
+        #url = "http://apiindev.trustranch.co.id/login"
+        #payload='barcode=3000030930&password=weha.ID!!2020'
+
+        payload=f'barcode={crm_api_username}&password={crm_api_password}'
+        
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-
-        response = requests.request("POST", url, headers=headers, data=payload)
-        #json_data = json.loads(response.text)
-        str_json_data  = response.text.replace("'"," ")
-        json_data = json.loads(str_json_data)
-        #_logger.info(response.text)
-        _logger.info(json_data['data']['api_token'])
-        return json_data['data']['api_token']
+        try:
+            response = requests.request("POST", crm_api_url + "/login", headers=headers, data=payload)
+            #json_data = json.loads(response.text)
+            str_json_data  = response.text.replace("'"," ")
+            json_data = json.loads(str_json_data)
+            #_logger.info(response.text)
+            _logger.info(json_data['data']['api_token'])
+            return json_data['data']['api_token']
+        except Exception as err:
+            _logger.info(err)  
 
     def send_data_to_trust(self):
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
+    
         api_token = self._auth_trust()
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
-        base_url = 'http://apiindev.trustranch.co.id'
+        #base_url = 'http://apiindev.trustranch.co.id'
         try:
             vouchers = []
             for voucher_trans_purchase_line_id in self.voucher_trans_purchase_line_ids:
@@ -156,7 +169,7 @@ class VoucherTransPurchase(models.Model):
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/get-voucher'.format(base_url), headers=headers ,data=data)
+            req = requests.post('{}/vms/get-voucher'.format(crm_api_url), headers=headers ,data=data)
             _logger.info(req.text)
             
             #content = json.loads(req.content.decode('utf-8'))
@@ -558,25 +571,40 @@ class VoucherTransStatus(models.Model):
                     _logger.info('')
 
     def _auth_trust(self):
+        _logger.info("_auth_trust")
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('crm_api_url')
+        crm_api_username = config_parameter_obj.get_param('crm_api_username')
+        crm_api_password = config_parameter_obj.get_param('crm_api_password')
+
+        #url = "http://apiindev.trustranch.co.id/login"
+        #payload='barcode=3000030930&password=weha.ID!!2020'
+
+        payload=f'barcode={crm_api_username}&password={crm_api_password}'
+        _logger.info(payload)
+        
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
         try:
-            url = "http://apiindev.trustranch.co.id/login"
-            payload='barcode=3000030930&password=weha.ID!!2020'
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-            response = requests.request("POST", url, headers=headers, data=payload)
+            response = requests.request("POST", crm_api_url + "/login", headers=headers, data=payload)
+            #json_data = json.loads(response.text)
             str_json_data  = response.text.replace("'"," ")
             json_data = json.loads(str_json_data)
+            #_logger.info(response.text)
             _logger.info(json_data['data']['api_token'])
             return json_data['data']['api_token']
         except Exception as err:
-            _logger.info(err)
-            return False
+            _logger.info("Error Auth Trust")
+            _logger.info(err)  
 
     #API for Sales
     def send_data_to_trust(self):
         _logger.info("Send Data")
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
+  
         trans_line_id = self.get_last_trans_line()
         _logger.info(trans_line_id.name)
         if self.voucher_trans_type in ('1','2','3'):
@@ -590,7 +618,7 @@ class VoucherTransStatus(models.Model):
             return True, "Error CRM"
 
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
-        base_url = 'http://apiindev.trustranch.co.id'
+        #base_url = 'http://apiindev.trustranch.co.id'
         try:
             vouchers = []
             vouchers.append(self.voucher_ean + ';' + self.expired_date.strftime('%Y-%m-%d') + ";" + self.voucher_sku)
@@ -606,7 +634,7 @@ class VoucherTransStatus(models.Model):
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+            req = requests.post('{}/vms/send-voucher'.format(crm_api_url), headers=headers ,data=data)
             if req.status_code == 200:
                 #Success
                 response_json = req.json()
@@ -651,13 +679,15 @@ class VoucherTransStatus(models.Model):
             return True, "Error CRM"
 
     def send_to_trust_by_batch_id(self):
-        _logger.info("Send Data")
-
+        _logger.info("send_to_trust_by_batch_id")
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
+  
         api_token = self._auth_trust()
         if not api_token:
             self.is_send_to_crm = False
             self.send_to_crm_message = "Error Authentication"
-            self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+            #self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
             return True, "Error CRM"
 
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
@@ -693,7 +723,6 @@ class VoucherTransStatus(models.Model):
                     voucher_order_line_id.sudo().write({'state': 'activated'})
                     voucher_order_line_id.voucher_trans_type = False
                     voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                
                 return False, "Success"                
             else:
                 #Error
@@ -733,7 +762,9 @@ class VoucherTransStatus(models.Model):
 
     def send_to_trust(self):
         _logger.info("Send To Trust")
-
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
+  
         api_token = self._auth_trust()
         if not api_token:
             self.is_send_to_crm = False
@@ -761,7 +792,7 @@ class VoucherTransStatus(models.Model):
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+            req = requests.post('{}/vms/send-voucher'.format(crm_api_url), headers=headers ,data=data)
             if req.status_code == 200:
                 #Success
                 response_json = req.json()
@@ -814,7 +845,9 @@ class VoucherTransStatus(models.Model):
     #API for Used
     def send_used_notification_to_trust(self):  
         _logger.info("Send Used Notifcation")
-
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
+  
         api_token = self._auth_trust()
         if not api_token:
             self.is_send_to_crm = False
@@ -837,7 +870,7 @@ class VoucherTransStatus(models.Model):
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/use-voucher'.format(base_url), headers=headers ,data=data)
+            req = requests.post('{}/vms/use-voucher'.format(crm_api_url), headers=headers ,data=data)
             if req.status_code == 200:
                 #Success
                 response_json = req.json()
@@ -1017,7 +1050,7 @@ class VoucherTransFTP(models.Model):
         _logger.info(self.ftp_url)
         self.ftp_username = self.env.ref(ftp_username).sudo().value
         _logger.info(self.ftp_username)
-        self.ftp_password = self.env.ref(ftp_password).sudo().value
+        self._password = self.env.ref(ftp_password).sudo().value
         _logger.info(self.ftp_password)
         #Connect To FTP Server
         ftp = FTP()

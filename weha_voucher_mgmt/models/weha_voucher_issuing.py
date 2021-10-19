@@ -306,6 +306,29 @@ class VoucherIssuing(models.Model):
             raise ValidationError('Stage not found')
         super(VoucherIssuing, self).write({'stage_id': stage_id.id})   
 
+    def trans_force_cancel(self):
+        for voucher_issuing_line_id in self.voucher_issuing_line_ids:
+            if voucher_issuing_line_id.state == 'issued':
+
+                vals = {'state': 'cancelled'}
+                voucher_issuing_line_id.write(vals)
+
+                vals = {'state': 'open'}
+                voucher_issuing_line_id.voucher_order_line_id.sudo().write(vals)
+                if not voucher_issuing_line_id.voucher_order_line_id.is_voucher_promo:
+                    #voucher_issuing_line_id.voucher_order_line_id.sudo().calculate_expired()
+                    voucher_issuing_line_id.voucher_order_line_id.sudo().write({'expired_date': False})
+
+                vals = {}
+                vals.update({'name': self.number})
+                vals.update({'voucher_order_line_id': voucher_issuing_line_id.voucher_order_line_id.id})
+                vals.update({'trans_date': datetime.now()})
+                vals.update({'trans_type': 'OP'})
+                self.env['weha.voucher.order.line.trans'].sudo().create(vals)
+        
+        stage_id = self.env['weha.voucher.issuing.stage'].search([('cancelled','=',True)], limit=1)
+        super(VoucherIssuing, self).write({'stage_id': stage_id.id})
+
     @api.depends('stage_id')
     def trans_confirm(self):
         if self.voucher_count == self.estimate_voucher_count:

@@ -13,15 +13,17 @@
         
         <record id="crm_api_url" model="ir.config_parameter">
             <field name="key">crm_api_url</field>
-            <field name="value">http://localhost:5000</field>
+            <field name="value">http://apiindev.trustranch.co.id</field>
         </record>
+
         <record id="crm_api_username" model="ir.config_parameter">
             <field name="key">crm_api_username</field>
-            <field name="value">crm</field>
+            <field name="value">3000030930</field>
         </record>
+
         <record id="crm_api_password" model="ir.config_parameter">
             <field name="key">crm_api_password</field>
-            <field name="value">crm</field>
+            <field name="value">weha.ID!!2020</field>
         </record>
 
         <record id="ftp_url" model="ir.config_parameter">
