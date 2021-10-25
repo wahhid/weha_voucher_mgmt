@@ -30,8 +30,12 @@ class OperatingUnit(models.Model):
     approval_user_ids = fields.Many2many(
           'res.users', 'approval_user_ids_operating_unit_rel',
           'user_id', 'ooperating_unit_id',
-          string='Approval Users')
-          
+          string='Approval Level 1 Users')
+    approval_level_2_user_ids = fields.Many2many(
+          'res.users', 'approval_level_2_user_ids_operating_unit_rel',
+          'user_id', 'ooperating_unit_id',
+          string='Approval Level 2 Users')
+
     requester_user_ids = fields.Many2many(
           'res.users', 'requester_user_ids_operating_unit_rel',
           'user_id', 'ooperating_unit_id',

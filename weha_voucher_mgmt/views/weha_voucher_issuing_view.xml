@@ -30,17 +30,29 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
+                        <!--HRD-->
                         <button type="action"
                                 name="%(weha_voucher_mgmt.action_issuing_import_voucher_line_wizard)d"
                                 attrs="{'invisible': [('current_stage', '!=', 'unattended')]}"
                                 groups="weha_voucher_mgmt.group_voucher_hrd_user"
                                 string="Add Lines"/>
+                        <!--HRD-->
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                                 class="btn btn-primary" 
                                 name="trans_issuing_approval" 
                                 string="Request Approval" 
                                 groups="weha_voucher_mgmt.group_voucher_hrd_user"/>
+                        
+                        <!--FINANCE--> 
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                class="btn btn-primary" 
+                                name="trans_issuing_finance_approval" 
+                                string="Request Approval" 
+                                groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+             
+                        <!--STORE-->
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                                 class="btn btn-primary"
@@ -48,52 +60,66 @@
                                 string="Confirm" 
                                 confirm="Are you sure to continue ?"
                                 groups="weha_voucher_mgmt.group_voucher_manager"/>
+                       
+                        <!--STORE-->
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                                 class="btn btn-primary" 
                                 name="trans_approve" 
                                 string="Approve" 
-                                groups="weha_voucher_mgmt.group_voucher_hrd_manager" 
+                                groups="weha_voucher_mgmt.group_voucher_hrd_manager,weha_voucher_mgmt.group_voucher_finance_manager" 
                                 confirm="Are you sure you want to approve voucher activate customer?"/>
+                        
+                        <!--HRD-->
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
                                 class="btn btn-primary" 
                                 name="trans_reject" 
                                 string="Reject" 
                                 confirm="Are you sure you want to reject voucher activate customer?"
-                                groups="weha_voucher_mgmt.group_voucher_hrd_manager"/>
+                                groups="weha_voucher_mgmt.group_voucher_hrd_manager,weha_voucher_mgmt.group_voucher_finance_manager"/>
+                        
+                        <!--STORE-->
                         <button type="action" 
                                 attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                                 class="btn btn-primary" 
                                 name="%(weha_voucher_mgmt.act_open_scan_voucher_issuing_view_form)d" 
                                 string="Scan Voucher" 
-                                groups="weha_voucher_mgmt.group_voucher_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"/>
+
+                        <!--STORE-->
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'unattended')]}"
                                 class="btn btn-primary" 
                                 name="action_issuing_voucher" 
                                 string="Ready to Issuing" 
                                 groups="weha_voucher_mgmt.group_voucher_user"/>
+
+                        <!--HRD-->
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'open')]}"
                                 class="btn btn-primary" 
                                 name="action_issuing_voucher" 
                                 string="Ready to Issuing" 
-                                groups="weha_voucher_mgmt.group_voucher_hrd_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_hrd_user,weha_voucher_mgmt.group_voucher_finance_user"/>
+
+                        <!--HRD/STORE-->
                         <button type="object" 
                                  attrs="{'invisible': [('current_stage', 'in', ('closed','cancelled','rejected'))]}"
                                  class="btn btn-warning" 
                                  name="trans_cancelled" 
                                  string="Cancel Issuing" 
                                  confirm="Are you sure you want to cancel voucher activate customer?"
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_hrd_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_hrd_user,weha_voucher_mgmt.group_voucher_finance_user"/>
+                        
+                        <!--STORE-->
                         <button type="object" 
                                  attrs="{'invisible': [('current_stage', 'in', ('cancelled','rejected'))]}"
                                  class="btn btn-error" 
                                  name="trans_force_cancel" 
                                  string="Force Cancel" 
                                  confirm="Are you sure you want to foroce cancel voucher activate customer?"
-                                groups="weha_voucher_mgmt.group_voucher_user"/>
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"/>
                         
                         <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>

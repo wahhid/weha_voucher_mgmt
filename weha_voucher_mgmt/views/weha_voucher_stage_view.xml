@@ -152,6 +152,7 @@
                                 <field name="unattended"/>
                                 <field name="approval"/>
                                 <field name="approval_level" attrs="{'invisible':[('approval','=', False)]}"/>
+                                <field name="is_next_approval"/>
                                 <field name="opened"/>
                                 <field name="closed"/>
                                 <field name="cancelled"/>

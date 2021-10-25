@@ -8,6 +8,7 @@
                 <field name="active" position="after">
                     <field name="manager_id"/>
                     <field name="approval_user_ids" widget="many2many_tags"/>
+                    <field name="approval_level_2_user_ids" widget="many2many_tags"/>
                     <field name="requester_user_ids" widget="many2many_tags"/>
                 </field>
             </field>

@@ -88,6 +88,7 @@ class WehaVoucherRequestStage(models.Model):
     approval_user_id_l1 = fields.Many2one('res.users', 'Approval User L1')
     approval_user_id_l2 = fields.Many2one('res.users', 'Approval User L2')
     approval_level = fields.Integer('Approval Level', default=1)
+    is_next_approval = fields.Boolean('Next Approval', default=False)
     next_stage_id = fields.Many2one('weha.voucher.request.stage', 'Next Stage', required=False)
     mail_template_id = fields.Many2one(
         'mail.template',
@@ -266,6 +267,7 @@ class WehaVoucherIssuingStage(models.Model):
     next_stage_id = fields.Many2one('weha.voucher.issuing.stage', 'Next Stage', required=False)
     approval_user_id = fields.Many2one('res.users', 'Approval User')
     approval_level = fields.Integer('Approval Level', default=1)
+    is_next_approval = fields.Boolean('Next Approval', default=False)
     mail_template_id = fields.Many2one(
         'mail.template',
         string='Email Template',

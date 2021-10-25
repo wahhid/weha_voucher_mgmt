@@ -40,11 +40,6 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-
-                        <button type="object" attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
-                            class="btn btn-primary" name="trans_return_approval" string="Request Approval" 
-                            groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
-
                         <button 
                             type="action" 
                             attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
@@ -53,12 +48,21 @@
                             string="Scan Voucher" 
                             groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
 
-                        <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
-                                class="btn btn-light" 
-                                name="trans_close" 
-                                string="Closed Return" 
-                                groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
+                        <button 
+                            type="object" 
+                            attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                            class="btn btn-primary" 
+                            name="trans_return_approval" 
+                            string="Request Approval" 
+                            groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
+
+                        <button 
+                            type="object" 
+                            attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
+                            class="btn btn-light" 
+                            name="trans_close" 
+                            string="Closed Return" 
+                            groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'open')]}"

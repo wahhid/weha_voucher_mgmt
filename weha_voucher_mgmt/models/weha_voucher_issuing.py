@@ -259,6 +259,26 @@ class VoucherIssuing(models.Model):
             }
             self.send_notification(data)
 
+    def trans_issuing_finance_approval(self):
+        stage_id = self.env['weha.voucher.issuing.stage'].search([('approval','=', True)], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage not found')
+        res = super(VoucherIssuing, self).write({'stage_id': stage_id.id})
+
+        #Create Schedule Activity
+        operating_unit_id = self.operating_unit_id
+        for approval_user_id in operating_unit_id.approval_user_ids:
+            data = {
+                'activity_type_id': 4,
+                'note': 'Voucher Issuing for Finance Approval',
+                'res_id': self.id,
+                'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_issuing').id,
+                'user_id': approval_user_id.id,
+                'date_deadline': datetime.now() + timedelta(days=2),
+                'summary': 'Voucher Issuing for Finance Approval'
+            }
+            self.send_notification(data) 
+
     def trans_approve(self):
         _logger.info("Trans Approve")
         stage_id = self.stage_id.next_stage_id

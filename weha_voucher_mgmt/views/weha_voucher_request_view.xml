@@ -54,22 +54,53 @@
                                 name="trans_request_approval" 
                                 string="Request Approval" 
                                 confirm="Are you sure to process request approval?"
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
-
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>         
+                        
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=','approval')]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=','approval'),('current_stage_approval_level','!=',1)]}"
                                 class="btn btn-primary" 
                                 name="trans_approve" 
                                 string="Approve" 
                                 confirm="Are you sure you want to Approve?" 
-                                groups="weha_voucher_mgmt.group_voucher_manager,weha_voucher_mgmt.group_voucher_marketing_manager" />
+                                groups="weha_voucher_mgmt.group_voucher_manager" />
+                        
+                         <button type="object" 
+                                attrs="{'invisible': ['|',('current_stage', '!=','approval'),('current_stage_approval_level','!=',1)]}"
+                                class="btn btn-primary" 
+                                name="trans_approve_marketing_manager" 
+                                string="Approve" 
+                                confirm="Are you sure you want to Approve?" 
+                                groups="weha_voucher_mgmt.group_voucher_marketing_manager" />
+
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=','approval'),('current_stage_approval_level','!=',2)]}"
+                                class="btn btn-primary"  
+                                name="trans_approve_marketing_chief" 
+                                string="Approve"
+                                confirm="Are you sure you want to Approve?" 
+                                groups="weha_voucher_mgmt.group_voucher_marketing_chief" />
                         
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                                 class="btn btn-primary" 
                                 name="trans_reject" 
                                 string="Reject"
-                                groups="weha_voucher_mgmt.group_voucher_manager, weha_voucher_mgmt.group_voucher_marketing_manager"/>
+                                groups="weha_voucher_mgmt.group_voucher_manager"/>
+
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_reject_marketing_manager" 
+                                string="Reject"
+                                groups="weha_voucher_mgmt.group_voucher_marketing_manager"/>
+
+                        <button type="object" 
+                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                class="btn btn-primary" 
+                                name="trans_reject_marketing_chief" 
+                                string="Reject"
+                                groups="weha_voucher_mgmt.group_voucher_marketing_chief"/>
+
 
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=','approval')]}"
@@ -127,6 +158,7 @@
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="voucher_count"/>
                                 <field name="current_stage" invisible="1"/>
+                                <field name="current_stage_approval_level" invisible="1"/>
                                 <field name="remark" widget="textarea"/>
                                 <field name="voucher_promo_id"/>
                             </group>
@@ -136,7 +168,7 @@
                             <page string="Vouchers">
                                 <field name="voucher_request_line_ids" widget="many2one_clickable">
                                     <tree string="Request Lines" editable="bottom">
-                                        <field name="voucher_mapping_sku_id"/>
+                                        <field name="voucher_mapping_sku_id" domain="[('voucher_code_id.voucher_type','=','physical')]"/>
                                         <field name="voucher_code_id"/>
                                         <field name="voucher_qty"/>
                                         <field name="voucher_amount"/>
