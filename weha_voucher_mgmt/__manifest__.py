@@ -94,7 +94,7 @@
         'mail',
         'operating_unit',
         'board',
-        'barcode_action'
+        #'barcode_action'
     ],
     'qweb': ["static/src/xml/voucher_dashboard.xml"],
     "installable": True,
