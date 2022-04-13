@@ -1,21 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
     <data noupdate="1">
 
-        <!-- Voucher Order Stages -->
-<!-- 
-        <record id="voucher_allocate_stage_in_order" model="weha.voucher.allocate.stage">
-            <field name="sequence">5</field>
+        <record id="voucher_order_stage_in_progress_done" model="weha.voucher.order.stage">
+            <field name="sequence">4</field>
             <field name="name">In Order</field>
             <field name="progress">True</field>
-            <field name="next_stage_id" ref="voucher_allocate_stage_receiving"/>
-        </record> -->
-
-        <record id="voucher_order_stage_done" model="weha.voucher.order.stage">
-            <field name="sequence">4</field>
-            <field name="name">Generate</field>
-            <field name="closed">True</field>
             <field name="fold">True</field>
         </record>
 
@@ -23,7 +13,7 @@
             <field name="sequence">3</field>
             <field name="name">Ready To Generate</field>
             <field name="opened">True</field>
-            <field name="next_stage_id" ref="voucher_order_stage_done"/>
+            <field name="next_stage_id" ref="voucher_order_stage_in_progress_done"/>
         </record>
 
         <record id="voucher_order_stage_approval" model="weha.voucher.order.stage">
@@ -41,15 +31,31 @@
             <field name="next_stage_id" ref="voucher_order_stage_approval"/>
         </record>
 
-        <record id="voucher_order_stage_cancelled" model="weha.voucher.order.stage">
+
+        <record id="voucher_order_stage_receiving" model="weha.voucher.order.stage">
+            <field name="sequence">5</field>
+            <field name="name">Receiving</field>
+            <field name="receiving">True</field>
+            <field name="fold">True</field>
+        </record>
+
+
+        <record id="voucher_order_stage_closed" model="weha.voucher.order.stage">
             <field name="sequence">6</field>
+            <field name="name">Closed</field>
+            <field name="closed">True</field>
+            <field name="fold">True</field>
+        </record>
+
+        <record id="voucher_order_stage_cancelled" model="weha.voucher.order.stage">
+            <field name="sequence">7</field>
             <field name="name">Cancelled</field>
             <field name="cancelled">True</field>
             <field name="fold">True</field>
         </record>
 
         <record id="voucher_order_stage_rejected" model="weha.voucher.order.stage">
-            <field name="sequence">7</field>
+            <field name="sequence">8</field>
             <field name="name">Rejected</field>
             <field name="rejected">True</field>
             <field name="fold">True</field>

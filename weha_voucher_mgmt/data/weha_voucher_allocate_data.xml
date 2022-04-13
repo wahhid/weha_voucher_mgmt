@@ -35,7 +35,7 @@
 
         <record id="voucher_allocate_stage_approval" model="weha.voucher.allocate.stage">
             <field name="sequence">2</field>
-            <field name="name">Pending for Approval</field>
+            <field name="name">Pending to Approval</field>
             <field name="approval">True</field>
             <field name="fold">True</field>
             <field name="next_stage_id" ref="voucher_allocate_stage_open"/>

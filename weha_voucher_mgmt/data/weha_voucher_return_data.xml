@@ -28,14 +28,14 @@
 
         <record id="voucher_return_stage_open" model="weha.voucher.return.stage">
             <field name="sequence">3</field>
-            <field name="name">Ready to Return</field>
+            <field name="name">Ready to Deliver</field>
             <field name="opened">True</field>
             <field name="next_stage_id" ref="voucher_return_stage_in_transit"/>
         </record>
 
         <record id="voucher_return_stage_approval" model="weha.voucher.return.stage">
             <field name="sequence">2</field>
-            <field name="name">Pending Approve</field>
+            <field name="name">Pending for Approval</field>
             <field name="approval">True</field>
             <field name="fold">True</field>
         </record>
@@ -67,10 +67,6 @@
             <field name="name">Rejected</field>
             <field name="rejected">True</field>
             <field name="fold">True</field>
-        </record>
-
-
-        
-       
+        </record>       
     </data>
 </odoo>

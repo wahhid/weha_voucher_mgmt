@@ -171,6 +171,8 @@ class VoucherIssuing(models.Model):
         _logger.info("Send Employee Data")
         api_token = self._auth_trust()
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('crm_api_url')
         base_url = 'http://apiindev.trustranch.co.id'
         try:
             for voucher_issuing_employee_line_id  in self.voucher_issuing_employee_line_ids :
@@ -191,7 +193,7 @@ class VoucherIssuing(models.Model):
                 }
                 _logger.info(data)
                 headers = {'Authorization' : 'Bearer ' + api_token}
-                req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+                req = requests.post('{}/vms/send-voucher'.format(crm_api_url), headers=headers ,data=data)
                 _logger.info(req.text)
                 if req.status_code != 200:
                     _logger.info(f'Error : {req.status_code}')

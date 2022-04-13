@@ -308,6 +308,9 @@ class VoucherOrderLine(models.Model):
             self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
             return True, "Error CRM"
 
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('crm_api_url')
+
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://apiindev.trustranch.co.id'
         try:
@@ -325,7 +328,7 @@ class VoucherOrderLine(models.Model):
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+            req = requests.post('{}/vms/send-voucher'.format(crm_api_url), headers=headers ,data=data)
             if req.status_code == 200:
                 #Success
                 response_json = req.json()
@@ -386,6 +389,8 @@ class VoucherOrderLine(models.Model):
             self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
             return True, "Error CRM"
 
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('crm_api_url')
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://apiindev.trustranch.co.id'
         try:
@@ -398,7 +403,7 @@ class VoucherOrderLine(models.Model):
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/use-voucher'.format(base_url), headers=headers ,data=data)
+            req = requests.post('{}/vms/use-voucher'.format(crm_api_url), headers=headers ,data=data)
             if req.status_code == 200:
                 #Success
                 response_json = req.json()
@@ -438,6 +443,8 @@ class VoucherOrderLine(models.Model):
             voucher_issuing_id = self.env['weha.voucher.issuing'].search([('number','=',trans_line_id.name)], limit=1)
     
         api_token = self._auth_trust()
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('crm_api_url')
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://apiindev.trustranch.co.id'
         try:
@@ -456,7 +463,7 @@ class VoucherOrderLine(models.Model):
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+            req = requests.post('{}/vms/send-voucher'.format(crm_api_url), headers=headers ,data=data)
             _logger.info(req.text)
             if req.status_code != '200':
                 _logger.info(f'Error : {req.status_code}')

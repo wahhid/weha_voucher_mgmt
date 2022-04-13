@@ -7,7 +7,7 @@
 
         <record id="voucher_issuing_stage_done" model="weha.voucher.issuing.stage">
             <field name="sequence">4</field>
-            <field name="name">Issuing</field>
+            <field name="name">Issued</field>
             <field name="closed">True</field>
             <field name="fold">True</field>
         </record>
@@ -21,7 +21,7 @@
 
         <record id="voucher_issuing_stage_approval" model="weha.voucher.issuing.stage">
             <field name="sequence">2</field>
-            <field name="name">Pending Approval</field>
+            <field name="name">Pending for Approval</field>
             <field name="approval">True</field>
             <field name="next_stage_id" ref="voucher_issuing_stage_open"/>
         </record>
