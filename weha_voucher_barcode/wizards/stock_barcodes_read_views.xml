@@ -35,6 +35,12 @@
                             <field name="message" />
                         </div>
                     </div>
+                    <div class="text-center">
+                        <img style="width: 400px;" src='weha_voucher_barcode/static/src/images/scan_voucher.png'/>
+                    </div>
+                    <div class="text-center">
+                        <span style="font-size: 32px">Please Scan Voucher!</span>
+                    </div>
                     <group>
                         <field name="message_type" invisible="1" />
                         <field name="barcode" invisible="1" force_save="1"/>
@@ -46,7 +52,9 @@
                             widget="barcode_handler"
                             invisible="1"
                         />
+
                     </group>
+                    <!--
                     <group />
                     <group />
                     <group string="Current voucher scanning log">
@@ -62,6 +70,7 @@
                             </tree>
                         </field>
                     </group>
+                    -->
                 </sheet>
             </form>
         </field>

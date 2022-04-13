@@ -60,10 +60,16 @@ class WeheVoucherRequest(models.Model):
     def send_notification(self, data):
         self.env['mail.activity'].create(data).action_feedback()
 
-    def send_l1_request_mail(self):
+    def send_chief_request_aprroval_email(self):
         for rec in self:
-            template = self.env.ref('weha_voucher_mgmt.voucher_request_l1_approval_notification_template', raise_if_not_found=False)
-            template.send_mail(rec.id)
+            domain = [
+                ('name','=','Request For Chief Approval')
+            ]
+            template = self.env['mail.template'].search(domain,limit=1)
+            # template = self.env.ref('email_template_voucher_request_marketing_cheif_approval', raise_if_not_found=False)
+            if not template:
+                raise ValidationError(_("Email Template not found!"))
+            template.send_mail(rec.id, force_send=True)
 
     def create_allocate_from_request(self, request_line):
         obj_allocate = self.env['weha.voucher.allocate']
@@ -73,6 +79,8 @@ class WeheVoucherRequest(models.Model):
         vals.update({'user_id': company_id.res_company_request_allocate_user_id.id})
         vals.update({'source_operating_unit': self.operating_unit_id.id})
         vals.update({'ref': self.number})
+        vals.update({'remark': self.remark})
+        vals.update({'promo_expired_date': self.promo_expired_date})
         vals.update({'is_request': True})
         vals.update({'voucher_request_id': self.id})
         vals.update({'voucher_request_qty': request_line.voucher_qty})
@@ -80,10 +88,12 @@ class WeheVoucherRequest(models.Model):
         vals.update({'voucher_terms_id': request_line.voucher_code_id.voucher_terms_id.id})
         vals.update({'voucher_mapping_sku_id': request_line.voucher_mapping_sku_id.id})
         vals.update({'year_id': self.env['weha.voucher.year'].get_current_year().id})
-        #vals.update({'voucher_promo_id': self.voucher_promo_id.id})
         if self.voucher_promo_id:
             vals.update({'voucher_promo_id': self.voucher_promo_id.id})
+            vals.update({'is_voucher_promo': True})
+            vals.update({'promo_expired_date': self.promo_expired_date})
         else:
+            vals.update({'expired_days': request_line.voucher_code_id.voucher_terms_id.number_of_days})
             vals.update({'voucher_promo_id': False})
         res = obj_allocate.sudo().create(vals)
         _logger.info("str_ean ID = " + str(res))
@@ -168,8 +178,9 @@ class WeheVoucherRequest(models.Model):
                 raise UserError("Stage not found")
             res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
             operating_unit_id = self.operating_unit_id
+            data = {}
             for approval_user_id in operating_unit_id.approval_level_2_user_ids:
-                data = {
+                data.update({
                         'activity_type_id': 4,
                         'note': 'Voucher Request Approval',
                         'res_id': self.id,
@@ -177,8 +188,9 @@ class WeheVoucherRequest(models.Model):
                         'user_id': approval_user_id.id,
                         'date_deadline': datetime.now() + timedelta(days=2),
                         'summary': 'Voucher Request Chief Approval'
-                }
+                })
             self.send_notification(data)
+            self.send_chief_request_aprroval_email()
         else:
             stage_id = self.stage_id.next_stage_id
             res = super(WeheVoucherRequest, self).write({'stage_id': stage_id.id})
@@ -278,6 +290,7 @@ class WeheVoucherRequest(models.Model):
                 'date_deadline': datetime.now() + timedelta(days=2),
                 'summary': 'Voucher Request was rejected by Marketing Manager'
             }).action_feedback()
+            #self.send_l1_request_mail
     
     def trans_reject_marketing_chief(self):
         stage_id = self.env['weha.voucher.request.stage'].search([('rejected','=', True)])
@@ -357,6 +370,7 @@ class WeheVoucherRequest(models.Model):
         default='physical'
     )
     voucher_promo_id = fields.Many2one('weha.voucher.promo','Promo')    
+    promo_expired_date = fields.Date('Promo Expired Date')
     remark = fields.Char('Remark', size=200)
     voucher_total_amount = fields.Float("Total", compute="_calculate_voucher_total_amount", readonly=True)
 

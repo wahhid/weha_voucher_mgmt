@@ -6,12 +6,19 @@ _logger = logging.getLogger(__name__)
 
 class VoucherReturnLine(models.Model):
     _name = 'weha.voucher.return.line'
+    _description = 'Voucher Return Line'
     
-    def check_voucher_order_line(self, voucher_return_id, voucher_order_line_id):
-        domain = [
-            ('voucher_order_line_id', '=', voucher_order_line_id),
-            ('state', '=', 'open'),
-        ]        
+    def check_voucher_order_line(self, voucher_return_id, voucher_order_line_id, is_finance=False):
+        if not is_finance:
+            domain = [
+                ('voucher_order_line_id', '=', voucher_order_line_id),
+                ('state', '=', 'open'),
+            ]    
+        else:
+            domain = [
+                ('voucher_order_line_id', '=', voucher_order_line_id),
+                ('state', '=', 'received'),
+            ]    
         voucher_return_line_ids = self.env['weha.voucher.return.line'].search(domain)
         if not voucher_return_line_ids:
             return False

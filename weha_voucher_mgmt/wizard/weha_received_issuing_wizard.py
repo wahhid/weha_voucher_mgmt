@@ -15,10 +15,13 @@ class WizardScanVoucherIssuing(models.TransientModel):
     @api.onchange('start_number', 'end_number')
     def _onchange_voucher(self):     
         if self.start_number:     
-            voucher_id  = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.start_number)],limit=1)
+            domain = [
+                ('voucher_ean','=', self.start_number)
+            ]
+            voucher_id  = self.env['weha.voucher.order.line'].search(domain,limit=1)
             if not voucher_id:
                 self.start_number = False
-                raise Warning('Voucher in start number not found')
+                raise Warning('Voucher in end number not found or not in open state')
             
             self.operating_unit_id = voucher_id.operating_unit_id.id
             self.voucher_code_id = voucher_id.voucher_code_id.id
@@ -44,17 +47,20 @@ class WizardScanVoucherIssuing(models.TransientModel):
             self.is_valid = True
 
         if self.end_number:     
-            voucher_id = self.env['weha.voucher.order.line'].search([('voucher_ean','=', self.end_number)], limit=1)
+            domain = [
+                ('voucher_ean','=', self.start_number)
+            ]
+            voucher_id = self.env['weha.voucher.order.line'].search(domain, limit=1)
             if not voucher_id:
                 self.end_number = ''
-                raise Warning('Voucher in end number not found')    
+                raise Warning('Voucher in end number not found or not in open state')    
             
             if self.operating_unit_id.id != voucher_id.operating_unit_id.id and \
                 self.voucher_code_id.id != voucher_id.voucher_code_id.id and \
                 self.year_id.id != voucher_id.year_id.id and \
                 self.voucher_promo_id.id != voucher_id.voucher_promo_id.id:
                 self.end_number = False
-                raise Validation('Voucher not match')
+                raise ValidationError('Voucher not match')
 
                  
     operating_unit_id = fields.Many2one('operating.unit', 'Operating Unit', required=False, readonly=True)
@@ -76,8 +82,8 @@ class WizardScanVoucherIssuing(models.TransientModel):
         voucher_issuing_id = self.voucher_issuing_id
 
         #Clear Voucher Issuing Line
-        for voucher_issuing_line_id in voucher_issuing_id.voucher_issuing_line_ids:
-            voucher_issuing_line_id.unlink()
+        #for voucher_issuing_line_id in voucher_issuing_id.voucher_issuing_line_ids:
+        #    voucher_issuing_line_id.unlink()
 
         for scan_voucher_issuing_line_id in self.scan_voucher_issuing_line_ids:
             if scan_voucher_issuing_line_id.state == 'available':
@@ -123,7 +129,6 @@ class WizardScanVoucherIssuing(models.TransientModel):
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('voucher_promo_id', '=', voucher_order_line_start_id.voucher_promo_id.id),
-                #('check_number', 'in', tuple(voucher_ranges))
                 ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
                 ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
             ]
@@ -132,7 +137,6 @@ class WizardScanVoucherIssuing(models.TransientModel):
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
                 ('year_id','=', voucher_order_line_start_id.year_id.id),
-                #('check_number', 'in', tuple(voucher_ranges)),
                 ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
                 ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
             ]
@@ -148,9 +152,14 @@ class WizardScanVoucherIssuing(models.TransientModel):
             is_invalid = self.env['weha.voucher.issuing.line'].check_voucher_order_line(voucher_issuing_id.id, voucher_order_line_id.id)
             if not is_invalid:
                 _logger.info('Is Invalid')
-                estimate_count = estimate_count + 1
-                vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'available'})
-                line_ids.append(vals)
+                if voucher_order_line_id.state == 'open':
+                    estimate_count = estimate_count + 1
+                    vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'available'})
+                    line_ids.append(vals)
+                else:
+                    _logger.info('Voucher Order Line was not open status')
+                    vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'not_available'})
+                    line_ids.append(vals)
             else:
                 _logger.info('Voucher Order Line was allocate in other transaction')
                 vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'allocated'})
@@ -190,11 +199,8 @@ class WizardScanVoucherIssuingLine(models.TransientModel):
     scan_voucher_issuing_line_id = fields.Many2one("weha.wizard.scan.issuing.scrap", 'Scan Voucher Issuing #')
     voucher_issuing_line_id = fields.Many2one('weha.voucher.issuing.line', 'Voucher Issuing Line #')
     voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher Order Line #')
-    state = fields.Selection([('available','Available'),('allocated','Allocated')],'Status', readonly=True)
+    state = fields.Selection([('available','Available'),('not_available','Not Available'),('allocated','Allocated')],'Status', readonly=True)
     
-
-
-
 class WehaWizardReceivedIssuing(models.TransientModel):
     _name = 'weha.wizard.received.issuing'
     _description = 'Wizard form for received voucher'
@@ -317,7 +323,6 @@ class WehaWizardReceivedIssuing(models.TransientModel):
     is_checked = fields.Boolean("Checked", default=False)
     issuing_line_wizard_ids = fields.One2many(comodel_name='weha.wizard.received.issuing.line', inverse_name='wizard_issuing_id', string='Wizard issuing Line')
 
-
 class WehaWizardReceivedIssuingLine(models.TransientModel):
     _name = 'weha.wizard.received.issuing.line'
 
@@ -329,7 +334,6 @@ class WehaWizardReceivedIssuingLine(models.TransientModel):
     wizard_issuing_id = fields.Many2one(comodel_name='weha.wizard.received.issuing', string='Wizard issuing')
     voucher_order_line_id = fields.Many2one(comodel_name='weha.voucher.order.line', string='Voucher Order Line')
     state = fields.Selection([('valid','Valid'),('not_valid','Not Valid')],'Status', readonly=True)
-
 
 class WehaWizardIssuingdReceived(models.TransientModel):
     _name = 'weha.wizard.issuing.received'

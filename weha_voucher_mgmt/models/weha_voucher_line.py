@@ -10,6 +10,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
+    _description = 'Voucher Order Line'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     def generate_12_random_numbers(self, vals):
@@ -184,6 +185,7 @@ class VoucherOrderLine(models.Model):
     
 class VoucherOrderLineTrans(models.Model):
     _name = 'weha.voucher.order.line.trans'
+    _description = 'Voucher Order Line Transaction'
     
     name = fields.Char(
         string='Voucher Trans ID', readonly=True

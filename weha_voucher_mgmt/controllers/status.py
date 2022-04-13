@@ -3,10 +3,13 @@ import ast
 import functools
 import logging
 import json
-from datetime import datetime, date
 import werkzeug.wrappers
+import pytz
 from odoo.exceptions import AccessError
 from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response
+from odoo.tools.misc import DEFAULT_SERVER_DATETIME_FORMAT, DEFAULT_SERVER_DATE_FORMAT
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
+from datetime import datetime, timedelta, date as dt
 
 from odoo import http
 
@@ -14,6 +17,7 @@ from odoo.addons.weha_voucher_mgmt.common import (
     extract_arguments,
     invalid_response,
     valid_response,
+    convert_local_to_utc
 )
 
 
@@ -140,10 +144,27 @@ class VMSStatusController(http.Controller):
                 ]
                 _logger.info(domain)
                 voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+                
                 if not voucher_order_line_id:
                     is_available = False
                     err_message = f'Voucher {voucher_ean} not found' 
                     break
+                
+                if voucher_order_line_id.voucher_type == 'electronic':
+                    _logger.info('Electronic Voucher')
+                    if not member_id:
+                        is_available = False
+                        err_message = f'Need Member Information' 
+                        break
+                    else:
+                        if voucher_order_line_id.member_id != member_id:
+                            is_available = False
+                            err_message = f'Voucher {voucher_ean} member not found' 
+                            break
+
+                else:
+                    _logger.info('Physical Voucher')
+
                 #Check For Used
                 if voucher_order_line_id.state != 'activated':
                     if voucher_order_line_id.state == 'used':
@@ -159,7 +180,7 @@ class VMSStatusController(http.Controller):
                         err_message = f'Voucher {voucher_ean} not found' 
                         break
                 #Check Voucher Expired Date
-                if voucher_order_line_id.expired_date <= date.today():
+                if voucher_order_line_id.expired_date <= dt.today():
                     is_available = False
                     err_message = f'Voucher {voucher_ean} expired' 
                     break
@@ -316,7 +337,7 @@ class VMSStatusController(http.Controller):
                         }
                     ]
                 }
-            return valid_response(data)
+                return valid_response(data)
         else:
             data = {
                 "err": True,
@@ -332,11 +353,11 @@ class VMSStatusController(http.Controller):
 
     @validate_token
     @http.route("/api/vms/v2.0/status", type="http", auth="none", methods=["POST"], csrf=False, cors="*")
-    def vssales(self, **post):
+    def vssales2(self, **post):
         
         #Process Fields
-        trans_date = post['date'] or False if 'date' in post else False
-        trans_time = post['time'] or False if 'time' in post else False
+        date = post['date'] or False if 'date' in post else False
+        time = post['time'] or False if 'time' in post else False
         receipt_number = post['receipt_number'] or False if 'receipt_number' in post else False
         t_id = post['t_id'] or False if 't_id' in post else False
         cashier_id = post['cashier_id'] or False  if 'cashier_id' in post else False
@@ -359,8 +380,8 @@ class VMSStatusController(http.Controller):
         #Check Field for Reserved
         if process_type == 'reserved':
             _logger.info("reserved")
-            _fields_includes_in_body = all([trans_date, 
-                                            trans_time, 
+            _fields_includes_in_body = all([date, 
+                                            time, 
                                             t_id, 
                                             cashier_id, 
                                             store_id,
@@ -370,8 +391,8 @@ class VMSStatusController(http.Controller):
         #Check Field for Used
         if process_type == 'used':
             _logger.info("used")
-            _fields_includes_in_body = all([trans_date, 
-                                            trans_time, 
+            _fields_includes_in_body = all([date, 
+                                            time, 
                                             receipt_number, #mandatory
                                             t_id, 
                                             cashier_id, 
@@ -383,8 +404,8 @@ class VMSStatusController(http.Controller):
         if process_type == 'activated':
             _logger.info("activated")
             if batch_id:
-                _fields_includes_in_body = all([trans_date, 
-                                                trans_time, 
+                _fields_includes_in_body = all([date, 
+                                                time, 
                                                 receipt_number,  #Mandatory
                                                 t_id, 
                                                 cashier_id, 
@@ -393,8 +414,8 @@ class VMSStatusController(http.Controller):
                                                 process_type
                                                 ])
             else:
-                _fields_includes_in_body = all([trans_date, 
-                                                trans_time, 
+                _fields_includes_in_body = all([date, 
+                                                time, 
                                                 receipt_number,  #Mandatory
                                                 t_id, 
                                                 cashier_id, 
@@ -405,8 +426,8 @@ class VMSStatusController(http.Controller):
         #Check Field for Re-Open
         if process_type == 'reopen':
             _logger.info("Re-Open")
-            _fields_includes_in_body = all([trans_date, 
-                                            trans_time,
+            _fields_includes_in_body = all([date, 
+                                            time,
                                             voucher_eans,
                                             process_type
                                             ])
@@ -443,6 +464,7 @@ class VMSStatusController(http.Controller):
                     is_available = False
                     err_message = f'Voucher {voucher_ean} not found 1' 
                     break
+                
                 #Check For Used
                 if voucher_order_line_id.state != 'activated':
                     if voucher_order_line_id.state == 'used':
@@ -457,6 +479,22 @@ class VMSStatusController(http.Controller):
                         is_available = False
                         err_message = f'Voucher {voucher_ean} not found' 
                         break
+                else:
+                    if voucher_order_line_id.voucher_type == 'electronic':
+                        _logger.info('Electronic Voucher')
+                        if not member_id:
+                            is_available = False
+                            err_message = f'Need Member Information' 
+                            break
+                        else:
+                            if voucher_order_line_id.member_id != member_id:
+                                is_available = False
+                                err_message = f'Voucher {voucher_ean} member not found' 
+                                break
+                    else:
+                        _logger.info('Physical Voucher')
+
+                
 
                 #Check Voucher Expired Date
                 if not voucher_order_line_id.expired_date:
@@ -464,12 +502,13 @@ class VMSStatusController(http.Controller):
                     err_message = f'Voucher {voucher_ean} expired date not exist' 
                     break
 
-                if voucher_order_line_id.expired_date <= date.today():
+                if voucher_order_line_id.expired_date <= dt.today():
                     is_available = False
                     err_message = f'Voucher {voucher_ean} was expired' 
                     break
                 #Add Voucher Order Line to List
                 voucher_order_line_ids.append(voucher_order_line_id)    
+
         elif process_type == 'used':
             #Not Batch
             #User for Payment After Reserved
@@ -484,7 +523,7 @@ class VMSStatusController(http.Controller):
                     is_available = False
                     err_message = f'Voucher {voucher_ean} not found' 
                     break
-
+                    
                 voucher_order_line_ids.append(voucher_order_line_id)  
         elif process_type == 'activated':
             #Batch
@@ -589,9 +628,21 @@ class VMSStatusController(http.Controller):
         
         values = {}
             
-        # #Save Voucher Status Transaction
+        # Prepare Voucher Status Transaction
+        user_tz = http.request.env.user.tz
+        if not user_tz:
+            data =  {
+                        "err": True,
+                        "message": "User didn't set timezone parameter",
+                        "data": []
+                    }
+            return valid_response(data)
+        _logger.info(user_tz)
+        
+        str_trans_date = date  +  " "  + time + ":00"
+        trans_date = convert_local_to_utc(user_tz, str_trans_date)
         voucher_trans_status_obj = http.request.env['weha.voucher.trans.status']
-        trans_date = trans_date  +  " "  + trans_time + ":00"
+        
         values.update({'batch_id': batch_id})
         values.update({'trans_date': trans_date})
         values.update({'receipt_number': receipt_number})
@@ -635,20 +686,30 @@ class VMSStatusController(http.Controller):
                         "data": []
                     }
             if process_type == 'used':
-                data = {
-                    "err": False,
-                    "message": "Create Successfully",
-                    "data": [
-                        {
-                            'code': 'Y',
-                            'transaction_id': result.id,
-                        }
-                    ]
-                }          
+                #err, message = result.send_used_notification_to_trust()
+                err, message = result.send_used_notification_to_trust_partial()
+                if not err:
+                    data = {
+                        "err": False,
+                        "message": "Create Successfully",
+                        "data": [
+                            {
+                                'code': 'Y',
+                                'transaction_id': result.id,
+                            }
+                        ]
+                    }    
+                else:
+                     data = {
+                        "err": True,
+                        "message": message,
+                        "data": []
+                    }        
             if process_type == 'activated':
                 if batch_id:
-                    add_data = result.get_json_batch()
-                    if not add_data['err']:
+                    err, message = result.send_to_trust_by_batch_id()
+                    if not err:
+                        result.trans_close()
                         data = {
                             "err": False,
                             "message": "Create Successfully",
@@ -662,10 +723,11 @@ class VMSStatusController(http.Controller):
                     else:
                         data = {
                             "err": True,
-                            "message": add_data['message'],
+                            "message": message,
                             "data": []
                         }
                 else:
+                    _logger.info("Not Batch - Activated")
                     add_data = result.get_json()
                     if not add_data['err']:
                         data = {

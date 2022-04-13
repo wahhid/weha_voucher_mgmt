@@ -6,6 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherAllocateRange(models.Model):  
     _name = 'weha.voucher.allocate.range'
+    _description = 'Voucher Allocate Range'
     
     @api.depends('voucher_allocate_line_ids')
     def _calculate_voucher_count(self):

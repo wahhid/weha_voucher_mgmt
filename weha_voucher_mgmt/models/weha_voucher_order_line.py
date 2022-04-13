@@ -1,5 +1,7 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools.safe_eval import safe_eval
+
 import requests
 from requests import ReadTimeout, ConnectTimeout, HTTPError, Timeout, ConnectionError
 from ftplib import FTP
@@ -23,6 +25,7 @@ import re
 
 class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
+    _description = 'Voucher Order Line'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     crm_url = "weha_voucher_mgmt.crm_url"
@@ -103,10 +106,14 @@ class VoucherOrderLine(models.Model):
         return ean[:-1] + str(self.ean_checksum(ean))
 
     def calculate_expired(self):
-        if self.voucher_type == 'physical':
-            self.expired_date = datetime.now() + timedelta(days=self.expired_days)
-        else:
-            self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
+        if not self.expired_date:
+            if self.voucher_type == 'physical':
+                if self.voucher_expired_date:
+                    self.expired_date = self.voucher_expired_date
+                else:
+                    self.expired_date = datetime.now() + timedelta(days=self.expired_days)
+            else:
+                self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
 
     def process_voucher_booking(self):
         cur_date_time = datetime.now()
@@ -257,21 +264,34 @@ class VoucherOrderLine(models.Model):
         return trans_line_id
 
     def _auth_trust(self):
+        _logger.info("_auth_trust")
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('crm_api_url')
+        crm_api_username = config_parameter_obj.get_param('crm_api_username')
+        crm_api_password = config_parameter_obj.get_param('crm_api_password')
+
+        #url = "http://apiindev.trustranch.co.id/login"
+        #payload='barcode=3000030930&password=weha.ID!!2020'
+
+        payload=f'barcode={crm_api_username}&password={crm_api_password}'
+        _logger.info(payload)
+        
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
         try:
-            url = "http://apiindev.trustranch.co.id/login"
-            payload='barcode=3000030930&password=weha.ID!!2020'
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-            response = requests.request("POST", url, headers=headers, data=payload)
+            response = requests.request("POST", crm_api_url + "/login", headers=headers, data=payload)
+            #json_data = json.loads(response.text)
             str_json_data  = response.text.replace("'"," ")
             json_data = json.loads(str_json_data)
+            #_logger.info(response.text)
             _logger.info(json_data['data']['api_token'])
             return json_data['data']['api_token']
         except Exception as err:
-            _logger.info(err)
-            return False
+            _logger.info("Error Auth Trust")
+            _logger.info(err)  
+
 
     #API for Sales
     def send_data_to_trust(self):
@@ -463,6 +483,28 @@ class VoucherOrderLine(models.Model):
             if not result:
                 raise ValidationError("Can't create voucher order line trans, contact administrator!")
 
+
+    def find_voucher_order_line_by_ref_using_barcode(self, barcode):
+        voucher_order_line_id = self.search([('voucher_ean', '=', barcode)], limit=1)
+        if not voucher_order_line_id:
+            action = self.env.ref('res_partner_find')
+            result = action.read()[0]
+            context = safe_eval(result['context'])
+            context.update({
+                'default_state': 'warning',
+                'default_status': _('Partner with Internal Reference '
+                                    '%s cannot be found') % barcode
+            })
+            result['context'] = json.dumps(context)
+            return result
+
+        action = self.env.sudo().ref('base.action_partner_form')
+        result = action.read()[0]
+        res = self.env.sudo().ref('base.view_partner_form', False)
+        result['views'] = [(res and res.id or False, 'form')]
+        result['res_id'] = voucher_order_line_id.id
+        return result
+
     name = fields.Char('Name', )
     batch_id = fields.Char('Batch #', size=10, readonly=True)
 
@@ -470,6 +512,10 @@ class VoucherOrderLine(models.Model):
     #Customer Code
     customer_id = fields.Many2one('res.partner', 'Customer')
     member_id = fields.Char("Member #", size=20, index=True)
+
+    #Transaction
+    receipt_number = fields.Char("Receipt #", size=50, reaodnly=True, track_visiblity=True)
+    t_id = fields.Char("Terminal #", readonly=True, track_visiblity=True)
     
     #Operating Unit
     operating_unit_id = fields.Many2one(
@@ -531,6 +577,7 @@ class VoucherOrderLine(models.Model):
     #Expired Date Voucher & Year
     expired_days =fields.Integer('Expired Days', default=0)
     expired_date = fields.Date(string='Expired Date')
+    voucher_expired_date = fields.Date(string='Voucher Expired Date')
     booking_expired_date = fields.Datetime(string='Booking Expired Date')
     year_id = fields.Many2one('weha.voucher.year',string='Year', index=True)
     
@@ -585,6 +632,15 @@ class VoucherOrderLine(models.Model):
     
     is_expired = fields.Boolean('Is Expired', compute="get_voucher_expired")
     is_legacy = fields.Boolean('Is Legacy', default=False)
+    
+    #Operation Information
+    source_doc = fields.Char('Source Document', size=100, readonly=True)
+    cc_number = fields.Char('CC Number',size=100)
+    total_transaction = fields.Float('Total Transaction', default=0.0)
+    issued_on = fields.Datetime('Issued On', readonly=True)
+    used_on = fields.Datetime('Used On', readonly=True)
+    used_operating_unit_id = fields.Many2one('operating.unit', 'Used at')
+    scrap_on = fields.Datetime('Scrap On', readonly=True)
 
     #State Voucher
     state = fields.Selection(
@@ -595,7 +651,7 @@ class VoucherOrderLine(models.Model):
             ('open', 'Open'), 
             ('deactivated','Deactivated'),
             ('activated','Activated'), 
-            ('damage', 'Scrap'),
+            ('damage', 'Damage'),
             ('transferred','Transferred'),
             ('intransit', 'In-Transit'),
             ('booking', 'Booking'),
@@ -624,14 +680,15 @@ class VoucherOrderLine(models.Model):
         vals['name'] = ean
         res = super(VoucherOrderLine, self).create(vals)
 
-        if vals.get('voucher_type') == 'electronic':
-            res.calculate_expired()
+        #if vals.get('voucher_type') == 'electronic':
+        res.calculate_expired()
 
         res.create_order_line_trans(res.name, 'OP')
         return res
     
 class VoucherOrderLineTrans(models.Model):
     _name = 'weha.voucher.order.line.trans'
+    _description = 'Voucher Order Line Transaction'
     _order = "trans_date desc"
 
     def open_form_view(self):
@@ -678,7 +735,8 @@ class VoucherOrderLineTrans(models.Model):
             ('RS', 'Reserved'), 
             ('US', 'Used'), 
             ('DM', 'Scrap'),
-            ('CL', 'Cancel'),
+            ('CL', 'Cancel'),   
+            ('FL', 'Force Cancel'),
             ('RO', 'Re-Open'),
             ('BO', 'Booking'),
         ],
@@ -693,9 +751,9 @@ class VoucherOrderLineTrans(models.Model):
     #User    
     user_id = fields.Many2one('res.users', 'User')
 
-
 class VoucherTransactionType(models.Model):
     _name = "weha.voucher.transaction.type"
+    _description = 'Voucher Transaction Type'
 
     name = fields.Char('Name', size=50)
     code = fields.Char('Code', size=10)

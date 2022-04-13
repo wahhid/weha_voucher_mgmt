@@ -89,13 +89,26 @@ class VoucherMappingSku(models.Model):
 
 class VoucherPromo(models.Model):
     _name = 'weha.voucher.promo'
+    _description = 'Voucher Promo'
     
+    @api.depends('voucher_promo_line_ids')
     def get_usage_quota(self):
         for data in self:
             amount = 0
             for voucher_promo_line_id in data.voucher_promo_line_ids:
                 amount = amount + voucher_promo_line_id.current_amount
             data.current_amount = amount
+
+    @api.depends('end_date')
+    def get_expired_status(self):
+        for row in self:
+            if row.end_date:
+                if row.end_date < date.today():
+                    row.is_expired = True
+                else:
+                    row.is_expired = False        
+            else:
+                row.is_expired = True
 
     name = fields.Char("Name", size=200, required=True)
     code = fields.Char("Code", size=10, required=True)
@@ -106,6 +119,7 @@ class VoucherPromo(models.Model):
     amount = fields.Float('Max Quota', default=0.0)
     start_date = fields.Date('Start Date', required=True)
     end_date = fields.Date('End Date', required=True)
+    is_expired = fields.Boolean('Expired', compute='get_expired_status', store=True)
     term = fields.Text('Term and Condition')
     image = fields.Image('Image')
     min_card_payment = fields.Float('Min Payment', default=0.0)
@@ -113,13 +127,14 @@ class VoucherPromo(models.Model):
 
 class VoucherPromoLine(models.Model):
     _name = 'weha.voucher.promo.line'
+    _description = 'Voucher Promo Line'
 
     def get_usage_quota(self):
         for data in self:
             if data.voucher_mapping_sku_id:
                 strSQL = """SELECT sum(b.voucher_amount) FROM weha_voucher_order_line a 
                             LEFT JOIN weha_voucher_code b ON b.id = a.voucher_code_id
-                            WHERE a.voucher_promo_id={} AND a.voucher_sku='{}' AND a.state in ('activated','used')""".format(data.voucher_promo_id.id, data.voucher_mapping_sku_id.code_sku) 
+                            WHERE a.voucher_promo_id={} AND a.voucher_sku='{}' AND a.state in ('activated','used')""".format(data.voucher_promo_id._origin.id, data.voucher_mapping_sku_id.code_sku) 
                 #strSQL = """SELECT sum(amount) FROM weha_voucher_trans_purchase_sku WHERE voucher_mapping_sku_id={}""".format(data.voucher_mapping_sku_id.id)
                 _logger.info(strSQL)
                 self.env.cr.execute(strSQL)
@@ -136,10 +151,9 @@ class VoucherPromoLine(models.Model):
     current_amount = fields.Float('Quota Usage', compute="get_usage_quota")
     #amount = fields.Float('Max Quota', default=0.0)
 
-
-
 class VoucherYear(models.Model):
     _name = 'weha.voucher.year'
+    _description = 'Voucher Year'
 
     def get_current_year(self):
         domain = [
@@ -177,18 +191,18 @@ class VoucherYear(models.Model):
 
 class VoucherTenderType(models.Model):
     _name = 'weha.voucher.tender.type'
+    _description = 'Voucher Tender Type'
 
     name = fields.Char('Name', size=100, required=True)
     code = fields.Char('Code', size=10, required=True)
 
-
 class VoucherBankCategory(models.Model):
     _name = 'weha.voucher.bank.category'
+    _description = 'Voucher Bank Category'
 
     name = fields.Char('Name', size=100, required=True)
     bin_number = fields.Char('Bin', size=10, required=True)
     classfication = fields.Char('Classification', size=50, required=True)
-
 
 # class VoucherNumberRange(models.Model):
 #     _name = 'weha.voucher.number.range'

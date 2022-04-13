@@ -12,6 +12,7 @@
                         <field name="end_number" attrs="{'invisible':[('is_valid','=', False)],'readonly': [('is_checked','=',True)]}"/>
                         <field name="is_valid" invisible="1"/>
                         <field name="is_checked" invisible="1"/>
+                        <field name="is_finance" invisible="1"/>
                     </group>
                     <group>
                         <field name="operating_unit_id"/>
@@ -43,6 +44,14 @@
 
     <record id="act_open_scan_voucher_return_view_form" model="ir.actions.act_window">
         <field name="name">Scan Voucher Return</field>
+        <field name="res_model">weha.wizard.scan.voucher.return</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="act_open_scan_voucher_return_finance_view_form" model="ir.actions.act_window">
+        <field name="name">Scan Voucher Return Finance</field>
         <field name="res_model">weha.wizard.scan.voucher.return</field>
         <field name="type">ir.actions.act_window</field>
         <field name="view_mode">form</field>
@@ -119,4 +128,52 @@
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
+
+    <record id="view_weha_wizard_multiple_return_form" model="ir.ui.view">
+        <field name="name">weha.wizard.multiple.return.form</field>
+        <field name="model">weha.wizard.multiple.return</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Multiple Return">
+                <group>
+                    <field name="operating_unit_id"/>
+                    <field name='is_checked' invisible="1"/>
+                </group>
+                <notebook attrs="{'invisible': [('is_checked','=',False)]}">
+                    <page name="multiple_return_line" string="Lines">
+                        <field name="wizard_multiple_return_line_ids" readonly="1">
+                            <tree>
+                                <field name="weha_voucher_return_id"/>
+                                <field name="state"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page name="multiple_return_voucher_ean" string="Vouchers">
+                        <field name="wizard_multiple_return_voucher_ean_ids" readonly="1">
+                            <tree>
+                                <field name="weha_voucher_order_line_id"/>
+
+                                <field name="state"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+                <footer>
+                    <button name="process" string="Process" type="object" class="btn-primary" attrs="{'invisible': [('is_checked','=', True)]}"/>
+                    <button name="submit" string="Submit" type="object" class="btn-primary" attrs="{'invisible': [('is_checked','=', False)]}"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_weha_wizard_multiple_return" model="ir.actions.act_window">
+        <field name="name">Bulk Return</field>
+        <field name="res_model">weha.wizard.multiple.return</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_weha_wizard_multiple_return_form"/>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="weha_voucher_mgmt.model_weha_voucher_return"/>
+    </record>
+
 </odoo>

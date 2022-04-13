@@ -4,6 +4,10 @@ import json
 import ast
 import requests
 import werkzeug.wrappers
+from odoo.tools.misc import DEFAULT_SERVER_DATETIME_FORMAT, DEFAULT_SERVER_DATE_FORMAT
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
+from datetime import datetime, timedelta, date
+import pytz 
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +44,6 @@ def invalid_response(typ, message=None, status=401):
         ),
     )
 
-
 def extract_arguments(payloads, offset=0, limit=0, order=None):
     """Parse additional data  sent along request."""
     payloads = payloads.get("payload", {})
@@ -60,7 +63,26 @@ def extract_arguments(payloads, offset=0, limit=0, order=None):
 
     return filters
 
-def auth_trust(self):
+def convert_local_to_utc(user_tz, trans_date):
+    _logger.info(user_tz)
+    local = pytz.timezone(user_tz)
+    _logger.info(trans_date)
+    trans_date = local.localize(datetime.strptime(trans_date,DEFAULT_SERVER_DATETIME_FORMAT)).astimezone(pytz.utc)
+    trans_date = datetime.strftime(trans_date,"%Y-%m-%d %H:%M:%S") 
+    _logger.info(trans_date)
+    return trans_date
+
+def convert_utc_to_local(user_tz, trans_date):
+    _logger.info(user_tz)
+    local = pytz.timezone(user_tz)
+    _logger.info(trans_date)
+    trans_date = pytz.utc.localize(datetime.strptime(trans_date,DEFAULT_SERVER_DATETIME_FORMAT)).astimezone(local)
+    #trans_date = datetime.strftime(trans_date,"%Y-%m-%d %H:%M:%S") 
+    #_logger.info(trans_date)
+    return trans_date
+
+
+def auth_trust():
     try:
         url = "http://apiindev.trustranch.co.id/login"
         payload='barcode=3000030930&password=weha.ID!!2020'

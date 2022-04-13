@@ -193,7 +193,10 @@ class VoucherOrder(models.Model):
         stage_id = self.env['weha.voucher.order.stage'].search([('receiving','=', True)], limit=1)
         if not stage_id:
             raise ValidationError('Stage receiving not found')
-        super(VoucherOrder, self).write({'stage_id': stage_id.id})
+        if self.voucher_request == self.voucher_received:
+            self.trans_close()
+        else:
+            super(VoucherOrder, self).write({'stage_id': stage_id.id})
 
     def trans_approve(self):
         #Approve Voucher Order
@@ -219,7 +222,7 @@ class VoucherOrder(models.Model):
         #template = self.env['mail.template'].browse(template_id)
         #template.email_to = self.user_id.partner_id.email
         #template.send_mail(self.id, force_send=True)
-    
+            
     def trans_reject(self):
         stage_id = self.env['weha.voucher.order.stage'].search([('rejected','=', True)], limit=1)
         if not stage_id:

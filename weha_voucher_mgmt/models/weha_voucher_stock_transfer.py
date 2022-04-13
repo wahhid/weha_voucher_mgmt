@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherStockTransfer(models.Model):
     _name = 'weha.voucher.stock.transfer'
+    _description = 'Voucher Stock Transfer'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']

@@ -6,6 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherIssuingLine(models.Model):
     _name = 'weha.voucher.issuing.line'
+    _description = 'Voucher Issuing Line'
     
     def check_voucher_order_line(self, voucher_issuing_id, voucher_order_line_id):
         domain = [
@@ -30,6 +31,7 @@ class VoucherIssuingLine(models.Model):
 
 class VoucherIssuingEmployeeLine(models.Model):
     _name = 'weha.voucher.issuing.employee.line'
+    _description = 'Voucher Issuing Employee Line'
     
 
     def trans_close(self):
@@ -42,20 +44,29 @@ class VoucherIssuingEmployeeLine(models.Model):
     member_id = fields.Char("Member #", size=20)
     mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku', 'Mapping SKU#')
     sku = fields.Char("SKU #", size=20)
+    voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', related="mapping_sku_id.voucher_code_id")
     quantity = fields.Integer('Qty')
+    expired_date = fields.Date('Expired Date')
     file_line_id = fields.Many2one('weha.voucher.issuing.file.line', 'File #')
+    is_send_to_trust = fields.Boolean('Is Send to Trust', default=False)
     state = fields.Selection([('open','Open'),('issued','Issued'),('cancelled','Cancelled')], 'Status', default='open')
-
+    voucher_issuing_employee_voucher_line_ids = fields.One2many(
+        comodel_name= 'weha.voucher.issuing.employee.voucher.line', 
+        inverse_name='employee_line_id', 
+        string='Employee Voucher    Lines',
+    )
+   
 class VoucherIssuingEmployeeVoucherLine(models.Model):
     _name = 'weha.voucher.issuing.employee.voucher.line'
+    _description = 'Voucher Issuing Employee Voucher Line'
 
     employee_line_id = fields.Many2one('weha.voucher.issuing.employee.line', 'Employee Line #')
     voucher_issuing_id = fields.Many2one(comodel_name='weha.voucher.issuing', string='Voucher Allocate')
     voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher')
 
-
 class VoucherAllocateFileLine(models.Model):
     _name = 'weha.voucher.issuing.file.line'
+    _description = 'Voucher Issuing File Line'
     _rec_name = 'file_attachment_name'
 
     def delete_lines(self):

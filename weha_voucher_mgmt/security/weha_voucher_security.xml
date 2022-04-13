@@ -81,6 +81,8 @@
         <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
     </record>
 
+    
+
     <!-- Voucher Order Operating Unit Rules -->
     <record id="voucher_order_line_operating_unit_rule" model="ir.rule">
         <field name="name">Store Voucher Rule</field>
@@ -91,39 +93,58 @@
     </record>
     
     <!-- Voucher Order Operating Unit Rules -->
-    <record id="voucher_request_operating_unit_rule" model="ir.rule">
+    <!-- <record id="voucher_request_operating_unit_rule" model="ir.rule">
         <field name="name">Voucher Request Operating Unit Rule</field>
         <field name="model_id" ref="model_weha_voucher_request"/>
         <field name="global" eval="True"/>    
         <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
     </record>
-    
-    <!-- Voucher Order Operating Unit Rules -->
+     -->
+    <!-- Voucher Order Operating Unit Rules 
     <record id="voucher_return_operating_unit_rule" model="ir.rule">
         <field name="name">Voucher Return Operating Unit Rule</field>
         <field name="model_id" ref="model_weha_voucher_return"/>
         <field name="global" eval="True"/>
         <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
     </record>
+    -->
     
     <!-- Voucher Order Operating Unit Rules -->
     <record id="voucher_allocate_operating_unit_rule" model="ir.rule">
         <field name="name">Voucher Allocate Operating Unit Rule</field>
         <field name="model_id" ref="model_weha_voucher_allocate"/>
         <field name="global" eval="True"/>
-        <field name="domain_force">[('source_operating_unit','in',user.operating_unit_ids.ids)]</field>
+        <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
         <field name="groups" eval="[(4, ref('group_voucher_user'))]"/>
     </record>
 
     <!-- Voucher Order Operating Unit Rules -->
+    <record id="voucher_allocate_operating_unit_rule" model="ir.rule">
+        <field name="name">Voucher Allocate Source Operating Unit Rule</field>
+        <field name="model_id" ref="model_weha_voucher_allocate"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('source_operating_unit','in',user.operating_unit_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('group_voucher_user'))]"/>
+    </record>
+
+    <!-- Voucher Issuing Operating Unit Rules -->
     <record id="voucher_issuing_operating_unit_rule" model="ir.rule">
         <field name="name">Voucher Issuing Operating Unit Rule</field>
         <field name="model_id" ref="model_weha_voucher_issuing"/>
         <field name="global" eval="True"/>
         <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
-        <field name="groups" eval="[(4, ref('group_voucher_user'))]"/>
+        <field name="groups" eval="[(4, ref('group_voucher_user')),(4, ref('group_voucher_hrd_user'))]"/>
     </record>
 
+    <record id="voucher_issuing_operating_unit_rule" model="ir.rule">
+        <field name="name">Voucher Issuing Operating Unit Rule (Finance)</field>
+        <field name="model_id" ref="model_weha_voucher_issuing"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('operating_unit_id','in',user.operating_unit_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('group_voucher_finance_user'))]"/>
+    </record>
+
+    <!-- Run -->
     <record id="voucher_stock_transfer_rule" model="ir.rule">
         <field name="name">All Vouchers Stock Transfer</field>
         <field ref="model_weha_voucher_stock_transfer" name="model_id"/>

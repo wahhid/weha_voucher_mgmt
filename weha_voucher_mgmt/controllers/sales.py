@@ -4,10 +4,14 @@ import functools
 import logging
 import json
 import werkzeug.wrappers
-from datetime import datetime
+from odoo.tools.misc import DEFAULT_SERVER_DATETIME_FORMAT, DEFAULT_SERVER_DATE_FORMAT
+from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
+from datetime import datetime, timedelta, date
+import pytz 
+
 
 from odoo.exceptions import AccessError
-from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response
+from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response, convert_local_to_utc
 
 from odoo import http
 
@@ -272,8 +276,22 @@ class VMSSalesController(http.Controller):
             
         # #Save Voucher Purchase Transaction
         voucher_trans_purchase_obj = http.request.env['weha.voucher.trans.purchase']
+        
+        # Prepare Voucher Status Transaction
+        #user_tz = http.request.env.user.tz or pytz.utc
+        user_tz = http.request.env.user.tz
+        if not user_tz:
+            data =  {
+                        "err": True,
+                        "message": "User didn't set timezone parameter",
+                        "data": []
+                    }
+            return valid_response(data)
+        _logger.info(user_tz)
+        
         str_trans_date = date  +  " "  + time + ":00"
-        values.update({'trans_date': str_trans_date})
+        trans_date = convert_local_to_utc(user_tz, str_trans_date)
+        values.update({'trans_date': trans_date})
         values.update({'receipt_number': receipt_number})
         values.update({'t_id': t_id})
         values.update({'cashier_id': cashier_id})

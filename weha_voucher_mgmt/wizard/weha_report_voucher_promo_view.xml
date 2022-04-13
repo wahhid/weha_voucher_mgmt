@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_wizard_weha_voucher_promo_report" model="ir.ui.view">
+        <field name="name">weha.voucher.promo.report.form.view</field>
+        <field name="model">weha.voucher.promo.report</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Voucher Promo">
+                <group>
+                    <group>
+                        <field name="voucher_promo_ids"  widget="many2many_tags"  options="{'no_create_edit': True}"/>
+                    </group>
+                    <group>
+                        <field name="operating_unit_ids" widget="many2many_tags"  options="{'no_create_edit': True}"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="print_report_pdf" string="Print PDF" type="object" class="btn-primary"/>
+                    <button name="print_report_excel" string="Print Excel" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="act_open_report_voucher_promo_wizard" model="ir.actions.act_window">
+        <field name="name">Voucher Promo</field>
+        <field name="res_model">weha.voucher.promo.report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem 
+            id="weha_voucher_promo_report_menu"
+            name="Voucher Promo"
+            parent="weha_voucher_reporting_main_menu"
+            action="act_open_report_voucher_promo_wizard" sequence="36"/>
+</odoo>

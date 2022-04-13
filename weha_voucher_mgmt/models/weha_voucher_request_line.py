@@ -6,6 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherRequestLine(models.Model):
     _name = 'weha.voucher.request.line'
+    _description = 'Voucher Request Line'
     
     def calculate_total(self):
         for row in self:

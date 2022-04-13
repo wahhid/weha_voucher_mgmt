@@ -9,6 +9,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherScrap(models.Model):
     _name = 'weha.voucher.scrap'
+    _description = 'Voucher Scrap'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -83,7 +84,7 @@ class VoucherScrap(models.Model):
 
             vals = {}
             #vals.update({'operating_unit_id': voucher_allocate_id.source_operating_unit.id})
-            vals.update({'state': 'damage'})
+            vals.update({'state': 'scrap'})
             voucher_scrap_line_id.voucher_order_line_id.write(vals)
 
             vals = {}

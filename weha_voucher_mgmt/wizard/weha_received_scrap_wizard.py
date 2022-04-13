@@ -16,7 +16,7 @@ class WizardScanVoucherScrap(models.TransientModel):
     def _onchange_voucher(self):     
         if self.start_number:     
             domain=[
-                ('voucher_type','=','physical'),
+                #('voucher_type','=','physical'),
                 ('voucher_ean','=', self.start_number)
             ]
             voucher_id  = self.env['weha.voucher.order.line'].search(domain,limit=1)
@@ -31,7 +31,7 @@ class WizardScanVoucherScrap(models.TransientModel):
             
             if self.voucher_promo_id:
                 domain = [
-                    ('voucher_type','=','physical'),
+                    #('voucher_type','=','physical'),
                     ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                     ('voucher_code_id','=', voucher_id.voucher_code_id.id),
                     ('year_id','=', voucher_id.year_id.id),
@@ -39,7 +39,7 @@ class WizardScanVoucherScrap(models.TransientModel):
                 ]
             else:
                 domain = [
-                    ('voucher_type','=','physical'),
+                    #('voucher_type','=','physical'),
                     ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                     ('voucher_code_id','=', voucher_id.voucher_code_id.id),
                     ('year_id','=', voucher_id.year_id.id),
@@ -51,7 +51,7 @@ class WizardScanVoucherScrap(models.TransientModel):
 
         if self.end_number:     
             domain=[
-                ('voucher_type','=','physical'),
+                #('voucher_type','=','physical'),
                 ('voucher_ean','=', self.start_number)
             ]
             voucher_id = self.env['weha.voucher.order.line'].search(domain, limit=1)
@@ -160,7 +160,7 @@ class WizardScanVoucherScrap(models.TransientModel):
         line_ids = []
         estimate_count = 0
         for voucher_order_line_id in voucher_order_line_ids:
-            if voucher_order_line_id.state == 'open':
+            if voucher_order_line_id.state == 'open' or voucher_order_line_id.state == 'activated':
                 estimate_count = estimate_count + 1
                 vals = (0,0,{'voucher_order_line_id': voucher_order_line_id.id, 'state': 'available'})
                 line_ids.append(vals)

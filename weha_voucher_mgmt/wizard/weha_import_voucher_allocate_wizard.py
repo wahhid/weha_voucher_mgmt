@@ -40,6 +40,8 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
     filename = fields.Char('Filename', size=200)
     is_valid = fields.Boolean("Valid", default=False)
     voucher_allocate_line_ids = fields.One2many('weha.wizard.import.voucher.allocate.line', 'voucher_allocate_id', 'Lines')    
+    url_field = fields.Char('Template File', default='/weha_voucher_mgmt/static/src/templates/import_voucher_allocate_template.xlsx')
+
 
     def confirm(self):
         current_year = self.env['weha.voucher.year'].get_current_year()
@@ -57,8 +59,11 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                 vals.update({'year_id': current_year.id})
                 if line.voucher_promo_id:
                     vals.update({'voucher_promo_id': line.voucher_promo_id.id})
+                    vals.update({'promo_expired_date': line.voucher_promo_id.end_date})
+                    vals.update({'is_voucher_promo': True})
                 else:
                     vals.update({'voucher_promo_id': False})
+                    vals.update({'is_voucher_promo': False})
 
                 voucher_allocate_id = self.env['weha.voucher.allocate'].create(vals)
                 for voucher_allocate_line_voucher_id in line.voucher_allocate_line_voucher_ids:
@@ -188,7 +193,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                         #('operating_unit_id', '=', key[0]),
                         ('voucher_ean','=', voucher_id),
                         ('year_id','=', current_year.id),
-                        ('voucher_promo_id','=', key[2]),
+                        #('voucher_promo_id','=', key[2]),
                         ('state','=','open')
                     ]
                 _logger.info(domain)

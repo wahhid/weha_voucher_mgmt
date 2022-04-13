@@ -10,6 +10,7 @@
                     <field name="file" filename="filename" attrs="{'invisible':[('is_valid','=', True)]}"/>
                     <field name="filename" attrs="{'invisible':[('is_valid','=', False)]}" readonly="1"/>
                     <field name="is_valid" invisible="1"/>
+                    <field name="url_field" widget="url" readonly="1" text="Clik Here"/>
                 </group>
                 <notebook>
                     <page name="voucher_allocate_line" string="Voucher Allocate Line" attrs="{'invisible':[('is_valid','=', False)]}">

@@ -6,6 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherStockTransferLine(models.Model):
     _name = 'weha.voucher.stock.transfer.line'
+    _description = 'Voucher Stock Transfer Line'
 
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=True)
     voucher_transfer_id = fields.Many2one(comodel_name='weha.voucher.stock.transfer', string='Voucher Request')

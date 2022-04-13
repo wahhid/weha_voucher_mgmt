@@ -23,6 +23,7 @@ ftp_password = "weha_voucher_mgmt.ftp_password"
 
 class VoucherTransPurchase(models.Model):
     _name = "weha.voucher.trans.purchase"
+    _description = 'Voucher Transaction Purchase (API)'
 
     def trans_error(self):
         super(VoucherTransPurchase, self).write({'state': 'error'})
@@ -177,7 +178,7 @@ class VoucherTransPurchase(models.Model):
         except Exception as err:
             _logger.info(err)  
         finally:
-            _logger.info("final")  
+            _logger.info("final")   
 
     def create_and_reserved_voucher(self):
         seq = self.env['ir.sequence']
@@ -190,6 +191,8 @@ class VoucherTransPurchase(models.Model):
                 vals.update({'operating_unit_id': operating_unit_id.id})
                 vals.update({'voucher_type': 'electronic'})
                 vals.update({'voucher_sku': voucher_trans_purchase_sku_id.sku})
+                vals.update({'receipt_number': self.receipt_number})
+                vals.update({'t_id': self.t_id})
                 #Set Voucher Trans Type for API#4 and Empty after API#4 confirm
                 vals.update({'voucher_trans_type': self.voucher_type})
                 vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
@@ -314,6 +317,7 @@ class VoucherTransPurchase(models.Model):
       
 class VoucheTransPurchaseSku(models.Model):
     _name = "weha.voucher.trans.purchase.sku"
+    _description = 'Voucher Transaction Purchase SKU (API)'
 
     voucher_trans_purchase_id = fields.Many2one('weha.voucher.trans.purchase', 'Purchase #')
     voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku', 'Mapping SKU #')
@@ -339,6 +343,7 @@ class VoucheTransPurchaseSku(models.Model):
 
 class VoucherTransPurchaseLine(models.Model):
     _name = "weha.voucher.trans.purchase.line"
+    _description = 'Voucher Transaction Purchase Line (API)'
 
     voucher_trans_purchase_id = fields.Many2one('weha.voucher.trans.purchase', 'Purchase #')
     voucher_trans_purchase_sku_id = fields.Many2one('weha.voucher.trans.purchase.sku', 'Purchase SKU #')
@@ -359,6 +364,7 @@ class VoucherTransPurchaseLine(models.Model):
 
 class VoucherTransPayment(models.Model):
     _name = "weha.voucher.trans.payment"
+    _description = 'Voucher Transaction Payment (API)'
 
 
     def trans_error(self):
@@ -408,6 +414,7 @@ class VoucherTransPayment(models.Model):
   
 class VoucheTransPaymentSku(models.Model):
     _name = "weha.voucher.trans.payment.sku"
+    _description = 'Voucher Transaction Payment SKU (API)'
 
     voucher_trans_purchase_id = fields.Many2one('weha.voucher.trans.payment', 'Payment #')
     sku = fields.Char("SKU", size=8)
@@ -431,12 +438,66 @@ class VoucheTransPaymentSku(models.Model):
 
 class VoucherTransStatus(models.Model):
     _name = "weha.voucher.trans.status"
+    _description = 'Voucher Transaction Status (API)'
 
     def trans_error(self):
         super(VoucherTransStatus, self).sudo().write({'state': 'error'})
 
     def trans_close(self):
         super(VoucherTransStatus, self).sudo().write({'state': 'done'})
+
+    def process_voucher_order_line_reserved(self, vals):
+        arr_ean = vals['voucher_ean'].split('|')
+        for voucher_ean in arr_ean:
+            domain = [
+                ('voucher_ean', '=', voucher_ean),
+                ('state', '=', 'activated')
+            ]
+            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+            _logger.info(voucher_order_line_id)
+            if voucher_order_line_id:
+                data = {
+                    'voucher_trans_status_id': self.id,
+                    'voucher_order_line_id': voucher_order_line_id.id,   
+                }
+                result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
+                if result:
+                    vals = {}
+                    vals.update({'voucher_trans_type': '5'})
+                    vals.update({'state': 'reserved'})
+                    vals.update({'t_id': self.t_id})
+                    vals.update({'receipt_number': self.receipt_number})
+                    voucher_order_line_id.sudo().write(vals)
+
+                    _logger.info('Update Voucher Order Line Status to Reserved')
+                    voucher_order_line_id.create_order_line_trans(self.name, 'RS')
+
+    def process_voucher_order_line_used(self, vals):
+        arr_ean = vals['voucher_ean'].split('|')
+        for voucher_ean in arr_ean:
+            domain = [
+                ('voucher_ean', '=', voucher_ean),
+                ('state', '=', 'reserved')
+            ]
+            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+            _logger.info(voucher_order_line_id)
+            if voucher_order_line_id:
+                data = {
+                    'voucher_trans_status_id': self.id,
+                    'voucher_order_line_id': voucher_order_line_id.id,   
+                }
+                result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
+                if result:
+                    vals = {}
+                    vals.update({'voucher_trans_type': '5'})
+                    vals.update({'state': 'reserved'})
+                    vals.update({'t_id': self.t_id})
+                    vals.update({'receipt_number': self.receipt_number})
+                    vals.update({'used_operating_unit_id' : self.operating_unit_id.id})
+                    voucher_order_line_id.sudo().write(vals)
+
+                    _logger.info('Update Voucher Order Line Status to Used')
+                    voucher_order_line_id.create_order_line_trans(self.name, 'RS')
 
     def process_voucher_order_line(self, vals):
         arr_ean = vals['voucher_ean'].split('|')
@@ -474,56 +535,24 @@ class VoucherTransStatus(models.Model):
                 }
                 result = self.env['weha.voucher.trans.status.line'].sudo().create(data)
                 if result:
-                    _logger.info('')
+                    _logger.info('Create Voucher Trans Status Line')
                     if vals['process_type'] == 'reserved':
                         _logger.info(vals['process_type'])
-                        voucher_order_line_id.sudo().write({'voucher_trans_type': '5','state': 'reserved'})
+                        vals = {}
+                        vals.update({'voucher_trans_type': '5'})
+                        vals.update({'state': 'reserved'})
+
+                        voucher_order_line_id.sudo().write(vals)
+                        _logger.info('Update Voucher Order Line Status to Reserved')
                         voucher_order_line_id.create_order_line_trans(self.name, 'RS')
                     elif vals['process_type'] == 'activated':
                         _logger.info(vals['process_type'])
-                        voucher_order_line_id.sudo().write({'state': 'activated'})
+                        voucher_order_line_id.sudo().write({'state': 'activated', 'issued_on': datetime.now()})
                         voucher_order_line_id.voucher_trans_type = False
-                        voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        # if voucher_order_line_id.voucher_trans_type == '1':
-                        #     err, message = voucher_order_line_id.send_data_to_trust()
-                        #     if not err:
-                        #         voucher_order_line_id.sudo().write({'state': 'activated'})
-                        #         voucher_order_line_id.voucher_trans_type = False
-                        #         voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        # if voucher_order_line_id.voucher_trans_type == '2':
-                        #     err, message = voucher_order_line_id.send_data_to_trust()
-                        #     if not err:
-                        #         voucher_order_line_id.sudo().write({'state': 'activated'})
-                        #         voucher_order_line_id.voucher_trans_type = False
-                        #         voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        # if voucher_order_line_id.voucher_trans_type == '3':
-                        #     err, message = voucher_order_line_id.send_data_to_trust()
-                        #     if not err:
-                        #         voucher_order_line_id.sudo().write({'state': 'activated'})
-                        #         voucher_order_line_id.voucher_trans_type = False
-                        #         voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        # if voucher_order_line_id.voucher_trans_type == '4':
-                        #     err, message = voucher_order_line_id.send_data_to_trust()
-                        #     if not err:
-                        #         voucher_order_line_id.sudo().write({'state': 'activated'})
-                        #         voucher_order_line_id.voucher_trans_type = False
-                        #         voucher_order_line_id.create_order_line_trans(self.name, 'AC')
-                        # if voucher_order_line_id.voucher_trans_type == '5':
-                            # voucher_order_line_id.sudo().write({'state': 'activated'})
-                            # voucher_order_line_id.voucher_trans_type = False
-                            # voucher_order_line_id.create_order_line_trans(self.name, 'AC')                    
+                        voucher_order_line_id.create_order_line_trans(self.name, 'AC')                   
                     elif vals['process_type'] == 'used':
                         _logger.info(vals['process_type'])
-                        if voucher_order_line_id.voucher_code_id.voucher_type == 'electronic':
-                            #err, message = voucher_order_line_id.send_used_notification_to_trust()
-                            #if not err:
-                            voucher_order_line_id.voucher_trans_type = False
-                            voucher_order_line_id.create_order_line_trans(self.name, 'US')
-                            voucher_order_line_id.sudo().write({'state': 'used'})
-                        else:
-                            voucher_order_line_id.voucher_trans_type = False
-                            voucher_order_line_id.create_order_line_trans(self.name, 'US')
-                            voucher_order_line_id.sudo().write({'state': 'used'})
+                        pass
                     elif vals['process_type'] == 'reopen':
                         _logger.info(vals['process_type'])
                         voucher_order_line_id.sudo().write({'state': 'open'})
@@ -601,7 +630,7 @@ class VoucherTransStatus(models.Model):
 
     #API for Sales
     def send_data_to_trust(self):
-        _logger.info("Send Data")
+        _logger.info("Send Data To Trust")
         config_parameter_obj = self.env['ir.config_parameter'].sudo()
         crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
   
@@ -687,8 +716,7 @@ class VoucherTransStatus(models.Model):
         if not api_token:
             self.is_send_to_crm = False
             self.send_to_crm_message = "Error Authentication"
-            #self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
-            return True, "Error CRM"
+            return True, "Error CRM Authentication"
 
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://apiindev.trustranch.co.id'
@@ -720,7 +748,7 @@ class VoucherTransStatus(models.Model):
                 for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
                     voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
                     voucher_order_line_id.sudo().is_send_to_crm = True
-                    voucher_order_line_id.sudo().write({'state': 'activated'})
+                    voucher_order_line_id.sudo().write({'state': 'activated', 'issued_on': datetime.now()})
                     voucher_order_line_id.voucher_trans_type = False
                     voucher_order_line_id.create_order_line_trans(self.name, 'AC')
                 return False, "Success"                
@@ -745,20 +773,20 @@ class VoucherTransStatus(models.Model):
             self.is_send_to_crm = False
             self.send_to_crm_message = "Error "
             #self.message_post(body="Send Notification to CRM Failed (Timeout)")
-            return True, "Error CRM"
+            return True, "Error CRM Timeout" 
         except requests.exceptions.TooManyRedirects:
             # Tell the user their URL was bad and try a different one
             self.is_send_to_crm = False
             self.send_to_crm_message = "Error Too Many Redirects"
             #self.message_post(body="Send Notification to CRM Failed (TooManyRedirects)")
-            return True, "Error CRM"
+            return True, "Error CRM  Too Many Redirects"
         except requests.exceptions.RequestException as e:
             _logger.info(e)
             self.is_send_to_crm = False
             self.send_to_crm_message = "Error Request"
             #self.message_post(body=e)
             #self.message_post(body="Send Notification to CRM Failed (Exception)")
-            return True, "Error CRM"
+            return True, "Error CRM Request"
 
     def send_to_trust(self):
         _logger.info("Send To Trust")
@@ -842,12 +870,17 @@ class VoucherTransStatus(models.Model):
             #self.message_post(body=e)
             #self.message_post(body="Send Notification to CRM Failed (Exception)")
             return True, "Error CRM"
-    #API for Used
-    def send_used_notification_to_trust(self):  
-        _logger.info("Send Used Notifcation")
+
+    def send_promo_to_trust(self):
+        _logger.info("Send Promo To Trust")
         config_parameter_obj = self.env['ir.config_parameter'].sudo()
         crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
   
+        #trans_line_id = self.get_last_trans_line()
+        #_logger.info(trans_line_id.name)
+        #if self.voucher_trans_type in ('1','2','3'):
+        #    trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
+
         api_token = self._auth_trust()
         if not api_token:
             self.is_send_to_crm = False
@@ -861,25 +894,33 @@ class VoucherTransStatus(models.Model):
             vouchers = []
             for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
                 voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
-                vouchers.append(voucher_order_line_id.voucher_ean)
-
+                vouchers.append(voucher_order_line_id.voucher_ean + ';' + voucher_order_line_id.expired_date.strftime('%Y-%m-%d') + ";" + voucher_order_line_id.voucher_sku)
             data = {
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'time': datetime.now().strftime('%H:%M:%S'),
+                'receipt': self.receipt_number,
+                'transaction_id': self.t_id,
+                'cashier_id': self.cashier_id,
                 'store_id': self.store_id,
                 'member_id': self.member_id,
                 'vouchers': '|'.join(vouchers)
             }
             _logger.info(data)
             headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/use-voucher'.format(crm_api_url), headers=headers ,data=data)
+            req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
             if req.status_code == 200:
                 #Success
                 response_json = req.json()
                 self.is_send_to_crm = True
                 #self.message_post(body="Send Notification to CRM Successfully")
+                _logger.info("Send Notification to CRM Successfully")
+                for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
+                    voucher_trans_status_line_id.voucher_order_line_id.state = 'activated'
                 return False, "Success"                
             else:
                 #Error
                 _logger.info(f'Error : {req.status_code}')
+                _logger.info("Send Notification to CRM Error")
                 if req.json():
                     response_json = req.json()                
                     _logger.info(f'Error Message: {response_json["message"]}')
@@ -888,10 +929,220 @@ class VoucherTransStatus(models.Model):
                     #self.message_post(body=response_json["message"])
                 else:
                     self.is_send_to_crm = False
-                    self.send_to_crm_message = f'Error : {req.status_code}'
+                    #self.send_to_crm_message = f'Error : {req.status_code}'
 
-                return True, "Error CRM"
+                return True, self.send_to_crm_message
 
+        except requests.exceptions.Timeout:
+            # Maybe set up for a retry, or continue in a retry loop
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error "
+            #self.message_post(body="Send Notification to CRM Failed (Timeout)")
+            return True, "Error CRM"
+        except requests.exceptions.TooManyRedirects:
+            # Tell the user their URL was bad and try a different one
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Too Many Redirects"
+            #self.message_post(body="Send Notification to CRM Failed (TooManyRedirects)")
+            return True, "Error CRM"
+        except requests.exceptions.RequestException as e:
+            _logger.info(e)
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Request"
+            #self.message_post(body=e)
+            #self.message_post(body="Send Notification to CRM Failed (Exception)")
+            return True, "Error CRM"
+
+    #API for Used
+    def send_used_notification_to_trust_partial(self): 
+        
+        #Change Voucher Order Line status to Used
+        for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
+            voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
+            #voucher_order_line_id.sudo().is_send_to_crm = True
+            vals = {}
+            vals.update({'state': 'used'})
+            vals.update({'used_on': datetime.now()})
+            vals.update({'receipt_number': self.receipt_number})
+            vals.update({'t_id': self.t_id})
+            vals.update({'used_operating_unit_id': self.operating_unit_id.id})
+            _logger.info(vals)
+            voucher_order_line_id.sudo().write(vals)
+
+        #Check All Voucher Already Change to Used State
+        domain = [
+            ('receipt_number','=', self.receipt_number),
+            ('t_id', '=', self.t_id)        
+        ]
+        voucher_order_line_reserved_ids = self.env['weha.voucher.order.line'].search(domain)
+        _logger.info(len(voucher_order_line_reserved_ids))
+        _logger.info(voucher_order_line_reserved_ids)
+        domain = [
+            ('receipt_number','=', self.receipt_number),
+            ('t_id', '=', self.t_id),
+            ('state', '=', 'used')
+        ]
+        voucher_order_line_used_ids = self.env['weha.voucher.order.line'].search(domain)
+        _logger.info(len(voucher_order_line_reserved_ids))
+        _logger.info(voucher_order_line_used_ids)
+
+    
+        used_status = True
+        if len(voucher_order_line_reserved_ids) != len(voucher_order_line_used_ids):
+            used_status = False
+        
+        # for voucher_order_line_id in voucher_order_line_ids:
+        #     if voucher_order_line_id.state != 'used':
+        #         used_status = False
+        #         break
+            
+        if used_status:
+            _logger.info("Count Match")
+            vouchers = []
+            physical_vouchers = []
+            for voucher_order_line_id in voucher_order_line_used_ids:
+                if voucher_order_line_id.voucher_type != 'physical':
+                    vouchers.append(voucher_order_line_id.voucher_ean)
+                else:
+                    physical_vouchers.append(voucher_order_line_id.voucher_ean)
+            
+            _logger.info(vouchers)
+            if len(vouchers) > 0:
+                _logger.info("Send Used Notifcation")
+                config_parameter_obj = self.env['ir.config_parameter'].sudo()
+                crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
+        
+                api_token = self._auth_trust()
+                if not api_token:
+                    self.is_send_to_crm = False
+                    self.send_to_crm_message = "Error Authentication"
+                    #self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+                    return True, "Error CRM"
+
+                data = {
+                    'store_id': self.store_id,
+                    'member_id': self.member_id,
+                    'vouchers': '|'.join(vouchers)
+                }
+                _logger.info(data)
+  
+
+                base_url = 'http://apiindev.trustranch.co.id'
+                headers = {'Authorization' : 'Bearer ' + api_token}
+                req = requests.post('{}/vms/use-voucher'.format(base_url), headers=headers ,data=data)
+                if req.status_code == 200:
+                    #Success
+                    response_json = req.json()
+                    self.is_send_to_crm = True
+                    #self.message_post(body="Send Notification to CRM Successfully")
+                    _logger.info("Send Notification to CRM Successfully")
+                    for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
+                        voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
+                        voucher_order_line_id.sudo().is_send_to_crm = True
+                        voucher_order_line_id.voucher_trans_type = False
+                        voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                    #return False, "Success"
+                    return False, "Success"                
+                else:
+                    #Error
+                    _logger.info(f'Error : {req.status_code}')
+                    if req.json():
+                        response_json = req.json()                
+                        _logger.info(f'Error Message: {response_json["message"]}')
+                        self.is_send_to_crm = False
+                        self.send_to_crm_message = response_json["message"]
+                        #self.message_post(body=response_json["message"])
+                    else:
+                        self.is_send_to_crm = False
+                        self.send_to_crm_message = f'Error : {req.status_code}'
+                    return True, self.send_to_crm_message
+        else:
+            return False, "Success" 
+    
+    def send_used_notification_to_trust(self):  
+        _logger.info("Send Used Notifcation")
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
+  
+        api_token = self._auth_trust()
+        if not api_token:
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Authentication"
+            #self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+            return True, "Error CRM"
+
+        headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        base_url = 'http://apiindev.trustranch.co.id'
+        try:
+            vouchers = []
+            physical_vouchers = []
+            for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
+                voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
+                if voucher_order_line_id.voucher_type != 'physical':
+                    vouchers.append(voucher_order_line_id.voucher_ean)
+                else:
+                    physical_vouchers.append(voucher_order_line_id.voucher_ean)
+
+            _logger.info(vouchers)
+            if len(vouchers) > 0:
+                data = {
+                    'store_id': self.store_id,
+                    'member_id': self.member_id,
+                    'vouchers': '|'.join(vouchers)
+                }
+                _logger.info(data)
+                headers = {'Authorization' : 'Bearer ' + api_token}
+                req = requests.post('{}/vms/use-voucher'.format(base_url), headers=headers ,data=data)
+                if req.status_code == 200:
+                    #Success
+                    response_json = req.json()
+                    self.is_send_to_crm = True
+                    #self.message_post(body="Send Notification to CRM Successfully")
+                    _logger.info("Send Notification to CRM Successfully")
+                    for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
+                        voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
+                        voucher_order_line_id.sudo().is_send_to_crm = True
+                        vals = {}
+                        vals.update({'state': 'used'})
+                        vals.update({'used_on': datetime.now()})
+                        vals.update({'receipt_number': self.receipt_number})
+                        vals.update({'t_id': self.t_id})
+                        vals.update({'used_operating_unit_id': self.operating_unit_id.id})
+                        _logger.info(vals)
+                        voucher_order_line_id.sudo().write(vals)
+                        voucher_order_line_id.voucher_trans_type = False
+                        voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                    #return False, "Success"
+                    return False, "Success"                
+                else:
+                    #Error
+                    _logger.info(f'Error : {req.status_code}')
+                    if req.json():
+                        response_json = req.json()                
+                        _logger.info(f'Error Message: {response_json["message"]}')
+                        self.is_send_to_crm = False
+                        self.send_to_crm_message = response_json["message"]
+                        #self.message_post(body=response_json["message"])
+                    else:
+                        self.is_send_to_crm = False
+                        self.send_to_crm_message = f'Error : {req.status_code}'
+
+                    return True, self.send_to_crm_message
+            else:
+                for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
+                    voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
+                    voucher_order_line_id.sudo().is_send_to_crm = True
+                    vals = {}
+                    vals.update({'state': 'used'})
+                    vals.update({'used_on': datetime.now()})
+                    vals.update({'receipt_number': self.receipt_number})
+                    vals.update({'t_id': self.t_id})
+                    vals.update({'used_operating_unit_id': self.operating_unit_id.id})
+                    _logger.info(vals)
+                    voucher_order_line_id.sudo().write(vals)
+                    voucher_order_line_id.voucher_trans_type = False
+                    voucher_order_line_id.create_order_line_trans(self.name, 'US')
+                return False, "Success" 
             
         except Exception as err:
             _logger.info(err)  
@@ -901,12 +1152,68 @@ class VoucherTransStatus(models.Model):
             #self.message_post(body="Send Notification to CRM Failed (Exception)")
             return True, "Error CRM"
 
+
+    def _used_notifcation_to_trust(self, vouchers):
+        _logger.info("Send Used Notifcation")
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('weha_voucher_mgmt.crm_api_url')
+
+        api_token = self._auth_trust()
+        if not api_token:
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Authentication"
+            #self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+            return True, "Error CRM"
+
+        data = {
+            'store_id': self.store_id,
+            'member_id': self.member_id,
+            'vouchers': '|'.join(vouchers)
+        }
+        _logger.info(data)
+
+
+        base_url = 'http://apiindev.trustranch.co.id'
+        headers = {'content-type': 'text/plain', 'charset':'utf-8', 'Authorization' : 'Bearer ' + api_token}
+        req = requests.post('{}/vms/use-voucher'.format(base_url), headers=headers ,data=data)
+        if req.status_code == 200:
+            #Success
+            response_json = req.json()
+            self.is_send_to_crm = True
+            #self.message_post(body="Send Notification to CRM Successfully")
+            _logger.info("Send Notification to CRM Successfully")
+            for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
+                voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
+                voucher_order_line_id.sudo().is_send_to_crm = True
+                voucher_order_line_id.sudo().write(vals)
+                voucher_order_line_id.voucher_trans_type = False
+                voucher_order_line_id.create_order_line_trans(self.name, 'US')
+            #return False, "Success"
+            return False, "Success"                
+        else:
+            #Error
+            _logger.info(f'Error : {req.status_code}')
+            if req.json():
+                response_json = req.json()                
+                _logger.info(f'Error Message: {response_json["message"]}')
+                self.is_send_to_crm = False
+                self.send_to_crm_message = response_json["message"]
+                #self.message_post(body=response_json["message"])
+            else:
+                self.is_send_to_crm = False
+                self.send_to_crm_message = f'Error : {req.status_code}'
+
+            return True, self.send_to_crm_message
+
+
     def procces_voucher_order_line_reopen(self, voucher_ean):
         pass                
     
+    #API for Promo
     def get_json(self):
         data = {}
         if self.process_type == 'reserved':
+            _logger.info('Get Json - reserved')
             voucher_trans_status_line_id = self.voucher_trans_status_line_ids and self.voucher_trans_status_line_ids[0] or False
             if voucher_trans_status_line_id:
                 voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
@@ -916,33 +1223,21 @@ class VoucherTransStatus(models.Model):
                 data.update({'bank_category': ''})
                 data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
                 data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
-                voucher_mapping_sku_id  = self.env['weha.voucher.mapping.sku'].search([('voucher_code_id','=', voucher_order_line_id.voucher_code_id.id)],limit=1)
-                if voucher_mapping_sku_id:    
-                    voucher_mapping_pos_id = voucher_mapping_sku_id.voucher_mapping_pos_id
-                    if voucher_mapping_pos_id.pos_trx_type == 'Promo':
-                        data.update({'tender_type': voucher_order_line_id.tender_type})
-                        data.update({'bank_category': voucher_order_line_id.bank_category})
-                        data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
-                        data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
-                    data.update({'err': False})
-                    data.update({'message': "Reserved Successfully"})
-                else:
-                    data.update({'err': True})
-                    data.update({'message': "Mapping SKU not found"})
+                if voucher_order_line_id.voucher_promo_id:
+                    data.update({'tender_type': voucher_order_line_id.tender_type})
+                    data.update({'bank_category': voucher_order_line_id.bank_category})
+                    data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
+                    data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
             else:
                 data.update({'err': True})
                 data.update({'message': "Transaction not found"})
 
         if self.process_type == 'activated':
-            voucher_trans_status_line_id = self.voucher_trans_status_line_ids and self.voucher_trans_status_line_ids[0] or False
-            if voucher_trans_status_line_id:
-                voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
-                data.update({'err': False})
-                data.update({'message': "Transaction Create Successfully"})
-            else:
-                data.update({'err': True})
-                data.update({'message': "Transaction not found"})
-                
+            _logger.info('Get Json - activated')
+            self.send_promo_to_trust()
+            data.update({'err': False})
+            data.update({'message': "Transaction Create Successfully"})
+        
         return data
 
     def get_json_batch(self):
@@ -954,10 +1249,11 @@ class VoucherTransStatus(models.Model):
     name = fields.Char('Name', )
     batch_id = fields.Char('Batch #', size=10, readonly=True)
     trans_date = fields.Datetime("Transaction Date")
-    receipt_number = fields.Char("Receipt #", size=5)
+    receipt_number = fields.Char("Receipt #", size=50)
     t_id = fields.Char("Transaction #")
     cashier_id = fields.Char("Cashier #", size=5)
     store_id = fields.Char("Store #", size=4)
+    operating_unit_id = fields.Many2one("operating.unit", "Operating Unit")
     member_id = fields.Char("Member #", size=10)
     voucher_ean = fields.Char("Voucher Ean", size=250)
     voucher_code_id = fields.Many2one("weha.voucher.code", "Voucher Code")
@@ -998,29 +1294,35 @@ class VoucherTransStatus(models.Model):
             seq = seq.with_context(force_company=vals['company_id'])
         vals['name'] = seq.next_by_code('weha.voucher.trans.status.sequence') or '/'
 
+        operating_unit_id = self.env['operating.unit'].search([('code','=', vals['store_id'])], limit=1)
+        _logger.info(operating_unit_id)
+        if operating_unit_id:
+            vals['operating_unit_id'] = operating_unit_id.id
+        
         res = super(VoucherTransStatus, self).create(vals)
        
         if vals['process_type'] in ('reserved', 'activated', 'used'):
-            #Complete Voucher Order Line
             if vals['batch_id']:
+                _logger.info("Process by Batch")
                 res.process_voucher_order_line_by_batch(vals) 
-                res.send_to_trust_by_batch_id()
-            else:
-                res.process_voucher_order_line(vals)          
+            else:   
+                _logger.info("Process without Batch")
                 if vals['process_type'] == 'activated':
-                    res.send_to_trust()
+                    res.process_voucher_order_line(vals)
                 if vals['process_type'] == 'used':
-                    res.send_used_notification_to_trust()
+                    res.process_voucher_order_line_used(vals)
+                if vals['process_type'] == 'reserved':
+                    res.process_voucher_order_line_reserved(vals)
         else:
-            #Process Voucher Order Line Reopen
             res.process_voucher_order_line(vals) 
         
-        #Close Voucher Transaction Purchase
-        res.trans_close()
+        # #Close Voucher Transaction Purchase
+        # res.trans_close()
         return res
   
 class VoucheTransStatusLine(models.Model):
     _name = "weha.voucher.trans.status.line"
+    _description = 'Voucher Transaction Status Line (API)'
 
     voucher_trans_status_id = fields.Many2one('weha.voucher.trans.status', 'Status #')
     voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher #')
@@ -1042,6 +1344,7 @@ class VoucheTransStatusLine(models.Model):
 
 class VoucherTransFTP(models.Model):
     _name = "weha.voucher.trans.ftp"
+    _description = 'Voucher Transaction FTP (API)'
      
     @api.model 
     def process_ftp(self):
@@ -1198,6 +1501,7 @@ class VoucherTransFTP(models.Model):
 
 class VoucherTransBooking(models.Model):
     _name = "weha.voucher.trans.booking" 
+    _description = 'Voucher Transaction Booking (API)'
 
     def complete_sku(self):
         mapping_sku = []
@@ -1356,6 +1660,7 @@ class VoucherTransBooking(models.Model):
 
 class VoucheTransBookingSku(models.Model):
     _name = "weha.voucher.trans.booking.sku"
+    _description = 'Voucher Transaction Booking SKU (API)'
 
     voucher_trans_booking_id = fields.Many2one('weha.voucher.trans.booking', 'Booking #')
     voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku', 'Mapping SKU #')
@@ -1381,9 +1686,94 @@ class VoucheTransBookingSku(models.Model):
 
 class VoucherTransBookingLine(models.Model):
     _name = "weha.voucher.trans.booking.line"
+    _description = 'Voucher Transaction Booking Line (API)'
 
     voucher_trans_booking_id = fields.Many2one('weha.voucher.trans.booking', 'Purchase #')
     voucher_trans_booking_sku_id = fields.Many2one('weha.voucher.trans.booking.sku', 'Purchase SKU #')
+    voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher #')
+    voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code", related="voucher_order_line_id.voucher_code_id")
+    year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")
+    voucher_promo_id = fields.Many2one('weha.voucher.promo', string="Voucher Promo", related="voucher_order_line_id.voucher_promo_id")
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )
+
+
+class VoucherChangeMember(models.Model):
+    _name = "weha.voucher.change.member"
+
+    def process_voucher_order_line_reserved(self, vals):
+        arr_ean = vals['voucher_ean'].split('|')
+        for voucher_ean in arr_ean:
+            domain = [
+                ('voucher_ean', '=', voucher_ean),
+                ('member_id', '=', self.old_member_id)
+            ]
+            voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+            if voucher_order_line_id:
+                line_id = self.env['weha.voucher.change.member.line'].create(
+                    {
+                        'voucher_change_member_id': self.id,
+                        'voucher_order_line_id': voucher_order_line_id.id,
+                    }
+                )
+
+    def complete_change_member_line(self):
+        for voucher_change_member_line_id in self.voucher_change_member_line_ids:
+            voucher_change_member_line_id.voucher_order_line_id.member_id = self.new_member_id
+            voucher_change_member_line_id.state = 'done'
+
+
+
+    name = fields.Char('Name', )
+    trans_date = fields.Datetime("Transaction Date", default=datetime.now())
+    trx_no = fields.Char('Trx No', size=50)
+    old_member_id = fields.Char("Old Member #", size=20)
+    new_member_id = fields.Char("New Member #", size=20)
+    voucher_ean = fields.Char("Voucher Ean", size=250)
+
+    voucher_change_member_line_ids = fields.One2many('weha.voucher.change.member.line','voucher_change_member_id','Lines')
+
+    state = fields.Selection(
+        [  
+            ('open', 'Open'),
+            ('done', 'Close'),
+            ('error', 'Error')
+        ],
+        'Status',
+        default='open',
+        index=True
+    )
+
+    @api.model
+    def create(self, vals):
+        #Create Trans #
+        seq = self.env['ir.sequence']
+        if 'company_id' in vals:
+            seq = seq.with_context(force_company=vals['company_id'])
+        vals['name'] = seq.next_by_code('weha.voucher.change.member.sequence') or '/'
+        
+        #Create Trans
+        res = super(VoucherChangeMember, self).create(vals)
+
+        res.process_voucher_order_line_reserved(vals)
+        res.complete_change_member_line()
+        res.state = 'done'
+
+        return res    
+
+
+class VoucherChangeMemberLine(models.Model):
+    _name = "weha.voucher.change.member.line"
+
+    voucher_change_member_id = fields.Many2one('weha.voucher.change.member', 'Change Member #')
     voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher #')
     voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code", related="voucher_order_line_id.voucher_code_id")
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")

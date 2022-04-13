@@ -604,5 +604,126 @@
             sequence="16"
             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
 
+        
+        <!-- Tree view for voucher change membmer -->
+        <record id="view_weha_voucher_change_member_tree" model="ir.ui.view">
+            <field name="name">view.weha.voucher.change.member.tree</field>
+            <field name="model">weha.voucher.change.member</field>
+            <field name="type">tree</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <tree string="Change Member" create="false" delete="false" edit="false">
+                    <field name="name" />
+                    <field name="trans_date"/>
+                    <field name="trx_no" />
+                    <field name="old_member_id" />
+                    <field name="new_member_id" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form view for voucher request -->
+        <record id="view_weha_voucher_change_member_form" model="ir.ui.view">
+            <field name="name">view.weha.voucher.change.member.form</field>
+            <field name="model">weha.voucher.change.member</field>
+            <field name="type">form</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <form string="model_form" create="true" delete="true" edit="true">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" />
+                            <h1>
+                                <field name="name" class="oe_inline"
+                                    placeholder="Name" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                 <field name="name" />
+                                <field name="trans_date"/>
+                                <field name="trx_no" />
+                                <field name="old_member_id" />
+                                <field name="new_member_id" />
+                            </group>
+                            <group>
+                            
+                            </group>
+                        </group>
+                        <notebook colspan="4">  
+                            <page string="Lines">
+	                        	<field name="voucher_change_member_line_ids" widget="one2many_list" nolabel="0" readonly="1">
+	                            	<tree string="Change Member Lines">
+	                            	    <field name="voucher_order_line_id" /> 
+                                        <field name="voucher_code_id"/>
+                                        <field name="year_id"/>
+                                        <field name="voucher_promo_id"/>                        	                                                                                                                                                                                                                                   
+	                            	</tree>                    	                            	
+	                        	</field>
+	                        </page>	   
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+
+        <!-- Search view for voucher request -->
+        <record id="view_weha_voucher_change_member_search" model="ir.ui.view">
+            <field name="name">view.weha.voucher.change.member.search</field>
+            <field name="model">weha.voucher.change.member</field>
+            <field name="type">search</field>
+            <field name="mode">primary</field>
+            <field name="priority" eval="16" />
+            <field name="active" eval="True" />
+            <field name="arch" type="xml">
+                <search string="model_search">
+                    <field name="name" />
+                    <field name="trans_date"/>
+                    <field name="trx_no"/>
+                    <field name="old_member_id"/>
+                    <field name="new_member_id"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status" name="state" domain="[]" context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Main window action for voucher request -->
+        <record id="action_weha_voucher_change_member" model="ir.actions.act_window">
+            <field name="type">ir.actions.act_window</field>
+            <field name="name">Voucher Change Member</field>
+            <field name="res_model">weha.voucher.change.member</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context"></field>
+            <field name="search_view_id" ref="view_weha_voucher_change_member_search" />
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add for request new voucher change member
+                </p>
+                <p>
+                    Voucher Change Member
+                </p>
+            </field>
+        </record>
+    
+        <menuitem 
+            id="weha_voucher_change_member_menu" 
+            name="Change Member" 
+            parent="weha_voucher_api_menu"
+            action="action_weha_voucher_change_member" 
+            sequence="16"
+             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+
     </data>
 </odoo>

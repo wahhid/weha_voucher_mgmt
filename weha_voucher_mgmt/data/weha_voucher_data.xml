@@ -101,5 +101,12 @@
             <field name="padding">5</field>
         </record>
 
+        <record id="weha_voucher_change_member" model="ir.sequence">
+            <field name="name">Voucher Change Member Sequence</field>
+            <field name="code">weha.voucher.change.member.sequence</field>
+            <field name="prefix">CM/%(year)s/%(month)s/%(day)s/</field>
+            <field name="padding">5</field>
+        </record>
+
     </data>
 </odoo>

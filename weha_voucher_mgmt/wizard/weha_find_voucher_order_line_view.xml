@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_wizard_find_voucher_order_line" model="ir.ui.view">
+        <field name="name">weha.wizard.find.voucher.order.line</field>
+        <field name="model">weha.wizard.find.voucher.order.line</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Find Voucher Order Line">
+                <group>
+                    <h1>
+                        <field name="code_ean"/>
+                    </h1>
+                </group>
+                <footer>
+                    <button name="find_voucher" string="Find Voucher" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="act_open_find_voucher_order_line_view_form" model="ir.actions.act_window">
+        <field name="name">Find Voucher</field>
+        <field name="res_model">weha.wizard.find.voucher.order.line</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+
+    <menuitem id="menu_voucher_order_line_find" 
+        name="Find Voucher"
+        action="act_open_find_voucher_order_line_view_form"
+        parent="weha_voucher_main_menu"
+        sequence="2"/>
+
+</odoo>

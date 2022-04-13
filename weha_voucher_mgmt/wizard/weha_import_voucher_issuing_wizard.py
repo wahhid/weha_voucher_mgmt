@@ -39,6 +39,7 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
     file = fields.Binary('File')
     filename = fields.Char('Filename', size=200)
     #file_opt = fields.Selection([('excel','Excel'),('csv','CSV')], default='excel')
+    url_field = fields.Char('Template File', default='/weha_voucher_mgmt/static/src/templates/import_voucher_issuing_template.xlsx')
 
     
     def create_voucher_line(self,val):
@@ -96,12 +97,21 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
             #else:
             #line = list(map(lambda row:isinstance(row.value, str) and row.value.encode('utf-8') or str(row.value), sheet.row(row_no)))   
             line = sheet.row(row_no)
+            _logger.info(line)
             domain = [
                 ('code_sku','=', line[2].value)
             ]
             mapping_sku_id = self.env['weha.voucher.mapping.sku'].sudo().search(domain, limit=1)
             if not mapping_sku_id:
                 raise ValidationError("SKU not found")
+
+            _logger.info(type(line[5].value))
+            expired_date = False
+            if line[5].value == '':
+                expired_date = False
+            else:
+                #expired_date = datetime.fromtimestamp(line[5].value).strftime('%Y-%m-%d')
+                expired_date = datetime.strptime(line[5].value ,'%d/%m/%Y').strftime('%Y-%m-%d')
 
             values.update( {
                             'voucher_issuing_id': active_id,
@@ -110,6 +120,7 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
                             'mapping_sku_id': mapping_sku_id.id, 
                             'sku': line[2].value,
                             'quantity': int(float(line[4].value)),
+                            'expired_date': expired_date,
                             'member_id': line[3].value,
                             'file_line_id': file_line_id.id,
                             })

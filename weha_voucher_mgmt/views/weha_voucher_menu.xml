@@ -29,11 +29,11 @@
 
         <menuitem id="weha_voucher_main_menu" name="Voucher"
             parent="weha_voucher_mgmt_main_menu" sequence="26"
-            groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user"/>
+            groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user,group_voucher_hrd_user"/>
 
          <menuitem id="weha_voucher_reporting_main_menu" name="Reporting"
             parent="weha_voucher_mgmt_main_menu" sequence="30"
-            groups="group_voucher_manager,group_voucher_finance_user"/>
+            groups="group_voucher_manager,group_voucher_finance_user,group_voucher_hrd_user"/>
 
         <menuitem id="weha_voucher_import_main_menu" name="Import"
             parent="weha_voucher_mgmt_main_menu" sequence="32"

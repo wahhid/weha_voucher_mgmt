@@ -11,6 +11,7 @@
                 <group>
                     <field name="file" filename="filename"/>
                     <field name="filename" invisible="1"/>
+                    <field name="url_field" widget="url" readonly="1" text="Clik Here"/>
                 </group>
                 <footer>
                     <button name="import_file" string="Import" type="object" class="btn-primary"/>

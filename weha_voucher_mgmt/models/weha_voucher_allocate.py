@@ -106,6 +106,11 @@ class VoucherAllocate(models.Model):
         if not self.stage_id.receiving:
             stage_id = self.stage_id.next_stage_id
             res = super(VoucherAllocate, self).write({'stage_id': stage_id.id})
+            for voucher_allocate_line_id in self.voucher_allocate_line_ids:
+                if self.voucher_expired_date:
+                    _logger.info('Voucher Expired Date exits')
+                    voucher_allocate_line_id.voucher_order_line_id.voucher_expired_date = self.voucher_expired_date
+                    voucher_allocate_line_id.voucher_order_line_id.calculate_expired()
             data =  {
                 'activity_type_id': 4,
                 'note': 'Voucher Allocate was received',
@@ -281,7 +286,7 @@ class VoucherAllocate(models.Model):
     ref = fields.Char(string='Source Document', required=True)
     allocate_date = fields.Date('Allocate Date', required=True, default=lambda self: fields.date.today(), readonly=True)
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
-    operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
+    operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id", store=True)
     source_operating_unit = fields.Many2one('operating.unit','Request Store', required=True)
     is_request = fields.Boolean('Is Request', default=False)
 
@@ -294,11 +299,13 @@ class VoucherAllocate(models.Model):
     voucher_mapping_sku_id = fields.Many2one('weha.voucher.mapping.sku','Mapping SKU #', required=True)
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True, related="voucher_mapping_sku_id.voucher_code_id", store=True)
     voucher_terms_id = fields.Many2one('weha.voucher.terms', 'Voucher Terms', related="voucher_code_id.voucher_terms_id")
+    voucher_expired_date = fields.Date('Expired Date')
     year_id = fields.Many2one('weha.voucher.year','Year', required=True, readonly=False)
     
     voucher_promo_id = fields.Many2one('weha.voucher.promo', 'Promo', readonly=False)
     is_voucher_promo = fields.Boolean('Is Voucher Promo', default=False)
     promo_expired_date = fields.Date('Promo Expired Date')
+    remark = fields.Char('Remark', size=200)
     expired_days =fields.Integer('Expired Days', default=0, required=True)
 
     start_number = fields.Integer(string='Start Number', required=False, readonly=True)

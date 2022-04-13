@@ -110,33 +110,57 @@ class VMSPromoController(http.Controller):
                 if not mapping_sku_id:
                     is_available = False
                     message = "SKU not found"
+                    break
                 
                 current_date = dt.today()
                 _logger.info(current_date)
                 
                 domain = [
                     ('voucher_mapping_sku_id', '=' , mapping_sku_id.id),
-                    ('voucher_promo_id.start_date', '>=',  '2021-09-16' ),
-                    ('voucher_promo_id.end_date', '<=', '2021-09-16')
+                    ('voucher_promo_id','!=', False)
                 ]
 
                 _logger.info(domain)
 
                 voucher_promo_line_id = http.request.env['weha.voucher.promo.line'].search(domain, limit=1)
+                _logger.info(voucher_promo_line_id)
                 if not voucher_promo_line_id:
-                    message = "Promo not found"
+                    message = "Promo Line not found"
                     is_available = False
-
-                _logger.info(voucher_promo_line_id.voucher_promo_id.end_date)
-                if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
-                    message = "Promo Expired"
+                    break
+                
+                _logger.info(voucher_promo_line_id.voucher_promo_id.name)
+                if not voucher_promo_line_id.voucher_promo_id:
+                    message = f'Promo for {mapping_sku_id.code_sku} not found'
+                    is_available = False
+                    break
+                
+                if voucher_promo_line_id.voucher_promo_id.end_date:
+                    if voucher_promo_line_id.voucher_promo_id.end_date < current_date:
+                        message = "Promo Expired"
+                        is_available = False  
+                        break
+                else:
+                    message = f'Promo {voucher_promo_line_id.voucher_mapping_sku_id.name} need end date'
                     is_available = False  
+                    break
 
                 total_amount =  int(arr_sku[1]) * mapping_sku_id.voucher_code_id.voucher_amount
               
-            if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + total_amount:
-                message = "Quota Exceeded"
-                is_available = False
+                if voucher_promo_line_id.voucher_promo_id.amount < voucher_promo_line_id.voucher_promo_id.current_amount + total_amount:
+                    message = "Quota Exceeded"
+                    is_available = False
+                    break
+
+            if not is_available:
+                    response_data = {
+                        "err": True,
+                        "message": message,
+                        "data": [
+                            {'code': 'N'}
+                        ]
+                    }
+                    return valid_response(response_data)
 
         else:
             arr_sku  = sku.split('|')
@@ -217,19 +241,16 @@ class VMSPromoController(http.Controller):
 
         #Prepare Voucher Order Line List
         vouchers = result.get_json()
-        
-
+    
         data = {
             "err": False,
-            "message": "Create Successfully",
+            "message": message,
             "data": [
                 {
                     'code': 'Y',
-                    'transaction_id': result.id,
                     'vouchers': vouchers
                 }
             ]
         }
         return valid_response(data)
-            
 

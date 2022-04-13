@@ -21,6 +21,7 @@ class WizStockBarcodesRead(models.AbstractModel):
             ('allocate', 'Allocate'),
             ('issuing', 'Issuing'),
             ('return', 'Return'),
+            ('return_receiving', 'Return Receiving'),
             ('scrap', 'Scrap'),
         ],
         'Process'
@@ -207,7 +208,7 @@ class WizStockBarcodesRead(models.AbstractModel):
                         ]
                         voucher_return_line_id = self.env['weha.voucher.return.line'].search(domain,limit=1)
                         if voucher_return_line_id:
-                            self._set_messagge_info("info", _("Issuing Line already exist"))                               
+                            self._set_messagge_info("info", _("Return Line already exist"))                               
                         else:
                             vals = {
                                 'voucher_return_id': active_id,
@@ -225,48 +226,48 @@ class WizStockBarcodesRead(models.AbstractModel):
                             }
                             self._add_read_log(vals)
                     else:
-                        _logger.info("Stage Pass")
-                elif voucher_return_id.current_stage == 'progress' or voucher_return_id.current_stage == 'receiving':
-                    domain = [
-                        ('voucher_ean', '=', barcode),
-                        ('operating_unit_id', '=', voucher_return_id.operating_unit_id.id),
-                        ('state', '=', 'intransit')
-                    ]
-                    voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
-                    if voucher_order_line_id:
-                        self._set_messagge_info("info", _("Barcode found"))
-                        domain = [
-                            ('voucher_return_id', '=', voucher_return_id.id),
-                            ('voucher_order_line_id', '=', voucher_order_line_id.id),
-                            ('state', '=', 'open') 
-                        ]
-                        voucher_return_line_id = self.env['weha.voucher.return.line'].search(domain,limit=1)
-                        if voucher_return_line_id:
-                            vals = {}
-                            vals.update({'state': 'received'})
-                            res = voucher_return_line_id.write(vals)
-
-                            company_id = self.env.user.company_id
-                            vals = {}
-                            vals.update({'operating_unit_id': company_id.res_company_return_operating_unit.id})
-                            vals.update({'state': 'open'})
-                            voucher_return_line_id.voucher_order_line_id.sudo().write(vals)
-                            
-                            vals = {}
-                            vals.update({'name': voucher_return_id.number})
-                            vals.update({'voucher_order_line_id': voucher_return_line_id.voucher_order_line_id.id})
-                            vals.update({'trans_date': datetime.now()})
-                            vals.update({'operating_unit_loc_fr_id': voucher_return_id.operating_unit_id.id})
-                            vals.update({'operating_unit_loc_to_id': company_id.res_company_return_operating_unit.id})
-                            vals.update({'trans_type': 'RV'})
-                            self.env['weha.voucher.order.line.trans'].create(vals)
-                            voucher_return_id.sudo().trans_received() 
-                        else:
-                            self._set_messagge_info("not_found", _("Voucher already received"))  
-                    else:
-                        self._set_messagge_info("not_found", _("Barcode not found or already received"))  
+                        self._set_messagge_info("not_found", _("Barcode not found"))
                 else:
                     self._set_messagge_info("not_found", _("Barcode not found"))
+
+        if self.received_process == 'return_receiving':
+            active_id = self.env.context.get('active_id') or False
+            if active_id:
+                voucher_return_id = self.env['weha.voucher.return'].browse(active_id)
+                domain = [
+                    ('voucher_ean', '=', barcode),
+                    ('operating_unit_id', '=', voucher_return_id.operating_unit_id.id),
+                    ('state', '=', 'intransit')
+                ]
+                voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(domain,limit=1)
+                if voucher_order_line_id:
+                    self._set_messagge_info("info", _("Barcode found"))
+                    domain = [
+                        ('voucher_return_id', '=', voucher_return_id.id),
+                        ('voucher_order_line_id', '=', voucher_order_line_id.id),
+                        ('state', '=', 'open') 
+                    ]
+                    voucher_return_line_id = self.env['weha.voucher.return.line'].search(domain,limit=1)
+                    if voucher_return_line_id:
+                        vals = {}
+                        vals.update({'state': 'received'})
+                        res = voucher_return_line_id.write(vals)
+
+                        company_id = self.env.user.company_id
+                        vals = {}
+                        vals.update({'operating_unit_id': company_id.res_company_return_operating_unit.id})
+                        vals.update({'state': 'open'})
+                        voucher_return_line_id.voucher_order_line_id.sudo().write(vals)
+                        
+                        vals = {}
+                        vals.update({'name': voucher_return_id.number})
+                        vals.update({'voucher_order_line_id': voucher_return_line_id.voucher_order_line_id.id})
+                        vals.update({'trans_date': datetime.now()})
+                        vals.update({'operating_unit_loc_fr_id': voucher_return_id.operating_unit_id.id})
+                        vals.update({'operating_unit_loc_to_id': company_id.res_company_return_operating_unit.id})
+                        vals.update({'trans_type': 'RV'})
+                        self.env['weha.voucher.order.line.trans'].create(vals)
+                        voucher_return_id.sudo().trans_received() 
 
         if self.received_process == 'scrap':
             _logger.info("Process Voucher Scrap")

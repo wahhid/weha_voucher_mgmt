@@ -76,13 +76,13 @@ class VoucherReturn(models.Model):
         return res
 
     def trans_delivery(self):
-        company_id = self.env.user.company_id
+        #company_id = self.env.user.company_id
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
         for row in self.voucher_return_line_ids:
             row.voucher_order_line_id.write({'state':'intransit'})
         
-        for requester_user_id in company_id.res_company_return_operating_unit.requester_user_ids:
+        for requester_user_id in self.source_operating_unit_id.requester_user_ids:
             data =  {
                 'activity_type_id': 4,
                 'note': 'Voucher Return was delivered',
@@ -90,7 +90,7 @@ class VoucherReturn(models.Model):
                 'res_model_id': self.env.ref('weha_voucher_mgmt.model_weha_voucher_return').id,
                 'user_id': requester_user_id.id,
                 'date_deadline': datetime.now() + timedelta(days=2),
-                'summary': 'Voucher Allocate was delivered'
+                'summary': 'Voucher Return was delivered'
             }
             self.send_notification(data)
 
@@ -268,6 +268,10 @@ class VoucherReturn(models.Model):
             }
             self.send_notification(data)
 
+    def create_voucher_return_for_finance(self):
+        voucher_return_ids = self.env['weha.voucher.return'].browse(self._context.get('active_ids', []))
+        for voucher_return_id in voucher_return_ids:
+            _logger.info(voucher_return_id.name)
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Return number', default="/",readonly=True)

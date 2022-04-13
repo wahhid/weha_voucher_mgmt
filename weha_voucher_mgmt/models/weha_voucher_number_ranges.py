@@ -7,6 +7,7 @@ _logger = logging.getLogger(__name__)
 
 class WehaVoucherNumberRanges(models.Model):
     _name = 'weha.voucher.number.ranges'
+    _description = 'Voucher Number Ranges'
 
     def name_get(self):
         result = []

@@ -6,6 +6,8 @@ _logger = logging.getLogger(__name__)
 
 class VoucherCode(models.Model):
     _name = 'weha.voucher.code'
+    _description = 'Voucher Code'
+    _order = "name"
 
     name = fields.Char(
         string='Name',

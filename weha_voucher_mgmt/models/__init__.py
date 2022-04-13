@@ -17,4 +17,4 @@ from . import weha_voucher_number_ranges
 from . import weha_voucher_online
 from . import weha_voucher_api
 from . import weha_voucher_dashboard
-
+from . import ir_rule

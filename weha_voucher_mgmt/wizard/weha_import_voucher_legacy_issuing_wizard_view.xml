@@ -7,28 +7,33 @@
         <field name="arch" type="xml">
             <form string="Import Voucher Lines">
                 <group>
-                    <field name="year"/>
-                    <field name="file" filename="filename"/>
+                    <field name="year" attrs="{'readonly': [('step','!=', 0)]}"/>
+                    <field name="file" filename="filename" attrs="{'invisible': [('step','!=', 0)]}"/>
                     <field name="filename" invisible="1"/>
+                    <field name="file_result" filename="filename_result" attrs="{'invisible': [('step','!=', 2)]}" readonly="1"/>
+                    <field name="filename_result" invisible="1"/>
                     <field name="is_valid" invisible="1"/>
+                    <field name="step" invisible="1"/>
+                    <field name="url_field" widget="url" readonly="1" text="Clik Here"/>
                 </group>
                 <notebook>
-                    <page name="voucher_legacy_line" string="Voucher Legacy Line" attrs="{'invisible':[('is_valid','=', False)]}">
+                    <page name="voucher_legacy_line" string="Voucher Legacy Line" attrs="{'invisible':[('step','!=', 1)]}">
                         <field name="voucher_legacy_issuing_line_ids" readonly="1">
                             <tree create="false" edit="false" delete="false">
                                 <field name="description"/>
                                 <field name="sku" invisible="1"/>
                                 <field name="voucher_ean"/>
                                 <field name="expired_date"/>
+                                <field name="state"/>
                             </tree> 
                         </field>
                     </page>
                 </notebook>
                 <footer>    
-                    <button name="import_file" string="Process" type="object" class="btn-primary" attrs="{'invisible':[('is_valid','=', True)]}"/>
-                    <button name="confirm" string="Confirm" type="object" class="btn-primary" attrs="{'invisible':[('is_valid','=', False)]}"/>
-                    or
-                    <button name="cancel" string="Cancel" class="oe_link"  special="cancel"/>
+                    <button name="import_file" string="Process" type="object" class="btn-primary" attrs="{'invisible':[('step','!=', 0)]}"/>
+                    <button name="confirm" string="Confirm" type="object" class="btn-primary" attrs="{'invisible':[('step','in', (0,2))]}"/>
+                    <button name="cancel" string="Cancel" class="oe_link"  special="cancel" attrs="{'invisible':[('step','=', 2)]}"/>
+                    <button name="close" string="Close" class="btn-primary"  special="cancel" attrs="{'invisible':[('step','!=', 2)]}"/>
                 </footer>
             </form>
         </field>

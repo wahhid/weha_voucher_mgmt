@@ -6,6 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherScrapLine(models.Model):
     _name = 'weha.voucher.scrap.line'
+    _description = 'Voucher Scrap Line'
     
     def check_voucher_order_line(self, voucher_scrap_id, voucher_order_line_id):
         domain = [

@@ -62,6 +62,25 @@
             <field name="fold">True</field>
         </record>
 
-       
+        <record id="email_template_voucher_request_marketing_cheif_approval" model="mail.template">
+            <field name="name">Voucher Request - Marketing Cheif Approval</field>
+            <field name="model_id" ref="weha.voucher.request"/>
+            <field name="subject">Voucher Request - Approval for ${object.name}</field>
+            <field name="email_from"></field>
+            <field name="partner_to"></field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Hello,
+                        <br/><br/>
+                        Need your approval for this Voucher Request
+                        <br/>
+                    </p>
+                </div>
+            </field>
+            <field name="user_signature" eval="False"/>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
     </data>
 </odoo>

@@ -121,6 +121,20 @@
                                  confirm="Are you sure you want to foroce cancel voucher activate customer?"
                                 groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"/>
                         
+                        <!--STORE-->
+                        <button type="object" 
+                                class="btn btn-error" 
+                                name="print_report_pdf" 
+                                string="Print PDF" 
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"/>
+                        
+                        <button type="object" 
+                                class="btn btn-error" 
+                                name="print_report_excel" 
+                                string="Print Excel" 
+                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"/>
+                        
+
                         <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
                     <sheet>
@@ -184,11 +198,32 @@
                                         <field name="employee_nik"/>
                                         <field name="employee_name"/>
                                         <field name="sku"/>
+                                        <field name="voucher_code_id"/>
                                         <field name="member_id"/>
                                         <field name="quantity"/>
+                                        <field name="expired_date"/>
                                         <field name="file_line_id"/>
                                         <field name="state"/>
                                     </tree>
+                                    <form readonly="1">
+                                        <group>
+                                            <field name="employee_nik"/>
+                                            <field name="employee_name"/>
+                                            <field name="sku"/>
+                                            <field name="member_id"/>
+                                            <field name="quantity"/>
+                                            <field name="file_line_id"/>
+                                            <field name="is_send_to_trust"/>
+                                            <field name="state"/>
+                                        </group>
+                                        <group>
+                                            <field name="voucher_issuing_employee_voucher_line_ids">
+                                                <tree>
+                                                    <field name="voucher_order_line_id"/>    
+                                                </tree>
+                                            </field>
+                                        </group>
+                                    </form>
                                 </field>
                             </page>
                            
@@ -308,11 +343,11 @@
             name="Issuing" 
             parent="weha_transaction_main_menu"
             action="action_weha_voucher_issuing_act_window" sequence="23"
-            groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"/>
+            groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_hrd_user"/>
         
         <menuitem 
             id="weha_voucher_issuing_employee_menu" 
-            name="Issuing" 
+            name="Issuing Employee" 
             parent="weha_transaction_main_menu"
             action="action_weha_voucher_issuing_employee" sequence="24"
             groups="weha_voucher_mgmt.group_voucher_hrd_user"/>

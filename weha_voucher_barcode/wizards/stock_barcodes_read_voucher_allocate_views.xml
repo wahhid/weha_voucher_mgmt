@@ -6,9 +6,7 @@
         <field name="inherit_id" ref="weha_voucher_barcode.view_stock_barcodes_read_form" />
         <field name="arch" type="xml">
             <field name="res_id" position="after">
-                <field
-                    name="voucher_allocate_id" invisible="1"
-                />
+                <fieldname="voucher_allocate_id" invisible="1"/>
             </field>
         </field>
     </record>

@@ -14,3 +14,5 @@ from . import weha_return_reason_wizard
 from . import weha_import_voucher_legacy_issuing_wizard
 from . import weha_import_voucher_allocate_wizard
 from . import weha_report_voucher_transaction
+from . import weha_find_voucher_order_line
+from . import weha_report_voucher_promo

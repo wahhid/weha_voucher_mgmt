@@ -1,7 +1,10 @@
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
+from odoo.addons.weha_voucher_mgmt.common import auth_trust
 from datetime import datetime, timedelta, date
 import logging
+import requests
+import json
 from random import randrange
 
 _logger = logging.getLogger(__name__)
@@ -9,6 +12,7 @@ _logger = logging.getLogger(__name__)
 
 class VoucherIssuing(models.Model):
     _name = 'weha.voucher.issuing'
+    _description = 'Voucher Issuing'
     _rec_name = 'number'
     _order = 'number desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -32,7 +36,7 @@ class VoucherIssuing(models.Model):
     def _get_default_stage_id(self):
         return self.env['weha.voucher.issuing.stage'].search([], limit=1).id
     
-    @api.model
+    @api.model 
     def _read_group_stage_ids(self, stages, domain, order):
         stage_ids = self.env['weha.voucher.issuing.stage'].search([])
         return stage_ids
@@ -71,7 +75,11 @@ class VoucherIssuing(models.Model):
                     res = voucher_issuing_line_id.sudo().write(vals)
 
                     vals = {}
-                    vals.update({'state': 'activated'})
+                    vals.update({'state': 'activated', 'issued_on': datetime.today()})
+                    vals.update({'source_doc': self.number})
+                    vals.update({'member_id': self.member_id})
+                    vals.update({'cc_number': self.cc_number})
+                    vals.update({'total_transaction': self.total_transaction})
                     voucher_issuing_line_id.voucher_order_line_id.sudo().write(vals)
                     if not voucher_issuing_line_id.voucher_order_line_id.is_voucher_promo:
                         voucher_issuing_line_id.voucher_order_line_id.sudo().calculate_expired()
@@ -106,10 +114,12 @@ class VoucherIssuing(models.Model):
                     vals.update({'check_number': check_number})
                     vals.update({'voucher_trans_type': '4'})
                     vals.update({'voucher_sku': voucher_issuing_employee_line_id.sku})
+                    if voucher_issuing_employee_line_id.expired_date:
+                        vals.update({'expired_date': voucher_issuing_employee_line_id.expired_date})
                     voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
                     if not voucher_order_line_id:
                         raise ValidationError("Can't Generate voucher order line, contact administrator!")
-                    voucher_order_line_id.write({'state': 'activated'})
+                    voucher_order_line_id.write({'state': 'activated', 'issued_on': datetime.now()})
                     voucher_order_line_id.create_order_line_trans(voucher_issuing_id.number, 'RS')
                     #Create Employee Voucher Line
                     self.env['weha.voucher.issuing.employee.voucher.line'].create(
@@ -121,10 +131,79 @@ class VoucherIssuing(models.Model):
                     )
                     voucher_issuing_employee_line_id.trans_close()
                     #voucher_issuing_employee_line_id.state = 'issued'
-                    voucher_order_line_id.send_employee_data_to_trust()
+            
+            #Send Employee Data To Trust
+            self.send_employee_data_to_trust()
 
             #self.state = 'issued'
             self.trans_close()
+
+    def _auth_trust(self):
+        _logger.info("_auth_trust")
+        config_parameter_obj = self.env['ir.config_parameter'].sudo()
+        crm_api_url = config_parameter_obj.get_param('crm_api_url')
+        crm_api_username = config_parameter_obj.get_param('crm_api_username')
+        crm_api_password = config_parameter_obj.get_param('crm_api_password')
+
+        #url = "http://apiindev.trustranch.co.id/login"
+        #payload='barcode=3000030930&password=weha.ID!!2020'
+
+        payload=f'barcode={crm_api_username}&password={crm_api_password}'
+        _logger.info(payload)
+        
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        try:
+            response = requests.request("POST", crm_api_url + "/login", headers=headers, data=payload)
+            #json_data = json.loads(response.text)
+            str_json_data  = response.text.replace("'"," ")
+            json_data = json.loads(str_json_data)
+            #_logger.info(response.text)
+            _logger.info(json_data['data']['api_token'])
+            return json_data['data']['api_token']
+        except Exception as err:
+            _logger.info("Error Auth Trust")
+            _logger.info(err)  
+
+    def send_employee_data_to_trust(self):
+        _logger.info("Send Employee Data")
+        api_token = self._auth_trust()
+        headers = {'content-type': 'text/plain', 'charset':'utf-8'}
+        base_url = 'http://apiindev.trustranch.co.id'
+        try:
+            for voucher_issuing_employee_line_id  in self.voucher_issuing_employee_line_ids :
+                vouchers = []
+                for voucher_issuing_employee_voucher_line_id  in  voucher_issuing_employee_line_id.voucher_issuing_employee_voucher_line_ids: 
+                    voucher_order_line_id = voucher_issuing_employee_voucher_line_id.voucher_order_line_id
+                    vouchers.append(voucher_order_line_id.voucher_ean + ';' + voucher_order_line_id.expired_date.strftime('%Y-%m-%d') + ";" + voucher_order_line_id.voucher_sku)
+                data = {
+                    'date': datetime.now().strftime('%Y-%m-%d'),
+                    'time': datetime.now().strftime('%H:%M:%S'),
+                    'receipt': self.number,
+                    'transaction_id': self.number,
+                    'cashier_id': self.number,
+                    'store_id': 'H-100',
+                    #'member_id': trans_purchase_id.member_id,
+                    'member_id': voucher_issuing_employee_line_id.member_id,
+                    'vouchers': '|'.join(vouchers)
+                }
+                _logger.info(data)
+                headers = {'Authorization' : 'Bearer ' + api_token}
+                req = requests.post('{}/vms/send-voucher'.format(base_url), headers=headers ,data=data)
+                _logger.info(req.text)
+                if req.status_code != 200:
+                    _logger.info(f'Error : {req.status_code}')
+                    response_json = req.json()
+                    _logger.info(f'Error Message: {response_json}')
+                else:
+                    response_json = req.json()
+                    _logger.info(f'Success : {req.status_code}')
+                    _logger.info(f'Data: {response_json}')
+        except Exception as err:
+            _logger.info("Error Exception")
+            _logger.error(err)  
 
     #Ready for Issuing
     def action_issuing_voucher1(self):
@@ -141,7 +220,7 @@ class VoucherIssuing(models.Model):
                     res = voucher_issuing_line_id.sudo().write(vals)
 
                     vals = {}
-                    vals.update({'state': 'activated'})
+                    vals.update({'state': 'activated', 'issued_on': datetime.today()})
                     voucher_issuing_line_id.voucher_order_line_id.sudo().write(vals)
                     voucher_issuing_line_id.voucher_order_line_id.sudo().calculate_expired()
 
@@ -203,7 +282,7 @@ class VoucherIssuing(models.Model):
                 voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
                 if not voucher_order_line_id:
                     raise ValidationError("Can't Generate voucher order line, contact administrator!")
-                voucher_order_line_id.write({'state': 'activated'})
+                voucher_order_line_id.write({'state': 'activated', 'issued_on': datetime.today()})
                 voucher_order_line_id.create_order_line_trans(self.name, 'AC')
 
                 vals = {
@@ -333,11 +412,22 @@ class VoucherIssuing(models.Model):
                 vals = {'state': 'cancelled'}
                 voucher_issuing_line_id.write(vals)
 
-                vals = {'state': 'open'}
+                vals = {
+                    'state': 'open',
+                    'issued_on': False,
+                }
+                
                 voucher_issuing_line_id.voucher_order_line_id.sudo().write(vals)
                 if not voucher_issuing_line_id.voucher_order_line_id.is_voucher_promo:
                     #voucher_issuing_line_id.voucher_order_line_id.sudo().calculate_expired()
                     voucher_issuing_line_id.voucher_order_line_id.sudo().write({'expired_date': False})
+
+                vals = {}
+                vals.update({'name': self.number})
+                vals.update({'voucher_order_line_id': voucher_issuing_line_id.voucher_order_line_id.id})
+                vals.update({'trans_date': datetime.now()})
+                vals.update({'trans_type': 'FL'})
+                self.env['weha.voucher.order.line.trans'].sudo().create(vals)
 
                 vals = {}
                 vals.update({'name': self.number})
@@ -360,6 +450,26 @@ class VoucherIssuing(models.Model):
                 raise ValidationError("Missing next stage configuration")
         else:
             raise ValidationError("Voucher count not match")
+
+    def print_report_pdf(self): 
+        data = {
+            'ids': self.ids,
+            'model':'weha.voucher.issuing',
+            'form': {
+                'voucher_issuing_id': self.id,
+            },
+        }
+        return self.env.ref('weha_voucher_mgmt.print_voucher_issuing_employee').report_action(self, data=data)
+
+    def print_report_excel(self): 
+        data = {
+            'ids': self.ids,
+            'model':'weha.voucher.issuing',
+            'form': {
+                'voucher_issuing_id': self.id,
+            },
+        }
+        return self.env.ref('weha_voucher_mgmt.print_voucher_issuing_employee_xlsx').report_action(self, data=data)
 
     #@api.depends('is_employee')
     def _calculate_voucher_count(self):
@@ -403,7 +513,7 @@ class VoucherIssuing(models.Model):
     voucher_count = fields.Integer('Voucher Count', compute="_calculate_voucher_count", store=False)
     
     cc_number = fields.Char('CC Number',size=100)
-    member_id = fields.Char('Member ID',size=100)
+    member_id = fields.Char('Member ID / Nama Customer',size=100)
     total_transaction = fields.Float('Total Transaction', default=0.0)
     
 
@@ -425,8 +535,19 @@ class VoucherIssuing(models.Model):
         string='File Lines',
     )
 
+    # _sql_constraints = [
+    #     ('ref_unique', 'unique(ref)', 'Source Document already exists!')
+    # ]
+
     @api.model
     def create(self, vals):
+        stage_id = self.env['weha.voucher.issuing.stage'].search([('closed','=','True')], limit=1)
+        if not stage_id:
+            raise ValidationError('Stage not found')
+        voucher_issuing_id = self.env['weha.voucher.issuing'].search([('ref','=', vals['ref']),('stage_id','=',stage_id.id)], limit=1)
+        if voucher_issuing_id:
+            raise ValidationError('Source Document already exist')
+
         if 'cc_number' in vals.keys():
             if vals['cc_number']:
                 if len(vals['cc_number']) != 8:
@@ -442,6 +563,14 @@ class VoucherIssuing(models.Model):
         return res    
     
     def write(self, vals):
+        if 'ref' in vals.keys():
+            stage_id = self.env['weha.voucher.issuing.stage'].search([('closed','=','True')], limit=1)
+            if not stage_id:
+                raise ValidationError('Stage not found')
+            voucher_issuing_id = self.env['weha.voucher.issuing'].search([('ref','=', vals['ref']),('stage_id','=',stage_id.id)], limit=1)
+            if voucher_issuing_id:
+                raise ValidationError('Source Document already exist')
+
         if 'cc_number' in vals.keys():
             if vals['cc_number']:
                 if len(vals['cc_number']) != 8:

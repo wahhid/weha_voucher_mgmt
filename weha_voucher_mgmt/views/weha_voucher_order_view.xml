@@ -105,7 +105,7 @@
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 <field name="voucher_type" widget="radio" options="{'horizontal': true}" readonly="1"/>
-                                <field name="voucher_mapping_sku_id" domain="[('voucher_code_id.voucher_type','=', voucher_type)]" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="voucher_mapping_sku_id" options="{'no_create': True, 'no_create_edit':True}" domain="[('voucher_code_id.voucher_type','=', voucher_type)]" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <!--
                                 <field name="voucher_code_id" domain="[('voucher_type','=', voucher_type)]" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 -->
@@ -121,7 +121,7 @@
                                 <field name="is_voucher_generated" invisible="1"/>
                             </group>
                             <group string='Voucher Number'>
-                                <field name="year" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
+                                <field name="year" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="start_number" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                                 <field name="end_number" attrs="{'readonly':['|', ('current_stage','!=','unattended'), ('is_voucher_generated', '=', True)]}"/>
                             </group>
@@ -252,7 +252,8 @@
             <field name="parent_id" ref="weha_voucher_main_menu"/>
         </record>
         -->
-        
+
+
 
         
     </data>
