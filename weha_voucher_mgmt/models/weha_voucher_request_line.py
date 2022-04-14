@@ -21,7 +21,7 @@ class VoucherRequestLine(models.Model):
     voucher_qty = fields.Integer(string='Quantity Ordered', required=True)
     total_amount = fields.Float('Total', readonly=True, compute="calculate_total")
     _sql_constraints = [
-        ('voucher_code_unique', 'unique (voucher_code_id)', 'Voucher Code already exist!')
+        ('voucher_code_unique', 'unique (voucher_request_id, voucher_code_id)', 'Voucher Code already exist!')
     ]
 
 class VoucherRequestAllocateLine(models.Model):
