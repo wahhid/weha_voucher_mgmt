@@ -1057,6 +1057,8 @@ class VoucherTransStatus(models.Model):
                         self.is_send_to_crm = False
                         self.send_to_crm_message = f'Error : {req.status_code}'
                     return True, self.send_to_crm_message
+            else:
+                return False, "Success"                 
         else:
             return False, "Success" 
     
