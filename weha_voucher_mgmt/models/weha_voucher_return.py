@@ -1,3 +1,4 @@
+from cv2 import line
 from odoo import models, fields, api,  _ 
 from odoo.exceptions import UserError, ValidationError
 import logging
@@ -272,6 +273,25 @@ class VoucherReturn(models.Model):
         voucher_return_ids = self.env['weha.voucher.return'].browse(self._context.get('active_ids', []))
         for voucher_return_id in voucher_return_ids:
             _logger.info(voucher_return_id.name)
+
+        account_move_ids = self.env['account.move'].browse(self._context.get('active_ids', []))
+        partner_id = account_move_ids[0].partner_id
+        std_vendor_prepare_id = self.env['std.vendor.prepare'].create({'customer': partner_id.id})        
+        for account_move_id in account_move_ids:
+            vals = {
+                'line_id': std_vendor_prepare_id.id,
+                'invoice_id': account_move_id.id,
+                'payment_state': account_move_id.payment_state,
+                'date_invoice': account_move_id.invoice_date,
+                'due_date': account_move_id.invoice_due_date
+            }
+            self.env['std.vendor.prepare.line'].write(vals)
+
+            
+
+            
+            
+
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Return number', default="/",readonly=True)

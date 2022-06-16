@@ -1708,7 +1708,6 @@ class VoucherTransBookingLine(models.Model):
         index=True
     )
 
-
 class VoucherChangeMember(models.Model):
     _name = "weha.voucher.change.member"
 
@@ -1771,7 +1770,6 @@ class VoucherChangeMember(models.Model):
         res.state = 'done'
 
         return res    
-
 
 class VoucherChangeMemberLine(models.Model):
     _name = "weha.voucher.change.member.line"
