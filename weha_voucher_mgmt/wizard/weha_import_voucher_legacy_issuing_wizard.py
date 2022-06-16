@@ -64,7 +64,8 @@ class weha_wizard_import_voucher_legacy_issuing(models.TransientModel):
             row = row + 1
             worksheet.write(row, 0, line.sku)
             worksheet.write(row, 1, line.voucher_ean)
-            worksheet.write(row, 2, line.expired_date.strftime("%d/%m/%Y"))
+            if line.expired_date:
+                worksheet.write(row, 2, line.expired_date.strftime("%d/%m/%Y"))
             worksheet.write(row, 3, line.state)
 
             if line.state == 'not_exist':
