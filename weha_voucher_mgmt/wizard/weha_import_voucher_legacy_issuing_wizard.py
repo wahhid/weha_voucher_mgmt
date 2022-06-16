@@ -19,7 +19,6 @@ try:
     import xlwt
 except ImportError:
     _logger.debug('Cannot `import xlwt`.')
-    from xlwt import Workbook
 try:
     import cStringIO
 except ImportError:
