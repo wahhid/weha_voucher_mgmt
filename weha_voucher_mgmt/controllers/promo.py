@@ -111,6 +111,11 @@ class VMSPromoController(http.Controller):
                     is_available = False
                     message = "SKU not found"
                     break
+                    
+                if mapping_sku_id.voucher_code_id and mapping_sku_id.voucher_code_id.voucher_type=='physical':
+                    is_available = False
+                    message = "Physical Voucher Detected!"
+                    break
                 
                 current_date = dt.today()
                 _logger.info(current_date)
@@ -173,6 +178,10 @@ class VMSPromoController(http.Controller):
                 message = "SKU not found"
                 is_available = False
 
+            if mapping_sku_id.voucher_code_id and mapping_sku_id.voucher_code_id.voucher_type=='physical':
+                is_available = False
+                message = "Physical Voucher Detected!"
+            
             current_date = dt.today()
             _logger.info(current_date)
 

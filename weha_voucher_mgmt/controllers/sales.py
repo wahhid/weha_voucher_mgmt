@@ -250,6 +250,10 @@ class VMSSalesController(http.Controller):
                 mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
                 if not mapping_sku_id:
                     is_available = False
+
+                if mapping_sku_id.voucher_code_id and mapping_sku_id.voucher_code_id.voucher_type=='physical':
+                    is_available = False
+                    
         else:
             arr_sku  = sku.split('|')
             _logger.info(arr_sku)
@@ -259,7 +263,10 @@ class VMSSalesController(http.Controller):
             mapping_sku_id = http.request.env['weha.voucher.mapping.sku'].search(domain, limit=1)
             if not mapping_sku_id:
                 is_available = False
-        
+            
+            if mapping_sku_id.voucher_code_id and mapping_sku_id.voucher_code_id.voucher_type=='physical':
+                is_available = False
+
         if not is_available:
             response_data = {
                 "err": True,
