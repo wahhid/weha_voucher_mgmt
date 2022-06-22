@@ -114,7 +114,7 @@ class VMSPromoController(http.Controller):
                     
                 if mapping_sku_id.voucher_code_id and mapping_sku_id.voucher_code_id.voucher_type=='physical':
                     is_available = False
-                    message = "Physical Voucher Detected!"
+                    message = "P Voucher - Press Clear!"
                     break
                 
                 current_date = dt.today()

@@ -106,13 +106,18 @@ class VoucherOrderLine(models.Model):
         return ean[:-1] + str(self.ean_checksum(ean))
 
     def calculate_expired(self):
+        _logger.info('Calculate Expired Date')
         if not self.expired_date:
             if self.voucher_type == 'physical':
+                _logger.info('Physical Voucher')
                 if self.voucher_expired_date:
+                    _logger.info('Expired Date Exist')
                     self.expired_date = self.voucher_expired_date
                 else:
+                    _logger.info('Expired Date Not Exist')
                     self.expired_date = datetime.now() + timedelta(days=self.expired_days)
             else:
+                _logger.info('Electronic Voucher')
                 self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
 
     def process_voucher_booking(self):

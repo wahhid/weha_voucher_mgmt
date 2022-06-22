@@ -180,7 +180,7 @@ class VMSStatusController(http.Controller):
                         err_message = f'Voucher {voucher_ean} not found' 
                         break
                 #Check Voucher Expired Date
-                if voucher_order_line_id.expired_date <= dt.today():
+                if voucher_order_line_id.expired_date < dt.today():
                     is_available = False
                     err_message = f'Voucher {voucher_ean} expired' 
                     break
@@ -502,7 +502,7 @@ class VMSStatusController(http.Controller):
                     err_message = f'Voucher {voucher_ean} expired date not exist' 
                     break
 
-                if voucher_order_line_id.expired_date <= dt.today():
+                if voucher_order_line_id.expired_date < dt.today():
                     is_available = False
                     err_message = f'Voucher {voucher_ean} was expired' 
                     break
