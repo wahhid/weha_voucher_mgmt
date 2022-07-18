@@ -207,7 +207,7 @@
                                     </div>
                                     <div class="row">
                                         <span style="font-size:9px">
-                                            <strong>(......................................)</strong>
+                                            <strong>( <span t-field="o.operating_unit_id.approval_level_2_user_ids[0].name"/> )</strong>
                                         </span>
                                     </div>
                                 </div>

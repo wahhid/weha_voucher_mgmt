@@ -64,7 +64,7 @@ class WizardScanVoucherScrap(models.TransientModel):
                 self.year_id.id != voucher_id.year_id.id and \
                 self.voucher_promo_id.id != voucher_id.voucher_promo_id.id:
                 self.end_number = False
-                raise Validation('Voucher not match')
+                raise ValidationError('Voucher not match')
             
 
         #if self.start_number and self.end_number:

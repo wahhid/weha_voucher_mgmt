@@ -8,9 +8,6 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-
-
-
     
 class ReportVoucherPromoSummarylXlsx(models.AbstractModel):
     """Abstract Model for report template.

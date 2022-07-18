@@ -29,6 +29,28 @@ class VoucherReturnLine(models.Model):
     # number_ranges_ids = fields.One2many(comodel_name='weha.voucher.number.ranges', inverse_name='stock_transfer_line_id', string='Stock Transfer Range')
     amount = fields.Integer(string='Amount')
     voucher_order_line_id = fields.Many2one('weha.voucher.order.line', 'Voucher')
+    voucher_operating_unit_id = fields.Many2one('operating.unit', 'Operating Unit', related='voucher_order_line_id.operating_unit_id', readonly=True)
+    voucher_state = fields.Selection(
+        string='Status',
+        selection=[
+            ('draft', 'New'), 
+            ('inorder', 'In-Order'),
+            ('open', 'Open'), 
+            ('deactivated','Deactivated'),
+            ('activated','Activated'), 
+            ('damage', 'Damage'),
+            ('transferred','Transferred'),
+            ('intransit', 'In-Transit'),
+            ('booking', 'Booking'),
+            ('reserved', 'Reserved'),
+            ('used', 'Used'),
+            ('return', 'Return'),
+            ('exception', 'Exception Request'),
+            ('done','Close'),
+            ('scrap','Scrap')
+        ],
+        related='voucher_order_line_id.state'
+    )
     voucher_code_id = fields.Many2one('weha.voucher.code', string="Voucher Code",
                                       related="voucher_order_line_id.voucher_code_id")
     year_id = fields.Many2one('weha.voucher.year', string="Year", related="voucher_order_line_id.year_id")

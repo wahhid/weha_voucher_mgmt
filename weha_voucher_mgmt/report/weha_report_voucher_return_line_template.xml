@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <report
+        id="weha_voucher_return_line_xlsx"
+        string="Print Voucher Return Line (XLSX)"
+        model="weha.voucher.return"
+        report_type="xlsx"
+        name="weha_voucher_mgmt.weha_voucher_return_line_xlsx"
+        file="weha_voucher_mgmt.weha_voucher_return_line_xlsx"/>
+    />
+
+</odoo>

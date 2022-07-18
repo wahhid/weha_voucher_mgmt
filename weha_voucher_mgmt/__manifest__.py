@@ -17,7 +17,7 @@
         'data/weha_voucher_issuing_data.xml',
         'data/weha_voucher_return_data.xml',
         'data/weha_voucher_api_data.xml',
-        'data/weha_voucher_config_data.xml',
+        #'data/weha_voucher_config_data.xml',
         'data/ir_config_param.xml',
         'security/weha_voucher_security.xml',
         'security/ir.model.access.csv',
@@ -40,6 +40,7 @@
         'wizard/weha_import_voucher_legacy_issuing_wizard_view.xml',
         'wizard/weha_import_voucher_allocate_wizard_view.xml',
         'wizard/weha_find_voucher_order_line_view.xml',
+        'wizard/wizard_voucher_order_line_view.xml',
         'views/weha_voucher_stage_view.xml',
         'views/weha_voucher_order_view.xml',
         'views/weha_voucher_order_line_view.xml',
@@ -88,6 +89,8 @@
         'report/weha_report_voucher_transaction_template.xml',
         'report/weha_report_voucher_issuing_employee_template.xml',  
         'report/weha_report_voucher_promo_template.xml',
+        'report/weha_report_voucher_return_line_template.xml',
+        
     ],
     "depends": [
         'base',

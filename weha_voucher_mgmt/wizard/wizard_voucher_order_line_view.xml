@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+     <!-- Form view for Voucher Stage -->
+    <record id="wizard_weha_voucher_order_line_form" model="ir.ui.view">
+        <field name="name">wizard.weha.voucher.order.line.form</field>
+        <field name="model">wizard.voucher.order.line</field>
+        <field name="type">form</field>
+        <field name="mode">primary</field>
+        <field name="priority" eval="16" />
+        <field name="active" eval="True" />
+        <field name="arch" type="xml">
+            <form string="Voucher Order Line" create="false" delete="false" edit="false">
+                <sheet>
+                    <widget name="web_ribbon" text="Promo" bg_color="bg-warning" attrs="{'invisible':[('is_voucher_promo','=', False)]}"/>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" />
+                        <h1>
+                            <field name="name" class="oe_inline" placeholder="Name" />
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="batch_id"/>
+                            <field name="voucher_type"/>
+                            <field name="voucher_code_id"/>
+                            <field name="voucher_promo_id"/>
+                            <field name="is_voucher_promo" invisible="1"/>
+
+                            <!--
+                            <field name="tender_type_id"/>
+                            <field name="bank_category_id"/>
+                            -->
+                            <field name="tender_type"/>
+                            <field name="bank_category"/>
+                            <field name="min_card_payment"/>
+                            <field name="voucher_count_limit"/>
+                            <field name="operating_unit_id" />
+                            <field name="check_number"/>
+                        </group>
+                        <group>
+                            <field name="voucher_terms_id"/>
+                            <field name="member_id"/>
+                            <field name="receipt_number"/>
+                            <field name="t_id"/>
+                            <field name="expired_days" invisible="1"/>
+                            <field name="expired_date"/>
+                            <field name="booking_expired_date" attrs="{'invisible':['state','!=','booking']}"/>
+                            <field name="is_expired"/>
+                            <field name="year_id"/>    
+                        </group>
+                        <group>
+                            <field name="voucher_12_digit"/>
+                            <field name="voucher_ean"/>
+                            <field name="voucher_sku"/>
+                        </group>
+                        <group>
+                            <field name="voucher_trans_type"/>
+                            <field name="state"/>
+                            <field name="is_legacy"/>
+                            <field name="is_send_to_crm" invisible="1"/>
+                            <field name="create_date"/>
+                            <field name="issued_on"/>
+                            <field name="source_doc"/>
+                            <field name="cc_number"/>
+                            <field name="total_transaction"/>   
+                            <field name="used_on"/>
+                            <field name="used_operating_unit_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

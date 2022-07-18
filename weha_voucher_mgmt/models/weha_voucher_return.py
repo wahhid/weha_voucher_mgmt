@@ -250,6 +250,19 @@ class VoucherReturn(models.Model):
     def trans_force_cancelled_reject(self):
         self.is_force_cancelled = False
 
+    def trans_download_lines(self):
+        data = {
+            'ids': self.ids,
+            'model':'weha.voucher.return',
+            'form': {
+                'return_id': self.id,         
+            },
+
+        }
+        return self.env.ref('weha_voucher_mgmt.weha_voucher_return_line_xlsx').report_action(self, data=data)
+
+
+
     def change_stage_to_intransit(self):
         stage_id = self.env['weha.voucher.return.stage'].search([('opened', '=', True)], limit=1)
         if not stage_id:

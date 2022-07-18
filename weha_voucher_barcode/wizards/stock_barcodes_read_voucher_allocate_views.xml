@@ -6,14 +6,16 @@
         <field name="inherit_id" ref="weha_voucher_barcode.view_stock_barcodes_read_form" />
         <field name="arch" type="xml">
             <field name="res_id" position="after">
-                <fieldname="voucher_allocate_id" invisible="1"/>
+                <field name="voucher_allocate_id" invisible="1"/>
             </field>
         </field>
     </record>
+
     <!--
      Open wizard in current target option to avoid that the wizard is
      closed after any button click,
     -->
+
     <record id="action_stock_barcodes_read_voucher_allocate" model="ir.actions.act_window">
         <field name="res_model">wiz.stock.barcodes.read.voucher.allocate</field>
         <field name="name">Barcodes Read</field>

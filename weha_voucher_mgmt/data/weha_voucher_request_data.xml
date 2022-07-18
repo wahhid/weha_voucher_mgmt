@@ -54,7 +54,7 @@
             <field name="fold">True</field>
         </record>
 
-        <record id="email_template_voucher_request_marketing_cheif_approval" model="mail.template">
+        <!-- <record id="email_template_voucher_request_marketing_cheif_approval" model="mail.template">
             <field name="name">Voucher Request - Marketing Cheif Approval</field>
             <field name="model_id" ref="model_weha_voucher_request"/>
             <field name="subject">Voucher Request - Approval for ${object.name}</field>
@@ -72,7 +72,7 @@
             </field>
             <field name="user_signature" eval="False"/>
             <field name="auto_delete" eval="True"/>
-        </record>
+        </record> -->
 
     </data>
 </odoo>

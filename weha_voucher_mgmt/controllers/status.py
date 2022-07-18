@@ -525,6 +525,7 @@ class VMSStatusController(http.Controller):
                     break
                     
                 voucher_order_line_ids.append(voucher_order_line_id)  
+        
         elif process_type == 'activated':
             #Batch
             #Activate After Sales
@@ -705,6 +706,7 @@ class VMSStatusController(http.Controller):
                         "message": message,
                         "data": []
                     }        
+
             if process_type == 'activated':
                 if batch_id:
                     err, message = result.send_to_trust_by_batch_id()

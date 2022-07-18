@@ -113,6 +113,7 @@ class VoucherOrderLine(models.Model):
                 if self.voucher_expired_date:
                     _logger.info('Expired Date Exist')
                     self.expired_date = self.voucher_expired_date
+                    
                 else:
                     _logger.info('Expired Date Not Exist')
                     self.expired_date = datetime.now() + timedelta(days=self.expired_days)

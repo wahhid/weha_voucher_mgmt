@@ -278,3 +278,5 @@ access_weha_voucher_year_user,weha.voucher.year.user,model_weha_voucher_year,gro
 access_weha_voucher_year_finance_user,weha.voucher.year.finance_user,model_weha_voucher_year,group_voucher_finance_user,1,0,0,0
 
 access_weha_voucher_transaction_type_user,weha.voucher.transaction.type.user,model_weha_voucher_transaction_type,group_voucher_user,1,1,1,0
+
+access_wizard_voucher_order_line_user,wizard.voucher.order.line.user,model_wizard_voucher_order_line,group_voucher_user,1,0,1,0
