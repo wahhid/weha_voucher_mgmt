@@ -7,7 +7,8 @@
         model="weha.voucher.return"
         report_type="xlsx"
         name="weha_voucher_mgmt.weha_voucher_return_line_xlsx"
-        file="weha_voucher_mgmt.weha_voucher_return_line_xlsx"/>
+        file="weha_voucher_mgmt.weha_voucher_return_line_xlsx"
+        menu="False"/>
     />
 
 </odoo>

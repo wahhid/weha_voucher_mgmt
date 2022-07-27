@@ -145,7 +145,7 @@ class VMSBookingController(http.Controller):
         _fields_includes_in_body = all([date, 
                                         time, 
                                         store_id,
-                                        member_id,
+                                        #member_id,
                                         sku,
                                         voucher_type])
         if not _fields_includes_in_body:
@@ -381,6 +381,7 @@ class VMSBookingController(http.Controller):
             return valid_response(response_data)
 
         voucher_order_line_id.write({'state': 'activated'})
+        voucher_order_line_id.calculate_expired()
 
         data = {
             "err": False,

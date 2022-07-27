@@ -58,8 +58,6 @@ class weha_wizard_import_voucher_legacy_issuing(models.TransientModel):
         worksheet.write(row, 2, 'EXPIRED')
         worksheet.write(row, 3, 'STATUS')
 
-        
-
         for line in self.voucher_legacy_issuing_line_ids:
             row = row + 1
             worksheet.write(row, 0, line.sku)

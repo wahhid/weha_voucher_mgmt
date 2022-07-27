@@ -388,6 +388,7 @@ class VMSStatusController(http.Controller):
                                             voucher_eans,
                                             process_type
                                             ])
+        
         #Check Field for Used
         if process_type == 'used':
             _logger.info("used")
@@ -400,6 +401,7 @@ class VMSStatusController(http.Controller):
                                             voucher_eans,
                                             process_type
                                             ])
+        
         #Check Field for Activated
         if process_type == 'activated':
             _logger.info("activated")
@@ -423,6 +425,7 @@ class VMSStatusController(http.Controller):
                                                 voucher_eans,
                                                 process_type
                                                 ])
+        
         #Check Field for Re-Open
         if process_type == 'reopen':
             _logger.info("Re-Open")
@@ -653,6 +656,7 @@ class VMSStatusController(http.Controller):
         values.update({'member_id': member_id})
         values.update({'voucher_ean': voucher_eans})
         values.update({'process_type': process_type})
+        
         if process_type == 'activated':
             if void == '0':
                 values.update({'void': False})
@@ -686,6 +690,7 @@ class VMSStatusController(http.Controller):
                         "message": add_data['message'],
                         "data": []
                     }
+            
             if process_type == 'used':
                 #err, message = result.send_used_notification_to_trust()
                 err, message = result.send_used_notification_to_trust_partial()

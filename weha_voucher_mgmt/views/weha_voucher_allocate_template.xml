@@ -229,11 +229,11 @@
                         </tr>
                         <tr>
                             <td style="border: 1px solid black;">Store</td>
-                            <td style="border: 1px solid black;"><span t-field="o.user_id"/></td>
+                            <td style="border: 1px solid black;"><span t-field="o.operating_unit_id"/></td>
                         </tr>
                         <tr>
                             <td style="border: 1px solid black;">Request Store</td>
-                            <td style="border: 1px solid black;"><span t-field="o.user_id"/></td>
+                            <td style="border: 1px solid black;"><span t-field="o.source_operating_unit"/></td>
                         </tr>
                         <tr ><td colspan="2" style="background-color:black; color:white;border: 1px solid black;">VOUCHER DETAIL</td></tr>
                         <tr>

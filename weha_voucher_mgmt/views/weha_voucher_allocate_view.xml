@@ -82,6 +82,7 @@
                                 name="trans_delivery" 
                                 string="Delivery" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>                        
+                        
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
                                 class="btn btn-primary" 

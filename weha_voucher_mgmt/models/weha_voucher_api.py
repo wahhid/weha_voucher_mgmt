@@ -907,6 +907,7 @@ class VoucherTransStatus(models.Model):
                 'vouchers': '|'.join(vouchers)
             }
             _logger.info(data)
+            
             headers = {'Authorization' : 'Bearer ' + api_token}
             req = requests.post('{}/vms/send-voucher'.format(crm_api_url), headers=headers ,data=data)
             if req.status_code == 200:
@@ -1061,6 +1062,7 @@ class VoucherTransStatus(models.Model):
                 return False, "Success"                 
         else:
             return False, "Success" 
+    
     
     def send_used_notification_to_trust(self):  
         _logger.info("Send Used Notifcation")
@@ -1236,7 +1238,7 @@ class VoucherTransStatus(models.Model):
                 data.update({'message': "Transaction not found"})
 
         if self.process_type == 'activated':
-            _logger.info('Get Json - activated')
+            _logger.info('Get Json - activated') 
             self.send_promo_to_trust()
             data.update({'err': False})
             data.update({'message': "Transaction Create Successfully"})
