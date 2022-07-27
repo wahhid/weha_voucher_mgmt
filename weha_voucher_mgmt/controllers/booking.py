@@ -283,7 +283,7 @@ class VMSBookingController(http.Controller):
         trans_date = date  +  " "  + time + ":00"
         values.update({'trans_date': trans_date})
         values.update({'store_id': store_id})
-        values.update({'member_id': member_id})
+        #values.update({'member_id': member_id})
         values.update({'sku': sku})
         #values.update({'voucher_type': voucher_type})        
 
@@ -362,7 +362,7 @@ class VMSBookingController(http.Controller):
         domain = [
             ('operating_unit_id','=', operating_unit_id.id),
             ('voucher_ean','=', voucher_ean),
-            ('member_id','=', member_id),
+            #('member_id','=', member_id),
             ('state','=', 'booking')
         ]
 
