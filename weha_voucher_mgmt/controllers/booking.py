@@ -338,7 +338,7 @@ class VMSBookingController(http.Controller):
         _fields_includes_in_body = all([date, 
                                         time, 
                                         store_id,
-                                        member_id,
+                                        #member_id,
                                         voucher_ean])
         if not _fields_includes_in_body:
                 data =  {
