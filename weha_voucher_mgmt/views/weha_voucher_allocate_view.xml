@@ -42,13 +42,12 @@
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
                          <button type="action" 
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended'),('is_mine','=', False)]}" 
                                 class="btn btn-primary" 
                                 name="%(weha_voucher_mgmt.act_open_scan_voucher_allocate_view_form)d" 
                                 string="Scan Allocate Voucher" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
                         
-          
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=', 'open')]}" 
                                 class="btn btn-primary" 
@@ -57,7 +56,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_user"/>
 
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended'),('is_mine','=', False)]}" 
                                 class="btn btn-primary" 
                                 name="trans_allocate_approval" 
                                 string="Request Approval" 
@@ -147,8 +146,8 @@
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
                             <h1>
-                                <field name="number" class="oe_inline"
-                                    placeholder="Number" />
+                                <field name="number" class="oe_inline" placeholder="Number" />
+                                
                             </h1>
                         </div>
                         <group>
@@ -156,10 +155,12 @@
                                 <field name="allocate_date" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
+                                
 
                                 <field name="source_operating_unit" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="current_stage" invisible="1"/>
                                 <field name="print_count"/>
+                                <field name="is_mine"/>
                             </group>
                             <group string="Voucher Allocate Information">
                                 <field name="ref" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>

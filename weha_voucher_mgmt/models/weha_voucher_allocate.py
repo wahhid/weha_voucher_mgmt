@@ -55,6 +55,13 @@ class VoucherAllocate(models.Model):
                 count += 1
         self.voucher_received_count = count
 
+    def get_is_mine(self):
+        if self.operating_unit_id.id == self.env.user.default_operating_unit_id.id:
+            self.is_mine = True
+        else:
+            self.is_mine = False
+
+
     def send_notification(self, data):
         self.env['mail.activity'].create(data).action_feedback()
         
@@ -289,6 +296,7 @@ class VoucherAllocate(models.Model):
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id", store=True)
     source_operating_unit = fields.Many2one('operating.unit','Request Store', required=True)
     is_request = fields.Boolean('Is Request', default=False)
+    is_mine = fields.Boolean('Is Mine', compute="get_is_mine")
 
     voucher_type = fields.Selection(
         string='Voucher Type',

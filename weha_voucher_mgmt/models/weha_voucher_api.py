@@ -882,12 +882,7 @@ class VoucherTransStatus(models.Model):
         #if self.voucher_trans_type in ('1','2','3'):
         #    trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
 
-        api_token = self._auth_trust()
-        if not api_token:
-            self.is_send_to_crm = False
-            self.send_to_crm_message = "Error Authentication"
-            self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
-            return True, "Error CRM"
+
 
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://apiindev.trustranch.co.id'
@@ -895,45 +890,57 @@ class VoucherTransStatus(models.Model):
             vouchers = []
             for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
                 voucher_order_line_id = voucher_trans_status_line_id.voucher_order_line_id
-                vouchers.append(voucher_order_line_id.voucher_ean + ';' + voucher_order_line_id.expired_date.strftime('%Y-%m-%d') + ";" + voucher_order_line_id.voucher_sku)
-            data = {
-                'date': datetime.now().strftime('%Y-%m-%d'),
-                'time': datetime.now().strftime('%H:%M:%S'),
-                'receipt': self.receipt_number,
-                'transaction_id': self.t_id,
-                'cashier_id': self.cashier_id,
-                'store_id': self.store_id,
-                'member_id': self.member_id,
-                'vouchers': '|'.join(vouchers)
-            }
-            _logger.info(data)
+                if voucher_order_line_id.voucher_type == 'electronic':
+                    vouchers.append(voucher_order_line_id.voucher_ean + ';' + voucher_order_line_id.expired_date.strftime('%Y-%m-%d') + ";" + voucher_order_line_id.voucher_sku)
             
-            headers = {'Authorization' : 'Bearer ' + api_token}
-            req = requests.post('{}/vms/send-voucher'.format(crm_api_url), headers=headers ,data=data)
-            if req.status_code == 200:
-                #Success
-                response_json = req.json()
-                self.is_send_to_crm = True
-                #self.message_post(body="Send Notification to CRM Successfully")
-                _logger.info("Send Notification to CRM Successfully")
-                for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
-                    voucher_trans_status_line_id.voucher_order_line_id.state = 'activated'
-                return False, "Success"                
-            else:
-                #Error
-                _logger.info(f'Error : {req.status_code}')
-                _logger.info("Send Notification to CRM Error")
-                if req.json():
-                    response_json = req.json()                
-                    _logger.info(f'Error Message: {response_json["message"]}')
+            if len(vouchers) > 0:
+                api_token = self._auth_trust()
+                if not api_token:
                     self.is_send_to_crm = False
-                    self.send_to_crm_message = response_json["message"]
-                    #self.message_post(body=response_json["message"])
+                    self.send_to_crm_message = "Error Authentication"
+                    self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+                    return True, "Error CRM"
+                
+                data = {
+                    'date': datetime.now().strftime('%Y-%m-%d'),
+                    'time': datetime.now().strftime('%H:%M:%S'),
+                    'receipt': self.receipt_number,
+                    'transaction_id': self.t_id,
+                    'cashier_id': self.cashier_id,
+                    'store_id': self.store_id,
+                    'member_id': self.member_id,
+                    'vouchers': '|'.join(vouchers)
+                }
+                _logger.info(data)
+                
+                headers = {'Authorization' : 'Bearer ' + api_token}
+                req = requests.post('{}/vms/send-voucher'.format(crm_api_url), headers=headers ,data=data)
+                if req.status_code == 200:
+                    #Success
+                    response_json = req.json()
+                    self.is_send_to_crm = True
+                    #self.message_post(body="Send Notification to CRM Successfully")
+                    _logger.info("Send Notification to CRM Successfully")
+                    for voucher_trans_status_line_id in self.voucher_trans_status_line_ids:
+                        voucher_trans_status_line_id.voucher_order_line_id.state = 'activated'
+                    return False, "Success"                
                 else:
-                    self.is_send_to_crm = False
-                    #self.send_to_crm_message = f'Error : {req.status_code}'
-
+                    #Error
+                    _logger.info(f'Error : {req.status_code}')
+                    _logger.info("Send Notification to CRM Error")
+                    if req.json():
+                        response_json = req.json()                
+                        _logger.info(f'Error Message: {response_json["message"]}')
+                        self.is_send_to_crm = False
+                        self.send_to_crm_message = response_json["message"]
+                        #self.message_post(body=response_json["message"])
+                    else:
+                        self.is_send_to_crm = False
+                        #self.send_to_crm_message = f'Error : {req.status_code}'
                 return True, self.send_to_crm_message
+            else:
+                _logger.info('No Voucher Line Send to Trust')
+                return True, ''
 
         except requests.exceptions.Timeout:
             # Maybe set up for a retry, or continue in a retry loop
@@ -1063,7 +1070,6 @@ class VoucherTransStatus(models.Model):
         else:
             return False, "Success" 
     
-    
     def send_used_notification_to_trust(self):  
         _logger.info("Send Used Notifcation")
         config_parameter_obj = self.env['ir.config_parameter'].sudo()
@@ -1157,7 +1163,6 @@ class VoucherTransStatus(models.Model):
             #self.message_post(body="Send Notification to CRM Failed (Exception)")
             return True, "Error CRM"
 
-
     def _used_notifcation_to_trust(self, vouchers):
         _logger.info("Send Used Notifcation")
         config_parameter_obj = self.env['ir.config_parameter'].sudo()
@@ -1209,7 +1214,6 @@ class VoucherTransStatus(models.Model):
                 self.send_to_crm_message = f'Error : {req.status_code}'
 
             return True, self.send_to_crm_message
-
 
     def procces_voucher_order_line_reopen(self, voucher_ean):
         pass                
