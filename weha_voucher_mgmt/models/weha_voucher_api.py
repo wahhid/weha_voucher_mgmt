@@ -881,7 +881,12 @@ class VoucherTransStatus(models.Model):
         #if self.voucher_trans_type in ('1','2','3'):
         #    trans_purchase_id = self.env['weha.voucher.trans.purchase'].search([('name','=',trans_line_id.name)], limit=1)
 
-
+        api_token = self._auth_trust()
+        if not api_token:
+            self.is_send_to_crm = False
+            self.send_to_crm_message = "Error Authentication"
+            self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
+            return True, "Error CRM"
 
         headers = {'content-type': 'text/plain', 'charset':'utf-8'}
         base_url = 'http://apiindev.trustranch.co.id'
@@ -893,13 +898,6 @@ class VoucherTransStatus(models.Model):
                     vouchers.append(voucher_order_line_id.voucher_ean + ';' + voucher_order_line_id.expired_date.strftime('%Y-%m-%d') + ";" + voucher_order_line_id.voucher_sku)
             
             if len(vouchers) > 0:
-                api_token = self._auth_trust()
-                if not api_token:
-                    self.is_send_to_crm = False
-                    self.send_to_crm_message = "Error Authentication"
-                    self.message_post(body="Send Notification to CRM Failed (Error Authentication)")
-                    return True, "Error CRM"
-                
                 data = {
                     'date': datetime.now().strftime('%Y-%m-%d'),
                     'time': datetime.now().strftime('%H:%M:%S'),
