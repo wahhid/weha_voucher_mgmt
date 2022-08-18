@@ -113,14 +113,14 @@
                                 groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_hrd_user,weha_voucher_mgmt.group_voucher_finance_user"/>
                         
                         <!--STORE-->
-                        <button type="object" 
+                        <!-- <button type="object" 
                                  attrs="{'invisible': [('current_stage', 'in', ('cancelled','rejected'))]}"
                                  class="btn btn-error" 
                                  name="trans_force_cancel" 
                                  string="Force Cancel" 
                                  confirm="Are you sure you want to foroce cancel voucher activate customer?"
                                 groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user"/>
-                        
+                         -->
                         <!--STORE-->
                         <button type="object" 
                                 class="btn btn-error" 

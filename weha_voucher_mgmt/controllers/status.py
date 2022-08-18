@@ -161,7 +161,6 @@ class VMSStatusController(http.Controller):
                             is_available = False
                             err_message = f'Voucher {voucher_ean} member not found' 
                             break
-
                 else:
                     _logger.info('Physical Voucher')
 
@@ -307,7 +306,7 @@ class VMSStatusController(http.Controller):
                         }
                     ]
                 }          
-            if process_type == 'activated':
+            if process_type == 'activated':           
                 add_data = result.get_json()
                 if not add_data['err']:
                     data = {
@@ -325,7 +324,7 @@ class VMSStatusController(http.Controller):
                         "err": True,
                         "message": add_data['message'],
                         "data": []
-                    }
+                    }           
             if process_type == 'reopen':
                 data = {
                     "err": False,
@@ -636,10 +635,10 @@ class VMSStatusController(http.Controller):
         user_tz = http.request.env.user.tz
         if not user_tz:
             data =  {
-                        "err": True,
-                        "message": "User didn't set timezone parameter",
-                        "data": []
-                    }
+                "err": True,
+                "message": "User didn't set timezone parameter",
+                "data": []
+            }
             return valid_response(data)
         _logger.info(user_tz)
         

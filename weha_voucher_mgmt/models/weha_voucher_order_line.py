@@ -105,21 +105,23 @@ class VoucherOrderLine(models.Model):
             ean = ean + '0' * (13 - len(ean))
         return ean[:-1] + str(self.ean_checksum(ean))
 
-    def calculate_expired(self):
+    def calculate_expired(self, booking=False):
         _logger.info('Calculate Expired Date')
-        if not self.expired_date:
-            if self.voucher_type == 'physical':
-                _logger.info('Physical Voucher')
-                if self.voucher_expired_date:
-                    _logger.info('Expired Date Exist')
-                    self.expired_date = self.voucher_expired_date
-                    
+        if not booking:
+            if not self.expired_date:
+                if self.voucher_type == 'physical':
+                    _logger.info('Physical Voucher')
+                    if self.voucher_expired_date:
+                        _logger.info('Expired Date Exist')
+                        self.expired_date = self.voucher_expired_date
+                    else:
+                        _logger.info('Expired Date Not Exist')
+                        self.expired_date = datetime.now() + timedelta(days=self.expired_days)
                 else:
-                    _logger.info('Expired Date Not Exist')
-                    self.expired_date = datetime.now() + timedelta(days=self.expired_days)
-            else:
-                _logger.info('Electronic Voucher')
-                self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
+                    _logger.info('Electronic Voucher')
+                    self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
+        else:
+            self.expired_date = datetime.now() + timedelta(days=7)
 
     def process_voucher_booking(self):
         cur_date_time = datetime.now()
@@ -380,7 +382,7 @@ class VoucherOrderLine(models.Model):
  
     #API for Used
     def send_used_notification_to_trust(self):  
-        _logger.info("Send Used Notifcation")
+        _logger.info("Send Used Notifcation 4")
         
         trans_line_id = self.get_last_trans_line()
         _logger.info(trans_line_id.name)

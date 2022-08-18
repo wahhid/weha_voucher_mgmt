@@ -406,6 +406,9 @@ class VoucherIssuing(models.Model):
         if not stage_id:
             raise ValidationError('Stage not found')
         super(VoucherIssuing, self).write({'stage_id': stage_id.id})   
+        for voucher_issuing_line_id in self.voucher_issuing_line_ids:
+            if voucher_issuing_line_id.state == 'open':
+                voucher_issuing_line_id.state = 'cancelled'
 
     def trans_force_cancel(self):
         for voucher_issuing_line_id in self.voucher_issuing_line_ids:

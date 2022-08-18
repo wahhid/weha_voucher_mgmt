@@ -125,14 +125,14 @@
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user"/>
                         
 
-                        <button type="object" 
+                        <!-- <button type="object" 
                                 attrs="{'invisible': ['|',('current_stage', '!=', 'closed'),('is_force_cancelled','=', True)]}"
                                 class="btn btn-danger" 
                                 name="trans_force_cancelled_approval" 
                                 string="Request Force Cancel" 
                                 confirm="Are you sure you want to request force cancel?"
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user"/>
-                       
+                        -->
                         <button type="object" 
                                 attrs="{'invisible': ['|',('current_stage', '!=', 'closed'),('is_force_cancelled','=', False)]}"
                                 class="btn btn-success" 

@@ -40,7 +40,7 @@ def invalid_response(typ, message=None, status=401):
         content_type="application/json; charset=utf-8",
         response=json.dumps(
             {"type": typ, "message": str(message) if str(message) else "wrong arguments (missing validation)",},
-            default=datetime.datetime.isoformat,
+            default=datetime.isoformat,
         ),
     )
 

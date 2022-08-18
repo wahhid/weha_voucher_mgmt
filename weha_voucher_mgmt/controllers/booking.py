@@ -104,13 +104,24 @@ class VMSBookingController(http.Controller):
             }
             return valid_response(response_data)
 
+        current_year = http.request.env['weha.voucher.year'].sudo().get_current_year()
         voucher_code_id = mapping_sku_id.voucher_code_id
         domain = [
+            ('operating_unit_id','=',operating_unit_id.id),
+            ('voucher_type','=', 'physical'),
             ('voucher_code_id', '=', voucher_code_id.id),
-            ('operating_unit_id', '=', operating_unit_id.id),
+            ('year_id', '=', current_year.id),
             ('is_expired', '=', False),
-            ('state', '=', 'open')
+            ('state','=', 'open')
         ]
+
+        # voucher_code_id = mapping_sku_id.voucher_code_id
+        # domain = [
+        #     ('voucher_code_id', '=', voucher_code_id.id),
+        #     ('operating_unit_id', '=', operating_unit_id.id),
+        #     ('is_expired', '=', False),
+        #     ('state', '=', 'open')
+        # ]
         
         stock_count  = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
         if stock_count < int(arr_sku[1]):
@@ -165,7 +176,6 @@ class VMSBookingController(http.Controller):
                 }
             )
 
-        
         operating_unit_id = http.request.env['operating.unit'].search([('code','=',store_id)])
         if not operating_unit_id:
             response_data = {
@@ -283,7 +293,8 @@ class VMSBookingController(http.Controller):
         trans_date = date  +  " "  + time + ":00"
         values.update({'trans_date': trans_date})
         values.update({'store_id': store_id})
-        #values.update({'member_id': member_id})
+        if member_id:
+            values.update({'member_id': member_id})
         values.update({'sku': sku})
         #values.update({'voucher_type': voucher_type})        
 
@@ -340,6 +351,7 @@ class VMSBookingController(http.Controller):
                                         store_id,
                                         #member_id,
                                         voucher_ean])
+
         if not _fields_includes_in_body:
                 data =  {
                     "err": True,
@@ -382,6 +394,8 @@ class VMSBookingController(http.Controller):
 
         voucher_order_line_id.write({'state': 'activated'})
         voucher_order_line_id.calculate_expired()
+        voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, "AC")
+
 
         data = {
             "err": False,
