@@ -40,6 +40,7 @@ class VoucherReturnLine(models.Model):
             ('activated','Activated'), 
             ('damage', 'Damage'),
             ('transferred','Transferred'),
+            ('waiting','Waiting'),
             ('intransit', 'In-Transit'),
             ('booking', 'Booking'),
             ('reserved', 'Reserved'),

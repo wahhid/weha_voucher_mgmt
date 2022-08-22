@@ -1738,8 +1738,6 @@ class VoucherChangeMember(models.Model):
             voucher_change_member_line_id.voucher_order_line_id.sudo().member_id = self.new_member_id
             voucher_change_member_line_id.state = 'done'
 
-
-
     name = fields.Char('Name', )
     trans_date = fields.Datetime("Transaction Date", default=datetime.now())
     trx_no = fields.Char('Trx No', size=50)
