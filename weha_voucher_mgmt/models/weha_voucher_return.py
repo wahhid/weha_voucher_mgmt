@@ -103,10 +103,6 @@ class VoucherReturn(models.Model):
         stage_id = self.stage_id.next_stage_id
         # self.send_l1_return_mail()
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
-        for row in self.voucher_return_line_ids:
-            row.voucher_order_line_id.write({'state':'waiting'})
-            row.voucher_order_line_id.create_order_line_trans(self.number, "WA")
-        
         for requester_user_id in  self.operating_unit_id.requester_user_ids:
             _logger.info(requester_user_id.name)
             data =  {
@@ -167,6 +163,9 @@ class VoucherReturn(models.Model):
             raise ValidationError("Return Lines Empty")
         stage_id = self.stage_id.next_stage_id
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        for row in self.voucher_return_line_ids:
+            row.voucher_order_line_id.write({'state':'waiting'})
+            row.voucher_order_line_id.create_order_line_trans(self.number, "WA")
         for approval_user_id in  self.operating_unit_id.approval_user_ids:
             _logger.info(approval_user_id.name)
             data =  {

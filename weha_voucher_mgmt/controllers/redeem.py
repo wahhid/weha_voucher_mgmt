@@ -140,8 +140,7 @@ class VMSRedeemController(http.Controller):
         values.update({'sku': sku})
         values.update({'voucher_type': voucher_type})
 
-        
-
+    
         #Save Data
         result = voucher_trans_purchase_obj.sudo().create(values)
         
