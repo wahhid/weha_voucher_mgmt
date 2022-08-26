@@ -180,6 +180,54 @@ class VoucherTransPurchase(models.Model):
         finally:
             _logger.info("final")   
 
+    def create_and_activated_voucher(self):
+        seq = self.env['ir.sequence']
+        operating_unit_id = self.env['operating.unit'].search([('code','=', self.store_id)],limit=1)
+        for voucher_trans_purchase_sku_id in self.voucher_trans_purchase_sku_ids:
+            for i in range(1,voucher_trans_purchase_sku_id.quantity + 1):
+                vals = {}
+                vals.update({'batch_id': self.batch_id})
+                vals.update({'member_id': self.member_id})
+                vals.update({'operating_unit_id': operating_unit_id.id})
+                vals.update({'voucher_type': 'electronic'})
+                vals.update({'voucher_sku': voucher_trans_purchase_sku_id.sku})
+                vals.update({'receipt_number': self.receipt_number})
+                vals.update({'t_id': self.t_id})
+                #Set Voucher Trans Type for API#4 and Empty after API#4 confirm
+                vals.update({'voucher_trans_type': self.voucher_type})
+                vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
+                vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
+                vals.update({'tender_type': self.tender_type})
+                vals.update({'bank_category': self.bank_category})
+                #Voucher Promo Process
+                if voucher_trans_purchase_sku_id.voucher_promo_id:
+                    vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
+                    vals.update({'min_card_payment': voucher_trans_purchase_sku_id.voucher_promo_id.min_card_payment})
+                    vals.update({'voucher_count_limit': voucher_trans_purchase_sku_id.voucher_promo_id.voucher_count_limit})
+
+                #Get Current Year
+                current_year = self.env['weha.voucher.year'].get_current_year()
+                vals.update({'year_id': current_year.id})
+
+                check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
+                vals.update({'check_number': check_number})
+
+                #Create Voucher Order Line
+                voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
+                if not voucher_order_line_id:
+                    raise ValidationError("Can't Generate voucher order line, contact administrator!")
+                voucher_order_line_id.write({'state': 'activated'})
+                voucher_order_line_id.calculate_expired()
+                voucher_order_line_id.create_order_line_trans(self.name, 'AC')
+
+                vals = {
+                    'voucher_trans_purchase_id': self.id,
+                    'voucher_trans_purchase_sku_id': voucher_trans_purchase_sku_id.id,
+                    'voucher_order_line_id': voucher_order_line_id.id
+                }
+                self.env['weha.voucher.trans.purchase.line'].create(vals)
+
+
     def create_and_reserved_voucher(self):
         seq = self.env['ir.sequence']
         operating_unit_id = self.env['operating.unit'].search([('code','=', self.store_id)],limit=1)
@@ -307,6 +355,8 @@ class VoucherTransPurchase(models.Model):
                 if not err:
                     voucher_trans_purchase_line_id.voucher_order_line_id.sudo().write({'state': 'activated'})
                     voucher_trans_purchase_line_id.voucher_order_line_id.voucher_trans_type = False
+        elif res.voucher_type == '3':
+            res.create_and_activated_voucher()
         else:
             res.create_and_reserved_voucher()  
 

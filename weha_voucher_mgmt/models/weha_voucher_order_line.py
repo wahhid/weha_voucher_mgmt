@@ -133,7 +133,13 @@ class VoucherOrderLine(models.Model):
         voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
         for voucher_order_line_id in  voucher_order_line_ids:
             #_logger.info(f"Scheduler : {len(voucher_order_line_ids)} vouhcers change to open ")
-            voucher_order_line_id.write({'state': 'open'})
+            voucher_order_line_id.write({
+                'state': 'open',
+                'member_id': False,
+                'expired_date': False,
+                'receipt_number': False,
+                't_id': False
+            })
             voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, "RO")
 
     def process_voucher_scrap(self):
