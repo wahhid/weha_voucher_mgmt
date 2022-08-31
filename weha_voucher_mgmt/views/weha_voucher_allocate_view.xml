@@ -42,7 +42,7 @@
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
                          <button type="action" 
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended'),('is_mine','=', False)]}" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')}" 
                                 class="btn btn-primary" 
                                 name="%(weha_voucher_mgmt.act_open_scan_voucher_allocate_view_form)d" 
                                 string="Scan Allocate Voucher" 
@@ -56,7 +56,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_user"/>
 
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended'),('is_mine','=', False)]}" 
+                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
                                 class="btn btn-primary" 
                                 name="trans_allocate_approval" 
                                 string="Request Approval" 

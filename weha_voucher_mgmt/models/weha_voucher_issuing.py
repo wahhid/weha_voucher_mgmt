@@ -90,6 +90,7 @@ class VoucherIssuing(models.Model):
                     vals.update({'trans_date': datetime.now()})
                     vals.update({'trans_type': 'AC'})
                     self.env['weha.voucher.order.line.trans'].sudo().create(vals)
+            
             self.trans_close()
         else:
             for voucher_issuing_employee_line_id in self.voucher_issuing_employee_line_ids.filtered(lambda r: r.state == "open" ):
@@ -300,6 +301,7 @@ class VoucherIssuing(models.Model):
             for voucher_issuing_line_id in self.voucher_issuing_line_ids:
                 voucher_order_line_id = voucher_issuing_line_id.voucher_order_line_id
                 voucher_order_line_id.write({'state': 'activated'})
+                #voucher_order_line_id.calculate_expired()
                 voucher_order_line_id.create_order_line_trans(self.number, 'AC')
                 voucher_issuing_line_id.write({'state': 'issued'})    
         else:  

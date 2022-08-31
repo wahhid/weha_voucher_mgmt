@@ -403,3 +403,75 @@ class VMSBookingController(http.Controller):
             "data": []
         }
         return valid_response(data)
+
+    @validate_token
+    @http.route("/api/vms/v1.0/bookingcancel", type="http", auth="none", methods=["POST"], csrf=False)
+    def bookingcancel(self, **post):
+        message = "Booking Cancel Successfully"
+        date = post['date'] or False if 'date' in post else False
+        time = post['time'] or False if 'time' in post else False
+        store_id = post['store_id'] or False  if 'store_id' in post else False
+        member_id = post['member_id'] or False  if 'member_id' in post else False
+        voucher_ean = post['voucher_ean'] or False  if 'voucher_ean' in post else False
+
+        _fields_includes_in_body = all([date, 
+                                        time, 
+                                        store_id,
+                                        #member_id,
+                                        voucher_ean])
+
+        if not _fields_includes_in_body:
+                data =  {
+                    "err": True,
+                    "message": "Missing fields",
+                    "data": []
+                }
+                return valid_response(data)
+                
+        operating_unit_id = http.request.env['operating.unit'].search([('code','=',store_id)])
+        if not operating_unit_id:
+            response_data = {
+                "err": True,
+                "message": "Operating Unit not found",
+                "data": [
+                    {'code': 'N'}
+                ]
+            }
+            return valid_response(response_data)
+
+        domain = [
+            ('operating_unit_id','=', operating_unit_id.id),
+            ('voucher_ean','=', voucher_ean),
+            #('member_id','=', member_id),
+            ('state','=', 'booking')
+        ]
+
+        _logger.info(domain)
+
+        voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+        
+        if not voucher_order_line_id:
+            response_data = {
+                "err": True,
+                "message": "Voucher not found",
+                "data": [
+                    {'code': 'N'}
+                ]
+            }
+            return valid_response(response_data)
+
+        voucher_order_line_id.write(
+            {
+                'state': 'open',
+                'member_id': False,
+                'booking_expired_date': False
+            }
+        )
+        voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, "OP")
+    
+        data = {
+            "err": False,
+            "message": "Booking Cancel Successfully",
+            "data": []
+        }
+        return valid_response(data)

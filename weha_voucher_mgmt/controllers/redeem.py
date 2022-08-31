@@ -68,6 +68,7 @@ class VMSRedeemController(http.Controller):
                                         member_id,
                                         sku,
                                         voucher_type])
+        
         if not _fields_includes_in_body:
                 data =  {
                     "err": True,
