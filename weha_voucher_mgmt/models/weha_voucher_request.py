@@ -21,6 +21,12 @@ class WeheVoucherRequest(models.Model):
     def _get_default_stage_id(self):
         return self.env['weha.voucher.request.stage'].search([], limit=1).id
 
+    def get_is_mine(self):
+        if self.operating_unit_id.id == self.env.user.default_operating_unit_id.id:
+            self.is_mine = True
+        else:
+            self.is_mine = False
+            
     @api.depends('stage_id')
     def _compute_current_stage(self):
         for rec in self:
@@ -97,6 +103,7 @@ class WeheVoucherRequest(models.Model):
             vals.update({'voucher_promo_id': False})
         res = obj_allocate.sudo().create(vals)
         _logger.info("str_ean ID = " + str(res))
+        
         #To Finance User
         for requester_user_id in company_id.res_company_request_operating_unit.requester_user_ids:
             data =  {
@@ -109,7 +116,6 @@ class WeheVoucherRequest(models.Model):
                 'summary': 'Voucher Request from ' + operating_unit_id.name
             }
             self.sudo().send_notification(data)
-
         return res
     
     def action_voucher_allocate_from_request(self):
@@ -363,6 +369,7 @@ class WeheVoucherRequest(models.Model):
     date_request = fields.Date('Date Request', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', 'Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
+    is_mine = fields.Boolean('Is Mine', compute="get_is_mine")
     source_operating_unit = fields.Many2one('operating.unit','Source Store', required=False)
     voucher_type = fields.Selection(
         string='Voucher Type',

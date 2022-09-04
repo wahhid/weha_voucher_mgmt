@@ -55,6 +55,12 @@ class VoucherReturn(models.Model):
         stage_ids = self.env['weha.voucher.return.stage'].search([])
         return stage_ids
 
+    def get_is_mine(self):
+        if self.operating_unit_id.id == self.env.user.default_operating_unit_id.id:
+            self.is_mine = True
+        else:
+            self.is_mine = False
+
     def send_notification(self, data):
         self.env['mail.activity'].create(data).action_feedback()
 
@@ -265,8 +271,6 @@ class VoucherReturn(models.Model):
         }
         return self.env.ref('weha_voucher_mgmt.weha_voucher_return_line_xlsx').report_action(self, data=data)
 
-
-
     def change_stage_to_intransit(self):
         stage_id = self.env['weha.voucher.return.stage'].search([('opened', '=', True)], limit=1)
         if not stage_id:
@@ -303,11 +307,6 @@ class VoucherReturn(models.Model):
             }
             self.env['std.vendor.prepare.line'].write(vals)
 
-            
-
-            
-            
-
 
     company_id = fields.Many2one('res.company', 'Company')
     number = fields.Char(string='Return number', default="/",readonly=True)
@@ -315,6 +314,7 @@ class VoucherReturn(models.Model):
     return_date = fields.Date('Return Date', required=True, default=lambda self: fields.date.today())
     user_id = fields.Many2one('res.users', string='Requester', default=lambda self: self.env.user and self.env.user.id or False, readonly=True)  
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
+    is_mine = fields.Boolean('Is Mine', compute="get_is_mine")
     source_operating_unit_id = fields.Many2one('operating.unit','Source Store', required=True)
     return_type = fields.Selection([('finance','Finance'),('marketing','Marketing')], 'Return Type')
 

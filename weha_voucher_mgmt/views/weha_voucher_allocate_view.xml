@@ -42,7 +42,7 @@
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
                          <button type="action" 
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'unattended'),('is_mine','=', False)]}" 
                                 class="btn btn-primary" 
                                 name="%(weha_voucher_mgmt.act_open_scan_voucher_allocate_view_form)d" 
                                 string="Scan Allocate Voucher" 
@@ -56,34 +56,35 @@
                                 groups="weha_voucher_mgmt.group_voucher_user"/>
 
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'unattended'),('is_mine','=', False)]}" 
                                 class="btn btn-primary" 
                                 name="trans_allocate_approval" 
                                 string="Request Approval" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
                         
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'unattended'),('is_mine','=', False)]}" 
                                 class="btn btn-primary" 
                                 name="print_voucher_allocate_approval" 
                                 string="Print Request Approval" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
                
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'receiving')]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'receiving'),('is_mine','=', False)]}"
                                 class="btn btn-light" 
                                 name="trans_close" 
                                 string="Closed Allocated" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user ,weha_voucher_mgmt.group_voucher_user"/>
+                        
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'open'),('is_mine','=', False)]}"
                                 class="btn btn-light" 
                                 name="trans_delivery" 
                                 string="Delivery" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user"/>                        
                         
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'approval'),('is_mine','=', False)]}"
                                 class="btn btn-primary" 
                                 name="trans_approve" 
                                 string="Approve" 
@@ -91,7 +92,7 @@
                                 confirm="Are you sure you want to Approve?"/>
                         
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'approval'),('is_mine','=', False)]}" 
                                 class="btn btn-primary" 
                                 name="trans_reject" 
                                 string="Reject" 
@@ -99,13 +100,14 @@
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager,weha_voucher_mgmt.group_voucher_marketing_manager"/>
                         
                         <button name="%(weha_voucher_mgmt.act_open_received_allocate_view_form)d" 
-                                type="action" string="Receive Voucher"
+                                type="action" 
+                                string="Receive Voucher"
                                 class="oe_highlight" 
                                 attrs="{'invisible': [('current_stage', 'in', ('unattended','approval','open','closed','cancelled','rejected'))]}" 
                                 groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>
                         
                         <button type="object" 
-                                attrs="{'invisible': ['|',('current_stage', 'in', ('closed','cancelled','rejected')),('is_force_cancelled','=', True)]}"
+                                attrs="{'invisible': ['|','|',('current_stage', 'in', ('closed','cancelled','rejected')),('is_force_cancelled','=', True),('is_mine','=', False)]}"
                                 class="btn btn-warning" 
                                 name="trans_cancelled" 
                                 string="Cancel Allocate" 
@@ -152,18 +154,18 @@
                         </div>
                         <group>
                             <group string="General Information">
-                                <field name="allocate_date" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
+                                <field name="allocate_date" attrs="{'readonly':['|',('current_stage','!=','unattended'),('is_mine','=', False)]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 
 
-                                <field name="source_operating_unit" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
-                                <field name="current_stage" invisible="1"/>
+                                <field name="source_operating_unit" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly':['|',('current_stage','!=','unattended'),('is_mine','=',False)]}"/>
+                                <field name="current_stage" readonly="1"/>
                                 <field name="print_count"/>
                                 <field name="is_mine"/>
                             </group>
                             <group string="Voucher Allocate Information">
-                                <field name="ref" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
+                                <field name="ref" attrs="{'readonly':['|',('current_stage','!=','unattended'),('is_mine','=', False)]}"/>
                                 <field name="voucher_count"/>
                                 <field name="voucher_received_count"/>
                                 <field name="is_request" invisible="1"/>
@@ -173,24 +175,24 @@
                         </group>
                         <group>
                             <group string="Voucher Detail">
-                                <field name="voucher_mapping_sku_id" options="{'no_create': True, 'no_create_edit':True}" domain="[('voucher_code_id.voucher_type','=', 'physical')]"/>
+                                <field name="voucher_mapping_sku_id" options="{'no_create': True, 'no_create_edit':True}" domain="[('voucher_code_id.voucher_type','=', 'physical')]" attrs="{'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=',False)]}"/>
                                 <field name="voucher_code_id"/>
                                 <field name="voucher_terms_id"/>
-                                <field name="expired_days" attrs="{'invisible': [('is_voucher_promo','=', True)], 'required': [('is_voucher_promo','=', False)]}"/>
+                                <field name="expired_days" attrs="{'invisible': [('is_voucher_promo','=', True)], 'required': [('is_voucher_promo','=', False)], 'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=',False)]}"/>
                                 <field name="voucher_expired_date" attrs="{'invisible': [('is_voucher_promo','=', True)]}"/>
-                                <field name="year_id" options="{'no_create': True, 'no_create_edit':True}"/>     
+                                <field name="year_id" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=',False)]}"/>     
                             </group>
                             <group string="Voucher Promo">
-                                <field name="voucher_promo_id" domain="[('is_expired','=', False)]" options="{'no_create': True, 'no_create_edit':True}"/>
+                                <field name="voucher_promo_id" domain="[('is_expired','=', False)]" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=', False)]}"/>
                                 <field name="is_voucher_promo" invisible="1"/>
-                                <field name="promo_expired_date" attrs="{'invisible': [('is_voucher_promo','=', False)], 'required': [('is_voucher_promo','=', True)]}"/>
-                                <field name="remark"/>
+                                <field name="promo_expired_date" attrs="{'invisible': [('is_voucher_promo','=', False)], 'required': [('is_voucher_promo','=', True)], 'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=', False)]}"/>
+                                <field name="remark" attrs="{'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=',False)]}"/>
                             </group>
                         </group>
 
                         <notebook colspan="4">
                             <page string="Allocate Ranges">
-	                        	<field name="voucher_allocate_range_ids" widget="one2many_list" nolabel="0" readonly="0">
+	                        	<field name="voucher_allocate_range_ids" widget="one2many_list" nolabel="0" attrs="{'readonly': [('current_stage','!=', 'unattended')]}">
 	                            	<tree string="Allocate Ranges">
 	                            	    <field name="start_number"/> 
                                         <field name="end_number"/>
@@ -200,7 +202,7 @@
 	                        	</field>
 	                        </page> 
                             <page string="Allocate Lines">
-	                        	<field name="voucher_allocate_line_ids" widget="one2many_list" nolabel="0" readonly="0">
+	                        	<field name="voucher_allocate_line_ids" widget="one2many_list" nolabel="0" attrs="{'readonly': [('current_stage','!=', 'unattended')]}">
 	                            	<tree string="Allocate Lines">
 	                            	    <field name="voucher_order_line_id"/> 
                                         <field name="voucher_code_id"/>

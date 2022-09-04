@@ -239,7 +239,7 @@ class WehaWizardReceivedAllocate(models.TransientModel):
                 vals.update({'expired_days':voucher_allocate_id.expired_days})
                 
             vals.update({'state': 'open'})
-            voucher_allocate_line_id.voucher_order_line_id.write(vals)
+            voucher_allocate_line_id.voucher_order_line_id.sudo().write(vals)
 
             vals = {}
             vals.update({'name': voucher_allocate_id.number})

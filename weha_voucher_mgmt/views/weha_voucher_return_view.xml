@@ -42,7 +42,7 @@
                     <header>
                         <button 
                             type="action" 
-                            attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                            attrs="{'invisible': ['|',('current_stage', '!=', 'unattended'),('is_mine','=',False)]}" 
                             class="btn btn-primary" 
                             name="%(weha_voucher_mgmt.act_open_scan_voucher_return_view_form)d" 
                             string="Scan Voucher" 
@@ -58,7 +58,7 @@
                     
                         <button 
                             type="object" 
-                            attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                            attrs="{'invisible': ['|',('current_stage', '!=', 'unattended'),('is_mine','=',False)]}" 
                             class="btn btn-primary" 
                             name="trans_return_approval" 
                             string="Request Approval" 
@@ -73,14 +73,14 @@
                             groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user, weha_voucher_mgmt.group_voucher_finance_user"/>
 
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'open')]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'open'),('is_mine','=',False)]}"
                                 class="btn btn-primary" 
                                 name="trans_delivery" 
                                 string="Delivery" 
                                 groups="weha_voucher_mgmt.group_voucher_user, weha_voucher_mgmt.group_voucher_marketing_user, weha_voucher_mgmt.group_voucher_finance_user"/>
 
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'approval'),('is_mine','=',False)]}"
                                 class="btn btn-primary" 
                                 name="trans_approve"
                                 string="Approve" 
@@ -88,7 +88,7 @@
                                 confirm="Are you sure you want to approve voucher return?"/>
                         
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'approval')]}" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'approval'),('is_mine','=',False)]}" 
                                 class="btn btn-primary" 
                                 name="trans_reject" 
                                 string="Reject" 
@@ -104,7 +104,7 @@
 
                         <button type="action"
                                 class="btn btn-warning"
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'unattended'),('is_mine','=',False)]}"
                                 name="%(weha_voucher_mgmt.act_open_weha_voucher_return_wizard)d"
                                 string="Set Reason"
                                 groups="weha_voucher_mgmt.group_voucher_marketing_user, weha_voucher_mgmt.group_voucher_finance_user"
@@ -118,7 +118,7 @@
                         />
 
                         <button type="object" 
-                                attrs="{'invisible': ['|',('current_stage', 'in', ('closed','cancelled','rejected')),('is_force_cancelled','=', True)]}"
+                                attrs="{'invisible': ['|','|',('current_stage', 'in', ('closed','cancelled','rejected')),('is_force_cancelled','=', True),('is_mine','=',False)]}"
                                 name="trans_cancelled" 
                                 string="Cancel Return" 
                                 confirm="Are you sure you want to cancel voucher return?"
@@ -133,6 +133,7 @@
                                 confirm="Are you sure you want to request force cancel?"
                                 groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user"/>
                         -->
+
                         <button type="object" 
                                 attrs="{'invisible': ['|',('current_stage', '!=', 'closed'),('is_force_cancelled','=', False)]}"
                                 class="btn btn-success" 
@@ -150,7 +151,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager"/>
                         
                         <button type="action"
-                                attrs="{'invisible': [('current_stage', '!=', 'intransit')]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'intransit'),('is_mine','=',False)]}"
                                 class="btn btn-danger"
                                 name="%(act_return_cancel_received_view_form)d"
                                 string="Cancel Received"
@@ -182,6 +183,7 @@
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 <field name="source_operating_unit_id" options="{'no_create': True, 'no_create_edit':True}"/>
+                                <field name="is_mine" />
                                 <field name="current_stage" invisible="1"/>
                                 <field name="has_exception" invisible="1"/>
                                 <field name="return_type" invisible="1"/>

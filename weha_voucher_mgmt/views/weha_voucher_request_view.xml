@@ -47,9 +47,8 @@
             <field name="arch" type="xml">
                 <form string="model_form" create="true" delete="true" edit="true">
                     <header>
-            
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=', 'unattended')]}" 
+                                attrs="{'invisible': ['|',('current_stage', '!=', 'unattended'),('is_mine','=',False)]}" 
                                 class="btn btn-primary" 
                                 name="trans_request_approval" 
                                 string="Request Approval" 
@@ -57,7 +56,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_marketing_user"/>         
                         
                         <button type="object" 
-                                attrs="{'invisible': ['|',('current_stage', '!=','approval'),('current_stage_approval_level','!=',1)]}"
+                                attrs="{'invisible': ['|','|',('current_stage', '!=','approval'),('current_stage_approval_level','!=',1),('is_mine','=',False)]}"
                                 class="btn btn-primary" 
                                 name="trans_approve" 
                                 string="Approve" 
@@ -65,7 +64,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_manager" />
                         
                          <button type="object" 
-                                attrs="{'invisible': ['|',('current_stage', '!=','approval'),('current_stage_approval_level','!=',1)]}"
+                                attrs="{'invisible': ['|','|',('current_stage', '!=','approval'),('current_stage_approval_level','!=',1),('is_mine','=',False)]}"
                                 class="btn btn-primary" 
                                 name="trans_approve_marketing_manager" 
                                 string="Approve" 
@@ -73,7 +72,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_marketing_manager" />
 
                         <button type="object" 
-                                attrs="{'invisible': [('current_stage', '!=','approval'),('current_stage_approval_level','!=',2)]}"
+                                attrs="{'invisible': ['|',('current_stage', '!=','approval'),('current_stage_approval_level','!=',2)]}"
                                 class="btn btn-primary"  
                                 name="trans_approve_marketing_chief" 
                                 string="Approve"
@@ -88,7 +87,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_manager"/>
 
                         <button type="object" 
-                                attrs="{'invisible': ['|',('current_stage', '!=', 'approval'),('current_stage_approval_level','!=',1)]}"
+                                attrs="{'invisible': ['|','|',('current_stage', '!=', 'approval'),('current_stage_approval_level','!=',1),('is_mine','=',False)]}"
                                 class="btn btn-primary" 
                                 name="trans_reject_marketing_manager" 
                                 string="Reject"
@@ -100,7 +99,6 @@
                                 name="trans_reject_marketing_chief" 
                                 string="Reject"
                                 groups="weha_voucher_mgmt.group_voucher_marketing_chief"/>
-
 
                         <button type="object" 
                                 attrs="{'invisible': [('current_stage', '!=','approval')]}"
@@ -119,7 +117,7 @@
                                 groups="weha_voucher_mgmt.group_voucher_finance_manager,weha_voucher_mgmt.group_voucher_manager, weha_voucher_mgmt.group_voucher_marketing_manager"/>
                         -->
                         <button type="object" 
-                                 attrs="{'invisible': [('current_stage', 'in', ('opened', 'closed','cancelled','rejected'))]}"
+                                 attrs="{'invisible': ['|',('current_stage', 'in', ('opened', 'closed','cancelled','rejected')),('is_mine','=', False)]}"
                                  class="btn btn-warning" 
                                  name="trans_cancelled" 
                                  string="Cancel Request" 
@@ -128,19 +126,7 @@
 
                         <field name="stage_id" widget="statusbar" clickable="False" />
                     </header>
-                    <sheet>
-                        <!-- <div class="oe_button_box" name="button_box">
-                            <button type="action" class="oe_stat_button" icon="fa-ticket" name="%(weha_voucher_mgmt.action_voucher_request_line_from_voucher_request)d"
-                                groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user">
-                                <div class="o_form_field o_stat_info">
-                                    <span class="o_stat_value">
-                                        <field name="voucher_count"/>
-                                    </span>
-                                    <span class="o_stat_text">Voucher is available</span>
-                                </div>
-                            </button>
-                        </div> -->
-                    
+                    <sheet>        
                         <div class="oe_title">
                             <label for="number" class="oe_edit_only" />
                             <h1>
@@ -153,11 +139,12 @@
                                 <field name="date_request" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
+                                <field name="is_mine" readonly="1"/>
                             </group>
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
-                                <field name="voucher_count"/>
-                                <field name="current_stage" invisible="1"/>
+                                <field name="voucher_count" />
+                                <field name="current_stage" />
                                 <field name="current_stage_approval_level" invisible="1"/>
                                 <field name="remark" widget="textarea"/>
                                 <field name="voucher_promo_id" domain="[('is_expired','=', False)]" options="{'no_create': True, 'no_create_edit':True}"/>
