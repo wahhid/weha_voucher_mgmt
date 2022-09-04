@@ -61,6 +61,13 @@ class VoucherReturn(models.Model):
         else:
             self.is_mine = False
 
+    def get_source_is_mine(self):
+        if self.source_operating_unit_id.id == self.env.user.default_operating_unit_id.id:
+            self.source_is_mine = True
+        else:
+            self.source_is_mine = False
+
+
     def send_notification(self, data):
         self.env['mail.activity'].create(data).action_feedback()
 
@@ -316,6 +323,8 @@ class VoucherReturn(models.Model):
     operating_unit_id = fields.Many2one('operating.unit','Store', related="user_id.default_operating_unit_id")
     is_mine = fields.Boolean('Is Mine', compute="get_is_mine")
     source_operating_unit_id = fields.Many2one('operating.unit','Source Store', required=True)
+    source_is_mine = fields.Boolean('Source is Mine', compute="get_source_is_mine")
+
     return_type = fields.Selection([('finance','Finance'),('marketing','Marketing')], 'Return Type')
 
     voucher_code_id = fields.Many2one('weha.voucher.code', 'Voucher Code', required=False, readonly=True)

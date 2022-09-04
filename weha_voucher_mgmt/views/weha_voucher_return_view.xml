@@ -99,14 +99,14 @@
                                 type="action" 
                                 string="Receive Voucher"
                                 class="oe_highlight" 
-                                attrs="{'invisible': ['|',('current_stage','in',('unattended','approval','closed','cancelled','rejected'))]}" 
+                                attrs="{'invisible': ['|',('current_stage','in',('unattended','approval','closed','cancelled','rejected')),('source_is_mine','=',False)]}" 
                                 groups="weha_voucher_mgmt.group_voucher_finance_user"/>
 
                         <button name="%(weha_voucher_mgmt.act_open_received_return_view_form)d" 
                                 type="action" 
                                 string="Receive Voucher"
                                 class="oe_highlight" 
-                                attrs="{'invisible': ['|',('current_stage','in',('unattended','approval','closed','cancelled','rejected'))]}" 
+                                attrs="{'invisible': ['|',('current_stage','in',('unattended','approval','closed','cancelled','rejected')),('source_is_mine','=',False)]}" 
                                 groups="weha_voucher_mgmt.group_voucher_marketing_user"/>
 
                         <button type="action"
@@ -191,6 +191,7 @@
                                 <field name="operating_unit_id"/>
                                 <field name="source_operating_unit_id" options="{'no_create': True, 'no_create_edit':True}"/>
                                 <field name="is_mine" />
+                                <field name="source_is_mine" />
                                 <field name="current_stage" invisible="1"/>
                                 <field name="has_exception" invisible="1"/>
                                 <field name="return_type" invisible="1"/>

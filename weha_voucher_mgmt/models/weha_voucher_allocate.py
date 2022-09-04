@@ -61,6 +61,11 @@ class VoucherAllocate(models.Model):
         else:
             self.is_mine = False
 
+    def get_source_is_mine(self):
+        if self.source_operating_unit.id == self.env.user.default_operating_unit_id.id:
+            self.source_is_mine = True
+        else:
+            self.source_is_mine = False
 
     def send_notification(self, data):
         self.env['mail.activity'].create(data).action_feedback()
@@ -297,6 +302,7 @@ class VoucherAllocate(models.Model):
     source_operating_unit = fields.Many2one('operating.unit','Request Store', required=True)
     is_request = fields.Boolean('Is Request', default=False)
     is_mine = fields.Boolean('Is Mine', compute="get_is_mine")
+    source_is_mine = fields.Boolean('Source is Mine', compute="get_source_is_mine")
 
     voucher_type = fields.Selection(
         string='Voucher Type',
