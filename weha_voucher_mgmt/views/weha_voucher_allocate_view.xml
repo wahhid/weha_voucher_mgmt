@@ -161,19 +161,19 @@
                         </div>
                         <group>
                             <group string="General Information">
-                                <field name="allocate_date" attrs="{'readonly':['|',('current_stage','!=','unattended'),('is_mine','=', False)]}"/>
+                                <field name="allocate_date" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
                                 
 
-                                <field name="source_operating_unit" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly':['|',('current_stage','!=','unattended'),('is_mine','=',False)]}"/>
+                                <field name="source_operating_unit" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="current_stage" readonly="1"/>
                                 <field name="print_count"/>
                                 <field name="is_mine"/>
                                 <field name="source_is_mine"/>
                             </group>
                             <group string="Voucher Allocate Information">
-                                <field name="ref" attrs="{'readonly':['|',('current_stage','!=','unattended'),('is_mine','=', False)]}"/>
+                                <field name="ref" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="voucher_count"/>
                                 <field name="voucher_received_count"/>
                                 <field name="is_request" invisible="1"/>
@@ -183,18 +183,18 @@
                         </group>
                         <group>
                             <group string="Voucher Detail">
-                                <field name="voucher_mapping_sku_id" options="{'no_create': True, 'no_create_edit':True}" domain="[('voucher_code_id.voucher_type','=', 'physical')]" attrs="{'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=',False)]}"/>
+                                <field name="voucher_mapping_sku_id" options="{'no_create': True, 'no_create_edit':True}" domain="[('voucher_code_id.voucher_type','=', 'physical')]" attrs="{'readonly': [('current_stage','!=', 'unattended')]}"/>
                                 <field name="voucher_code_id"/>
                                 <field name="voucher_terms_id"/>
-                                <field name="expired_days" attrs="{'invisible': [('is_voucher_promo','=', True)], 'required': [('is_voucher_promo','=', False)], 'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=',False)]}"/>
+                                <field name="expired_days" attrs="{'invisible': [('is_voucher_promo','=', True)], 'required': [('is_voucher_promo','=', False)], 'readonly': [('current_stage','!=', 'unattended')]}"/>
                                 <field name="voucher_expired_date" attrs="{'invisible': [('is_voucher_promo','=', True)]}"/>
-                                <field name="year_id" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=',False)]}"/>     
+                                <field name="year_id" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly': [('current_stage','!=', 'unattended')]}"/>     
                             </group>
                             <group string="Voucher Promo">
-                                <field name="voucher_promo_id" domain="[('is_expired','=', False)]" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=', False)]}"/>
+                                <field name="voucher_promo_id" domain="[('is_expired','=', False)]" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly': [('current_stage','!=', 'unattended')]}"/>
                                 <field name="is_voucher_promo" invisible="1"/>
-                                <field name="promo_expired_date" attrs="{'invisible': [('is_voucher_promo','=', False)], 'required': [('is_voucher_promo','=', True)], 'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=', False)]}"/>
-                                <field name="remark" attrs="{'readonly': ['|',('current_stage','!=', 'unattended'),('is_mine','=',False)]}"/>
+                                <field name="promo_expired_date" attrs="{'invisible': [('is_voucher_promo','=', False)], 'required': [('is_voucher_promo','=', True)], 'readonly': [('current_stage','!=', 'unattended')]}"/>
+                                <field name="remark" attrs="{'readonly': [('current_stage','!=', 'unattended')]}"/>
                             </group>
                         </group>
 
