@@ -158,5 +158,5 @@
               parent="weha_voucher_mgmt_main_menu" 
               action="weha_voucher_mgmt.open_board_my_dash_action" 
               sequence="1"
-              groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user"/>
+              groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_admin_user"/>
 </odoo>

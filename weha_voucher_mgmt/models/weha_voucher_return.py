@@ -149,6 +149,26 @@ class VoucherReturn(models.Model):
         if not stage_id:
             raise ValidationError("Stage not found")
         res = super(VoucherReturn, self).write({'stage_id': stage_id.id})
+        for voucher_return_line_id in self.voucher_return_line_ids:
+            if voucher_return_line_id.state == 'open':
+                vals = {}
+                vals.update({'state': 'cancelled'})
+                res = voucher_return_line_id.write(vals)
+
+                vals = {}
+                vals.update({'operating_unit_id': self.operating_unit_id.id})
+                vals.update({'state': 'open'})
+                voucher_return_line_id.voucher_order_line_id.sudo().write(vals)
+
+                vals = {}
+                vals.update({'name': self.number})
+                vals.update({'voucher_order_line_id': voucher_return_line_id.voucher_order_line_id.id})
+                vals.update({'trans_date': datetime.now()})
+                vals.update({'operating_unit_loc_fr_id': self.source_operating_unit_id.id})
+                vals.update({'operating_unit_loc_to_id': self.operating_unit_id.id})
+                vals.update({'trans_type': 'CL'})
+                self.env['weha.voucher.order.line.trans'].sudo().create(vals)
+ 
         for requester_user_id in  self.operating_unit_id.requester_user_ids:
             _logger.info(requester_user_id.name)
             data =  {

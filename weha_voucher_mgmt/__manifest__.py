@@ -8,7 +8,7 @@
     "website": "https://www.weha-id.com",
     "license": "AGPL-3",
     'data': [
-        #'data/weha_voucher_data.xml',
+        'data/weha_voucher_data.xml',
         #'data/weha_voucher_order_line_data.xml',
         #'data/weha_voucher_order_data.xml',
         #'data/weha_voucher_request_data.xml',

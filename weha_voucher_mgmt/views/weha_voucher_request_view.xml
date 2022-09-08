@@ -139,12 +139,12 @@
                                 <field name="date_request" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="user_id"/>
                                 <field name="operating_unit_id"/>
-                                <field name="is_mine" readonly="1"/>
+                                <field name="is_mine" readonly="1" invisible="1"/>
                             </group>
                             <group>
                                 <field name="ref" attrs="{'readonly':[('current_stage', '!=', 'unattended')]}"/>
                                 <field name="voucher_count" />
-                                <field name="current_stage" />
+                                <field name="current_stage" invisible="1" />
                                 <field name="current_stage_approval_level" invisible="1"/>
                                 <field name="remark" widget="textarea"/>
                                 <field name="voucher_promo_id" domain="[('is_expired','=', False)]" options="{'no_create': True, 'no_create_edit':True}"/>
@@ -307,7 +307,7 @@
             parent="weha_transaction_main_menu"
             action="action_weha_voucher_request_act_window" 
             sequence="21"
-            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user"/>
+            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_admin_user"/>
         
 
         

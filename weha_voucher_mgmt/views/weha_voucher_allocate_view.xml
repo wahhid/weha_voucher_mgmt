@@ -169,8 +169,8 @@
                                 <field name="source_operating_unit" options="{'no_create': True, 'no_create_edit':True}" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>
                                 <field name="current_stage" readonly="1"/>
                                 <field name="print_count"/>
-                                <field name="is_mine"/>
-                                <field name="source_is_mine"/>
+                                <field name="is_mine" invisible="1"/>
+                                <field name="source_is_mine" invisible="1"/>
                             </group>
                             <group string="Voucher Allocate Information">
                                 <field name="ref" attrs="{'readonly':[('current_stage','!=','unattended')]}"/>

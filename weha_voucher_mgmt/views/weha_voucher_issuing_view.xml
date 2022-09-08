@@ -343,14 +343,14 @@
             name="Issuing" 
             parent="weha_transaction_main_menu"
             action="action_weha_voucher_issuing_act_window" sequence="23"
-            groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_hrd_user"/>
+            groups="weha_voucher_mgmt.group_voucher_user,weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_hrd_user,weha_voucher_mgmt.group_voucher_admin_user"/>
         
         <menuitem 
             id="weha_voucher_issuing_employee_menu" 
             name="Issuing Employee" 
             parent="weha_transaction_main_menu"
             action="action_weha_voucher_issuing_employee" sequence="24"
-            groups="weha_voucher_mgmt.group_voucher_hrd_user"/>
+            groups="weha_voucher_mgmt.group_voucher_hrd_user,weha_voucher_mgmt.group_voucher_admin_user"/>
         
 
         

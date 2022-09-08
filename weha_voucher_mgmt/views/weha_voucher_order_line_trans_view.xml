@@ -93,8 +93,11 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_order_line_trans_menu" name="Order Trans" parent="weha_voucher_main_menu"
-            action="action_weha_voucher_order_line_trans_act_window" sequence="27"/>
+        <menuitem id="weha_voucher_order_line_trans_menu" 
+            name="Order Trans" 
+            parent="weha_voucher_main_menu"
+            action="action_weha_voucher_order_line_trans_act_window" 
+            sequence="27"/>
 
     </data>
 </odoo>

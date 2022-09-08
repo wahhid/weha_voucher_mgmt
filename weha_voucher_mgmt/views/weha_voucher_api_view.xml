@@ -144,7 +144,7 @@
             parent="weha_voucher_api_menu"
             action="action_weha_voucher_trans_purchase" 
             sequence="14"
-             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+             groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_admin_user"/>
 
         <!-- Tree view for voucher trans payment -->
         <record id="view_weha_voucher_trans_payment_tree" model="ir.ui.view">
@@ -369,7 +369,7 @@
             parent="weha_voucher_api_menu"
             action="action_weha_voucher_trans_status" 
             sequence="14"
-             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+             groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_admin_user"/>
 
         <!-- Tree view for voucher trans api -->
         <record id="view_weha_voucher_trans_ftp_tree" model="ir.ui.view">
@@ -467,7 +467,7 @@
             parent="weha_voucher_api_menu"
             action="action_weha_voucher_trans_ftp" 
             sequence="15"
-            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_admin_user"/>
  
     
         <!-- Tree view for voucher trans booking -->
@@ -602,7 +602,7 @@
             parent="weha_voucher_api_menu"
             action="action_weha_voucher_trans_booking" 
             sequence="16"
-            groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_admin_user"/>
 
         
         <!-- Tree view for voucher change membmer -->
@@ -723,7 +723,7 @@
             parent="weha_voucher_api_menu"
             action="action_weha_voucher_change_member" 
             sequence="16"
-             groups="weha_voucher_mgmt.group_voucher_finance_user"/>
+             groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_admin_user"/>
 
     </data>
 </odoo>

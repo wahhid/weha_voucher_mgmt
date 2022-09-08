@@ -98,8 +98,10 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_scrap_stage_menu" name="Scrap" parent="weha_voucher_stages_main_menu"
-            action="action_weha_voucher_scrap_stage_act_window" sequence="49" />
+        <menuitem id="weha_voucher_scrap_stage_menu" 
+            name="Scrap" parent="weha_voucher_stages_main_menu"
+            action="action_weha_voucher_scrap_stage_act_window" 
+            sequence="49" />
 
     </data>
 </odoo>

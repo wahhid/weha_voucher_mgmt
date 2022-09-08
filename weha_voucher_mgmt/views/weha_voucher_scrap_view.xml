@@ -217,7 +217,7 @@
             id="weha_voucher_scrap_menu" 
             name="Scrap" 
             parent="weha_transaction_main_menu"
-            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_hrd_user"
+            groups="weha_voucher_mgmt.group_voucher_finance_user,weha_voucher_mgmt.group_voucher_hrd_user,weha_voucher_mgmt.group_voucher_admin_user"
             action="action_weha_voucher_scrap_act_window" sequence="24"/>
 
         

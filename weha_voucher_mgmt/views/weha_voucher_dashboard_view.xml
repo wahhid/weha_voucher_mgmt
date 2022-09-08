@@ -10,7 +10,7 @@
     <menuitem name="Dashboard" id="voucher_dashboard" 
               parent="weha_voucher_mgmt_main_menu"
               sequence="1"
-              groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user"
+              groups="group_voucher_user,group_voucher_finance_user,group_voucher_marketing_user,weha_voucher_mgmt.group_voucher_admin_user"
               action="action_voucher_dashboard"/>
   </data>
 

@@ -101,7 +101,9 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_order_stage_menu" name="Order" parent="weha_voucher_stages_main_menu"
+        <menuitem id="weha_voucher_order_stage_menu" 
+            name="Order" 
+            parent="weha_voucher_stages_main_menu"
             action="action_weha_voucher_order_stage_act_window" sequence="25"/>
  
 
@@ -199,7 +201,9 @@
             </field>
         </record>
         
-        <menuitem id="weha_voucher_request_stage_menu" name="Request" parent="weha_voucher_stages_main_menu"
+        <menuitem id="weha_voucher_request_stage_menu" 
+            name="Request" 
+            parent="weha_voucher_stages_main_menu"
             action="action_weha_voucher_request_stage_act_window" sequence="26"/>
     </data>
 </odoo>
