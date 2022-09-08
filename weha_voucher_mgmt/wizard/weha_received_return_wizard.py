@@ -330,7 +330,7 @@ class WehaWizardReceivedReturn(models.TransientModel):
                         ('voucher_12_digit', '<=', end_voucher.voucher_12_digit),
                     ]
 
-                voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
+                voucher_order_line_ids = self.env['weha.voucher.order.line'].sudo().search(domain)
                 _logger.info("voucher_order_line_ids")
                 _logger.info(voucher_order_line_ids)
 
