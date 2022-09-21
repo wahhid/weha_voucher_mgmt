@@ -121,7 +121,7 @@ class VoucherIssuing(models.Model):
                     if not voucher_order_line_id:
                         raise ValidationError("Can't Generate voucher order line, contact administrator!")
                     voucher_order_line_id.write({'state': 'activated', 'issued_on': datetime.now()})
-                    voucher_order_line_id.create_order_line_trans(voucher_issuing_id.number, 'RS')
+                    voucher_order_line_id.create_order_line_trans(voucher_issuing_id.number, 'AC')
                     #Create Employee Voucher Line
                     self.env['weha.voucher.issuing.employee.voucher.line'].create(
                         {
@@ -259,9 +259,7 @@ class VoucherIssuing(models.Model):
                     for line_id in trans_purchase.voucher_trans_purchase_line_ids:
                         voucher_order_line_id  = line_id.voucher_order_line_id
                         voucher_order_line_id
-                    voucher_issuing_employee_line_id.sudo().trans_close()
-
-                    
+                    voucher_issuing_employee_line_id.sudo().trans_close()                    
             self.sudo().trans_close()
 
     def issuing_voucher(self):

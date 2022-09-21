@@ -105,7 +105,7 @@ class weha_wizard_import_voucher_issuing(models.TransientModel):
             if not mapping_sku_id:
                 raise ValidationError("SKU not found")
 
-            _logger.info(type(line[5].value))
+            #_logger.info(type(line[5].value))
             expired_date = False
             if line[5].value == '':
                 expired_date = False
