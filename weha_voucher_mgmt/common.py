@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 
 
 def default(o):
-    if isinstance(o, (datetime.date, datetime)):
+    if isinstance(o, (date, datetime)):
         return o.isoformat()
     if isinstance(o, bytes):
         return str(o)
