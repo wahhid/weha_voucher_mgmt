@@ -6,16 +6,13 @@ import json
 import werkzeug.wrappers
 from odoo.exceptions import AccessError
 from odoo.addons.weha_voucher_mgmt.common import invalid_response, valid_response
-
 from odoo import http
-
 from odoo.addons.weha_voucher_mgmt.common import (
     extract_arguments,
     invalid_response,
     valid_response,
 )
-
-
+from datetime import datetime
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)
@@ -105,13 +102,16 @@ class VMSBookingController(http.Controller):
             return valid_response(response_data)
 
         current_year = http.request.env['weha.voucher.year'].sudo().get_current_year()
+        cur_date_time = datetime.now()
+
         voucher_code_id = mapping_sku_id.voucher_code_id
         domain = [
             ('operating_unit_id','=',operating_unit_id.id),
             ('voucher_type','=', 'physical'),
             ('voucher_code_id', '=', voucher_code_id.id),
             ('year_id', '=', current_year.id),
-            ('is_expired', '=', False),
+            ('expired_date','>', cur_date_time),
+            #('is_expired', '=', False),
             ('state','=', 'open')
         ]
 
@@ -220,6 +220,7 @@ class VMSBookingController(http.Controller):
                     ('voucher_type','=', 'physical'),
                     ('voucher_code_id', '=', voucher_code_id.id),
                     ('year_id', '=', current_year.id),
+                    ('expired_date','>', cur_date_time),
                     ('state','=', 'open')
                 ]
                 # domain = [
@@ -274,6 +275,7 @@ class VMSBookingController(http.Controller):
                 ('voucher_type','=', 'physical'),
                 ('voucher_code_id', '=', voucher_code_id.id),
                 ('year_id', '=', current_year.id),
+                ('expired_date','>', cur_date_time),
                 ('state','=', 'open')
             ]
             

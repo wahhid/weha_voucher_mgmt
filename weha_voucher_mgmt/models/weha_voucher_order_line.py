@@ -22,7 +22,6 @@ _logger = logging.getLogger(__name__)
 import math
 import re
 
-
 class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
     _description = 'Voucher Order Line'
@@ -309,7 +308,6 @@ class VoucherOrderLine(models.Model):
             _logger.info("Error Auth Trust")
             _logger.info(err)  
 
-
     #API for Sales
     def send_data_to_trust(self):
         _logger.info("Send Data")
@@ -506,7 +504,6 @@ class VoucherOrderLine(models.Model):
             result = order_line_trans_obj.sudo().create(vals)            
             if not result:
                 raise ValidationError("Can't create voucher order line trans, contact administrator!")
-
 
     def find_voucher_order_line_by_ref_using_barcode(self, barcode):
         voucher_order_line_id = self.search([('voucher_ean', '=', barcode)], limit=1)

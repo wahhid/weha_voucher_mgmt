@@ -57,8 +57,8 @@ class VMSPromoController(http.Controller):
         t_id = post['t_id'] or False if 't_id' in post else False
         cashier_id = post['cashier_id'] or False if 'cashier_id' in post else False
         store_id = post['store_id'] or False if 'store_id' in post else False
-        tender_type = post['tender_type'] or False if 'tender_type' in post else False
-        bank_category = post['bank_category'] or False if 'bank_category' in post else False
+        tender_type = post['tender_type'] or False if 'tender_type' in post else ''
+        bank_category = post['bank_category'] or False if 'bank_category' in post else ''
         bin_number = post['bin_number'] or False if 'bin_number' in post else False
         sku = post['sku'] or False if 'sku' in post else False
         member_id = post['member_id'] or False  if 'member_id' in post else False
@@ -70,8 +70,8 @@ class VMSPromoController(http.Controller):
                                         t_id, 
                                         cashier_id, 
                                         store_id,
-                                        tender_type,
-                                        bank_category,
+                                        #tender_type,
+                                        #bank_category,
                                         bin_number,
                                         sku,
                                         voucher_type])
@@ -190,7 +190,6 @@ class VMSPromoController(http.Controller):
                     ('voucher_promo_id.start_date', '<=',  current_date),
                     ('voucher_promo_id.end_date', '>=', current_date)
             ]
-
             _logger.info(domain)
             voucher_promo_line_id = http.request.env['weha.voucher.promo.line'].search(domain, limit=1)
             _logger.info(voucher_promo_line_id)
