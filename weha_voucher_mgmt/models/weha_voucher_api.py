@@ -249,14 +249,24 @@ class VoucherTransPurchase(models.Model):
                 vals.update({'voucher_trans_type': self.voucher_type})
                 vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
                 vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
-                vals.update({'tender_type': self.tender_type})
-                vals.update({'bank_category': self.bank_category})
+                # vals.update({'tender_type': self.tender_type})
+                # vals.update({'bank_category': self.bank_category})
+                # #Voucher Promo Process
+                # if voucher_trans_purchase_sku_id.voucher_promo_id:
+                #     vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
+                #     vals.update({'min_card_payment': voucher_trans_purchase_sku_id.voucher_promo_id.min_card_payment})
+                #     vals.update({'voucher_count_limit': voucher_trans_purchase_sku_id.voucher_promo_id.voucher_count_limit})
                 #Voucher Promo Process
                 if voucher_trans_purchase_sku_id.voucher_promo_id:
+                    vals.update({'tender_type': voucher_trans_purchase_sku_id.voucher_promo_id.tender_type_id and voucher_trans_purchase_sku_id.voucher_promo_id.tender_type_id.code or False})
+                    vals.update({'bank_category': voucher_trans_purchase_sku_id.voucher_promo_id.bank_category_id  and voucher_trans_purchase_sku_id.voucher_promo_id.bank_category_id.bin_number or False})
                     vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
                     vals.update({'min_card_payment': voucher_trans_purchase_sku_id.voucher_promo_id.min_card_payment})
                     vals.update({'voucher_count_limit': voucher_trans_purchase_sku_id.voucher_promo_id.voucher_count_limit})
-
+                else:
+                    vals.update({'tender_type': self.tender_type})
+                    vals.update({'bank_category': self.bank_category})
+                
                 #Get Current Year
                 current_year = self.env['weha.voucher.year'].get_current_year()
                 vals.update({'year_id': current_year.id})
