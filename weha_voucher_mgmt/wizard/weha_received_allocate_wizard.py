@@ -24,24 +24,39 @@ class WizardScanVoucherAllocate(models.TransientModel):
                 ('voucher_ean','=', self.start_number),
                 ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
                 ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
-                ('year_id','=',voucher_allocate_id.year_id.id),
+                #('year_id','=',voucher_allocate_id.year_id.id),
                 ('state','=', 'open'),
             ]
-            
+        
             _logger.info(f'Domain : {domain}')
 
             voucher_id  = self.env['weha.voucher.order.line'].search(domain,limit=1)
             if not voucher_id:
                 self.start_number = False
                 raise Warning('Voucher in start number not found')
-            
-            self.operating_unit_id = voucher_id.operating_unit_id.id
-            self.voucher_code_id = voucher_id.voucher_code_id.id
-            self.year_id = voucher_id.year_id.id
-            self.start_check_number = voucher_id.check_number
 
-            #Set Valid Transaction
-            self.is_valid = True
+            if voucher_allocate_id.voucher_promo_id: 
+                _logger.info('Allocate Have Promo')
+                if voucher_id.voucher_promo_id and voucher_id.voucher_promo_id.id == voucher_allocate_id.voucher_promo_id.id:
+                    _logger.info('Voucher Promo Valid')
+                    self.operating_unit_id = voucher_id.operating_unit_id.id
+                    self.voucher_code_id = voucher_id.voucher_code_id.id
+                    self.year_id = voucher_id.year_id.id
+                    self.voucher_promo_id = voucher_id.voucher_promo_id.id
+                    self.start_check_number = voucher_id.check_number
+                    #Set Valid Transaction
+                    self.is_valid = True
+                else:
+                    self.is_valid = False
+                    raise ValidationError("Vouher Promo not valid!")
+            else:
+                self.operating_unit_id = voucher_id.operating_unit_id.id
+                self.voucher_code_id = voucher_id.voucher_code_id.id
+                self.year_id = voucher_id.year_id.id
+                self.start_check_number = voucher_id.check_number
+                
+                #Set Valid Transaction
+                self.is_valid = True
 
     api.onchange('end_number')
     def _onchange_end_number(self):
@@ -54,7 +69,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
                 ('voucher_ean','=', self.end_number),
                 ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
                 ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
-                ('year_id','=',voucher_allocate_id.year_id.id),
+                #('year_id','=',voucher_allocate_id.year_id.id),
                 ('state','=', 'open'),
             ]
             
@@ -63,9 +78,18 @@ class WizardScanVoucherAllocate(models.TransientModel):
                 self.start_number = False
                 raise Warning('Voucher in end number not found')
             
-            self.end_check_number = voucher_id.check_number
-            if self.end_check_number < self.start_check_number:
-                raise Warning('End Number not valid')
+            if voucher_id.voucher_promo_id and voucher_allocate_id.voucher_promo_id: 
+                if voucher_id.voucher_promo_id.id == voucher_allocate_id.voucher_promo_id.id:
+                    self.end_check_number = voucher_id.check_number
+                    if self.end_check_number < self.start_check_number:
+                        raise Warning('End Number not valid')                    
+                    #Set Valid Transaction
+                    self.is_valid = True
+                else:
+                    self.is_valid = False
+            else:
+                self.is_valid = False
+
 
     voucher_allocate_id = fields.Many2one('weha.voucher.allocate','Voucher Allocate #')
     operating_unit_id = fields.Many2one('operating.unit', 'Operating Unit', required=False, readonly=True)
@@ -124,7 +148,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
             ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
             ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
             ('voucher_ean','=', self.start_number),
-            ('year_id','=', voucher_allocate_id.year_id.id),
+            #('year_id','=', voucher_allocate_id.year_id.id),
             ('state','=','open')
         ]
         voucher_order_line_start_id  = self.env['weha.voucher.order.line'].search(domain, limit=1)
@@ -136,7 +160,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
             ('voucher_code_id','=', voucher_allocate_id.voucher_code_id.id),
             ('operating_unit_id', '=', voucher_allocate_id.operating_unit_id.id),
             ('voucher_ean','=', self.end_number),
-            ('year_id','=', voucher_allocate_id.year_id.id),
+            #('year_id','=', voucher_allocate_id.year_id.id),
             ('state','=','open')
         ]
         
@@ -152,15 +176,13 @@ class WizardScanVoucherAllocate(models.TransientModel):
             ('voucher_type','=','physical'),
             ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
             ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-            ('year_id','=', voucher_order_line_start_id.year_id.id),
+            #('year_id','=', voucher_order_line_start_id.year_id.id),
             ('state', '=', 'open'),
             ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
             ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
         ]
 
-        
         _logger.info(domain)
-
         voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
         _logger.info(voucher_order_line_ids)
         
@@ -194,6 +216,7 @@ class WizardScanVoucherAllocate(models.TransientModel):
             'is_checked': True,
             'estimate_total': len(line_ids),
         }
+
         scan_voucher_allocate_id = self.env['weha.wizard.scan.voucher.allocate'].create(vals)
         scan_voucher_allocate_id.write({'estimate_count': estimate_count, 'scan_voucher_allocate_line_ids':line_ids})
         return {
@@ -237,7 +260,7 @@ class WehaWizardReceivedAllocate(models.TransientModel):
                 vals.update({'expired_date':voucher_allocate_id.promo_expired_date})
             else:
                 vals.update({'expired_days':voucher_allocate_id.expired_days})
-                
+
             vals.update({'state': 'open'})
             voucher_allocate_line_id.voucher_order_line_id.sudo().write(vals)
 
@@ -298,19 +321,18 @@ class WehaWizardReceivedAllocate(models.TransientModel):
                         ('voucher_type', '=', 'physical'),
                         ('voucher_code_id', '=', start_voucher.voucher_code_id.id),
                         ('operating_unit_id', '=', start_voucher.operating_unit_id.id),
-                        ('year_id', '=', start_voucher.year_id.id),
+                        #('year_id', '=', start_voucher.year_id.id),
                         ('voucher_promo_id', '=', start_voucher.voucher_promo_id.id),
                         ('state', '=', 'intransit'),
                         ('voucher_12_digit', '>=', start_voucher.voucher_12_digit),
                         ('voucher_12_digit', '<=', end_voucher.voucher_12_digit),
-
                     ]
                 else:
                     domain = [
                         ('voucher_type', '=', 'physical'),
                         ('voucher_code_id', '=', start_voucher.voucher_code_id.id),
                         ('operating_unit_id', '=', start_voucher.operating_unit_id.id),
-                        ('year_id', '=', start_voucher.year_id.id),
+                        #('year_id', '=', start_voucher.year_id.id),
                         ('state', '=', 'intransit'),
                         ('voucher_12_digit', '>=', start_voucher.voucher_12_digit),
                         ('voucher_12_digit', '<=', end_voucher.voucher_12_digit),

@@ -54,14 +54,14 @@ class WizardScanVoucherScrap(models.TransientModel):
                 domain = [
                     ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                     ('voucher_code_id','=', voucher_id.voucher_code_id.id),
-                    ('year_id','=', voucher_id.year_id.id),
+                    #('year_id','=', voucher_id.year_id.id),
                     ('voucher_promo_id', '=', voucher_id.voucher_promo_id.id)
                 ]
             else:
                 domain = [
                     ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                     ('voucher_code_id','=', voucher_id.voucher_code_id.id),
-                    ('year_id','=', voucher_id.year_id.id),
+                    #('year_id','=', voucher_id.year_id.id),
                 ]
             
             voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
@@ -79,7 +79,7 @@ class WizardScanVoucherScrap(models.TransientModel):
                 self.year_id.id != voucher_id.year_id.id and \
                 self.voucher_promo_id.id != voucher_id.voucher_promo_id.id:
                 self.end_number = False
-                raise Validation('Voucher not match')
+                raise ValidationError('Voucher not match')
             
 
         #if self.start_number and self.end_number:
@@ -130,7 +130,7 @@ class WizardScanVoucherScrap(models.TransientModel):
             domain = [
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-                ('year_id','=', voucher_order_line_start_id.year_id.id),
+                #('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('voucher_promo_id', '=', voucher_order_line_start_id.voucher_promo_id.id),
                 #('check_number', 'in', tuple(voucher_ranges))
                 ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
@@ -140,7 +140,7 @@ class WizardScanVoucherScrap(models.TransientModel):
             domain = [
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-                ('year_id','=', voucher_order_line_start_id.year_id.id),
+                #('year_id','=', voucher_order_line_start_id.year_id.id),
                 #('check_number', 'in', tuple(voucher_ranges))
                 ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
                 ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),

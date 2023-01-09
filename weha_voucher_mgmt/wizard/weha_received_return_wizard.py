@@ -37,7 +37,7 @@ class WehaWizardScanVoucherReturn(models.TransientModel):
             domain = [
                 ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_id.voucher_code_id.id),
-                ('year_id','=', voucher_id.year_id.id)
+                #('year_id','=', voucher_id.year_id.id)
                 
             ]
 
@@ -156,7 +156,7 @@ class WehaWizardScanVoucherReturn(models.TransientModel):
         domain = [
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-                ('year_id','=', voucher_order_line_start_id.year_id.id),
+                #('year_id','=', voucher_order_line_start_id.year_id.id),
                 #('check_number', 'in', tuple(voucher_ranges))
                 ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
                 ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
@@ -313,7 +313,7 @@ class WehaWizardReceivedReturn(models.TransientModel):
                         ('voucher_type', '=', 'physical'),
                         ('voucher_code_id', '=', start_voucher.voucher_code_id.id),
                         ('operating_unit_id', '=', start_voucher.operating_unit_id.id),
-                        ('year_id', '=', start_voucher.year_id.id),
+                        #('year_id', '=', start_voucher.year_id.id),
                         ('voucher_promo_id', '=', start_voucher.voucher_promo_id.id),
                         ('state', '=', 'intransit'),
                         ('voucher_12_digit', '>=', start_voucher.voucher_12_digit),
@@ -324,7 +324,7 @@ class WehaWizardReceivedReturn(models.TransientModel):
                         ('voucher_type', '=', 'physical'),
                         ('voucher_code_id', '=', start_voucher.voucher_code_id.id),
                         ('operating_unit_id', '=', start_voucher.operating_unit_id.id),
-                        ('year_id', '=', start_voucher.year_id.id),
+                        #('year_id', '=', start_voucher.year_id.id),
                         ('state', '=', 'intransit'),
                         ('voucher_12_digit', '>=', start_voucher.voucher_12_digit),
                         ('voucher_12_digit', '<=', end_voucher.voucher_12_digit),

@@ -48,7 +48,6 @@ class VMSRedeemController(http.Controller):
     @validate_token
     @http.route("/api/vms/v1.0/redeem", type="http", auth="none", methods=["POST"], csrf=False)
     def vssales(self, **post):
-        
         date = post['date'] or False if 'date' in post else False
         time = post['time'] or False if 'time' in post else False
         receipt_number = post['receipt_number'] or False if 'receipt_number' in post else False
@@ -58,6 +57,7 @@ class VMSRedeemController(http.Controller):
         member_id = post['member_id'] or False  if 'member_id' in post else False
         sku = post['sku'] or False  if 'sku' in post else False
         voucher_type = post['voucher_type'] or False if 'voucher_type' in post else False
+        expired_date = post['expired_date'] or False if 'expired_date' in post else False
 
         _fields_includes_in_body = all([date, 
                                         time, 
@@ -140,8 +140,9 @@ class VMSRedeemController(http.Controller):
         values.update({'member_id': member_id})
         values.update({'sku': sku})
         values.update({'voucher_type': voucher_type})
+        if expired_date:
+            values.update({'voucher_expired_date': expired_date})
 
-    
         #Save Data
         result = voucher_trans_purchase_obj.sudo().create(values)
         

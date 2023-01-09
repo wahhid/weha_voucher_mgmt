@@ -121,7 +121,11 @@ class VoucherOrderLine(models.Model):
                             self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
                 else:
                     _logger.info('Electronic Voucher')
-                    self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
+                    if self.voucher_expired_date:
+                        _logger.info('Expired Date Exist')
+                        self.expired_date = self.voucher_expired_date
+                    else:
+                        self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
         else:
             self.expired_date = datetime.now() + timedelta(days=7)
 

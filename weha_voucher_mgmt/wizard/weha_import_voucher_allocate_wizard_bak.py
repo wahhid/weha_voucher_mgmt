@@ -60,8 +60,6 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
             voucher_allocate_id = self.env['weha.voucher.allocate'].create(vals)
             #for voucher_allocate_line_id in self.voucher_allocate_line_ids:
 
-                
-           
     def import_file(self):
         current_year = self.env['weha.voucher.year'].get_current_year()
         active_id = self.env.context.get('active_id') or False
@@ -130,7 +128,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                             ('voucher_code_id','=', mapping_sku_id.voucher_code_id.id),
                             ('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
                             ('voucher_ean','=', line[2].value),
-                            ('year_id','=', current_year.id),
+                            #('year_id','=', current_year.id),
                             ('voucher_promo_id','=', voucher_promo_id.id),
                             ('state','=','open')
                         ]
@@ -144,7 +142,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                             ('voucher_code_id','=', mapping_sku_id.voucher_code_id.id),
                             ('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
                             ('voucher_ean','=', line[3].value),
-                            ('year_id','=', current_year.id),
+                            #('year_id','=', current_year.id),
                             ('voucher_promo_id','=', voucher_promo_id.id),
                             ('state','=','open')
                         ]
@@ -161,7 +159,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                             ('voucher_type','=','physical'),
                             ('operating_unit_id','=', self.env.user.default_operating_unit_id.id),
                             ('voucher_code_id','=', mapping_sku_id.voucher_code_id.id),
-                            ('year_id','=', current_year.id),
+                            #('year_id','=', current_year.id),
                             ('voucher_promo_id','=', voucher_promo_id.id),
                             ('state', '=', 'open'),
                             ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
@@ -202,7 +200,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                         ('voucher_code_id','=', mapping_sku_id.voucher_code_id.id),
                         ('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
                         ('voucher_ean','=', line[2].value),
-                        ('year_id','=', current_year.id),
+                        # ('year_id','=', current_year.id),
                         ('state','=','open')
                     ]
                     _logger.info(domain)
@@ -215,7 +213,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                         ('voucher_code_id','=', mapping_sku_id.voucher_code_id.id),
                         ('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
                         ('voucher_ean','=', line[3].value),
-                        ('year_id','=', current_year.id),
+                        # ('year_id','=', current_year.id),
                         ('state','=','open')
                     ]
     
@@ -231,7 +229,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                         ('voucher_type','=','physical'),
                         ('operating_unit_id','=', self.env.user.default_operating_unit_id.id),
                         ('voucher_code_id','=', mapping_sku_id.voucher_code_id.id),
-                        ('year_id','=', current_year.id),
+                        # ('year_id','=', current_year.id),
                         ('state', '=', 'open'),
                         ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
                         ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),

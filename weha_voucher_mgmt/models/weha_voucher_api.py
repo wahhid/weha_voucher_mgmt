@@ -197,7 +197,7 @@ class VoucherTransPurchase(models.Model):
                 vals.update({'voucher_trans_type': self.voucher_type})
                 vals.update({'voucher_code_id': voucher_trans_purchase_sku_id.voucher_code_id.id})
                 vals.update({'voucher_terms_id': voucher_trans_purchase_sku_id.voucher_code_id.voucher_terms_id.id})
-     
+                
                 #Voucher Promo Process
                 if voucher_trans_purchase_sku_id.voucher_promo_id:
                     vals.update({'tender_type': voucher_trans_purchase_sku_id.voucher_promo_id.tender_type_id and voucher_trans_purchase_sku_id.voucher_promo_id.tender_type_id.code or False})
@@ -216,6 +216,9 @@ class VoucherTransPurchase(models.Model):
                 check_number = voucher_trans_purchase_sku_id.voucher_number_range_id.sequence_id.next_by_id()
                 vals.update({'check_number': check_number})
 
+                #Voucher Expired Date
+                vals.update({'voucher_expired_date': self.voucher_expired_date})
+
                 #Create Voucher Order Line
                 voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().create(vals)            
                 if not voucher_order_line_id:
@@ -230,7 +233,6 @@ class VoucherTransPurchase(models.Model):
                     'voucher_order_line_id': voucher_order_line_id.id
                 }
                 self.env['weha.voucher.trans.purchase.line'].create(vals)
-
 
     def create_and_reserved_voucher(self):
         seq = self.env['ir.sequence']
@@ -328,6 +330,7 @@ class VoucherTransPurchase(models.Model):
         'Voucher Type',
         index=True
     )
+    voucher_expired_date = fields.Date('Voucher Expired Date')
     voucher_trans_purchase_line_ids = fields.One2many('weha.voucher.trans.purchase.line','voucher_trans_purchase_id','Lines')
     voucher_trans_purchase_sku_ids = fields.One2many('weha.voucher.trans.purchase.sku','voucher_trans_purchase_id','Skus')
 
@@ -1587,7 +1590,6 @@ class VoucherTransBooking(models.Model):
                 vals['voucher_trans_booking_id'] = self.id
                 vals['sku'] = arr_sku[0]
                 vals['quantity'] = arr_sku[1]
-                #vals['amount'] = arr_sku[2]
                 _logger.info(arr_sku)
                 domain = [
                     ('code_sku', '=', arr_sku[0]),
@@ -1641,7 +1643,7 @@ class VoucherTransBooking(models.Model):
                     ('voucher_type','=', 'physical'),
                     ('voucher_code_id', '=', voucher_trans_booking_sku_id.voucher_code_id.id),
                     #('voucher_terms_id', '=',  voucher_trans_booking_sku_id.voucher_code_id.voucher_terms_id.id),
-                    ('year_id', '=', voucher_trans_booking_sku_id.year_id.id),
+                    #('year_id', '=', voucher_trans_booking_sku_id.year_id.id),
                     ('state','=', 'open')
                 ]
                 _logger.info(domain)

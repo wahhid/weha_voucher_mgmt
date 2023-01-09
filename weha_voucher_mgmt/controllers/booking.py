@@ -109,19 +109,9 @@ class VMSBookingController(http.Controller):
             ('operating_unit_id','=',operating_unit_id.id),
             ('voucher_type','=', 'physical'),
             ('voucher_code_id', '=', voucher_code_id.id),
-            ('year_id', '=', current_year.id),
             ('expired_date','>', cur_date_time),
-            #('is_expired', '=', False),
             ('state','=', 'open')
         ]
-
-        # voucher_code_id = mapping_sku_id.voucher_code_id
-        # domain = [
-        #     ('voucher_code_id', '=', voucher_code_id.id),
-        #     ('operating_unit_id', '=', operating_unit_id.id),
-        #     ('is_expired', '=', False),
-        #     ('state', '=', 'open')
-        # ]
         
         stock_count  = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
         if stock_count < int(arr_sku[1]):
@@ -156,7 +146,6 @@ class VMSBookingController(http.Controller):
         _fields_includes_in_body = all([date, 
                                         time, 
                                         store_id,
-                                        #member_id,
                                         sku,
                                         voucher_type])
         if not _fields_includes_in_body:
@@ -186,8 +175,6 @@ class VMSBookingController(http.Controller):
                 ]
             }
             return valid_response(response_data)
-
-        
 
         #Check Vouche by SKU on store
         skus = []
@@ -219,17 +206,10 @@ class VMSBookingController(http.Controller):
                     ('operating_unit_id','=',operating_unit_id.id),
                     ('voucher_type','=', 'physical'),
                     ('voucher_code_id', '=', voucher_code_id.id),
-                    ('year_id', '=', current_year.id),
-                    ('expired_date','>', cur_date_time),
+                    ('expired_date','>', datetime.now()),
                     ('state','=', 'open')
                 ]
-                # domain = [
-                #     ('voucher_code_id', '=', voucher_code_id.id),
-                #     ('operating_unit_id', '=', operating_unit_id.id),
-                #     ('is_expired', '=', False),
-                #     ('state', '=', 'open')
-                # ]
-                
+
                 stock_count  = http.request.env['weha.voucher.order.line'].sudo().search_count(domain)
                 if stock_count < int(arr_sku[1]):
                     is_error = True
@@ -274,8 +254,7 @@ class VMSBookingController(http.Controller):
                 ('operating_unit_id','=',operating_unit_id.id),
                 ('voucher_type','=', 'physical'),
                 ('voucher_code_id', '=', voucher_code_id.id),
-                ('year_id', '=', current_year.id),
-                ('expired_date','>', cur_date_time),
+                ('expired_date','>', datetime.now()),
                 ('state','=', 'open')
             ]
             

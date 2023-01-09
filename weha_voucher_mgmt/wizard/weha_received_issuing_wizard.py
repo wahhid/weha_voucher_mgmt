@@ -32,14 +32,14 @@ class WizardScanVoucherIssuing(models.TransientModel):
                 domain = [
                     ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                     ('voucher_code_id','=', voucher_id.voucher_code_id.id),
-                    ('year_id','=', voucher_id.year_id.id),
+                    #('year_id','=', voucher_id.year_id.id),
                     ('voucher_promo_id', '=', voucher_id.voucher_promo_id.id)
                 ]
             else:
                 domain = [
                     ('operating_unit_id','=', voucher_id.operating_unit_id.id),
                     ('voucher_code_id','=', voucher_id.voucher_code_id.id),
-                    ('year_id','=', voucher_id.year_id.id),
+                    #('year_id','=', voucher_id.year_id.id),
                 ]
             
             voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)
@@ -127,7 +127,7 @@ class WizardScanVoucherIssuing(models.TransientModel):
             domain = [
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-                ('year_id','=', voucher_order_line_start_id.year_id.id),
+                #('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('voucher_promo_id', '=', voucher_order_line_start_id.voucher_promo_id.id),
                 ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
                 ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
@@ -136,7 +136,7 @@ class WizardScanVoucherIssuing(models.TransientModel):
             domain = [
                 ('operating_unit_id','=', voucher_order_line_start_id.operating_unit_id.id),
                 ('voucher_code_id','=', voucher_order_line_start_id.voucher_code_id.id),
-                ('year_id','=', voucher_order_line_start_id.year_id.id),
+                #('year_id','=', voucher_order_line_start_id.year_id.id),
                 ('voucher_12_digit', '>=', voucher_order_line_start_id.voucher_12_digit),
                 ('voucher_12_digit', '<=', voucher_order_line_end_id.voucher_12_digit),
             ]
@@ -230,14 +230,14 @@ class WehaWizardReceivedIssuing(models.TransientModel):
                     if start_voucher.voucher_promo_id:
                         domain = [
                             ('voucher_order_id', '=', start_voucher.voucher_code_id.id),
-                            ('year_id', '=', start_voucher.year_id.id),
+                            #('year_id', '=', start_voucher.year_id.id),
                             ('voucher_promo_id', '=', start_voucher.voucher_promo_id.id),
                             ('check_number','in', voucher_range)
                         ]
                     else:
                         domain = [
                             ('voucher_order_id', '=', start_voucher.voucher_code_id.id),
-                            ('year_id', '=', start_voucher.year_id.id),
+                            #('year_id', '=', start_voucher.year_id.id),
                             ('check_number','in', voucher_range)
                         ]
                     voucher_order_line_ids = self.env['weha.voucher.order.line'].search(domain)

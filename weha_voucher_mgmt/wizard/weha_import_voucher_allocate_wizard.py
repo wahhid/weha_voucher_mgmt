@@ -182,7 +182,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                         #('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
                         #('operating_unit_id', '=', key[0]),
                         ('voucher_ean','=', voucher_id),
-                        ('year_id','=', current_year.id),
+                        #('year_id','=', current_year.id),
                         ('state','=','open')
                     ]
                 else:
@@ -192,7 +192,7 @@ class weha_wizard_import_voucher_allocate(models.TransientModel):
                         #('operating_unit_id', '=', self.env.user.default_operating_unit_id.id),
                         #('operating_unit_id', '=', key[0]),
                         ('voucher_ean','=', voucher_id),
-                        ('year_id','=', current_year.id),
+                        #('year_id','=', current_year.id),
                         #('voucher_promo_id','=', key[2]),
                         ('state','=','open')
                     ]
