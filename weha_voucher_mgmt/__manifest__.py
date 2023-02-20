@@ -41,6 +41,7 @@
         'wizard/weha_import_voucher_allocate_wizard_view.xml',
         'wizard/weha_find_voucher_order_line_view.xml',
         'wizard/wizard_voucher_order_line_view.xml',
+        'wizard/weha_voucher_order_line_change_status_view.xml',
         'views/weha_voucher_stage_view.xml',
         'views/weha_voucher_order_view.xml',
         'views/weha_voucher_order_line_view.xml',

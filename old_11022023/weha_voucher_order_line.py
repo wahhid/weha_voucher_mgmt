@@ -22,6 +22,7 @@ _logger = logging.getLogger(__name__)
 import math
 import re
 
+
 class VoucherOrderLine(models.Model):
     _name = 'weha.voucher.order.line'
     _description = 'Voucher Order Line'
@@ -121,11 +122,7 @@ class VoucherOrderLine(models.Model):
                             self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
                 else:
                     _logger.info('Electronic Voucher')
-                    if self.voucher_expired_date:
-                        _logger.info('Expired Date Exist')
-                        self.expired_date = self.voucher_expired_date
-                    else:
-                        self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
+                    self.expired_date = datetime.now() + timedelta(days=self.voucher_code_id.voucher_terms_id.number_of_days)
         else:
             self.expired_date = datetime.now() + timedelta(days=7)
 
@@ -312,6 +309,7 @@ class VoucherOrderLine(models.Model):
             _logger.info("Error Auth Trust")
             _logger.info(err)  
 
+
     #API for Sales
     def send_data_to_trust(self):
         _logger.info("Send Data")
@@ -497,7 +495,7 @@ class VoucherOrderLine(models.Model):
             _logger.error(err)  
 
     @api.model
-    def create_order_line_trans(self, name, trans_type, reason=""):
+    def create_order_line_trans(self, name, trans_type):
         for row in self:
             order_line_trans_obj = self.env['weha.voucher.order.line.trans']
             vals = {} 
@@ -505,11 +503,10 @@ class VoucherOrderLine(models.Model):
             vals.update({'trans_date': datetime.now()})
             vals.update({'voucher_order_line_id': self.id})
             vals.update({'trans_type': trans_type})
-            vals.update({'reason': reason})
-            vals.update({'user_id': self.env.uid})
             result = order_line_trans_obj.sudo().create(vals)            
             if not result:
                 raise ValidationError("Can't create voucher order line trans, contact administrator!")
+
 
     def find_voucher_order_line_by_ref_using_barcode(self, barcode):
         voucher_order_line_id = self.search([('voucher_ean', '=', barcode)], limit=1)
@@ -779,8 +776,6 @@ class VoucherOrderLineTrans(models.Model):
 
     #User    
     user_id = fields.Many2one('res.users', 'User')
-
-    reason = fields.Char("Reason", size=250)
 
 class VoucherTransactionType(models.Model):
     _name = "weha.voucher.transaction.type"

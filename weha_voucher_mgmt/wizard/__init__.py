@@ -17,4 +17,5 @@ from . import weha_report_voucher_transaction
 from . import weha_find_voucher_order_line
 from . import wizard_voucher_order_line
 from . import weha_report_voucher_promo
+from . import weha_voucher_order_line_change_status
 

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="view_wizard_voucher_order_line_change_status" model="ir.ui.view">
+        <field name="name">weha.wizard.voucher.order.line.change.status</field>
+        <field name="model">weha.wizard.voucher.order.line.change.status</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Change Voucher Status">
+                <group>
+                    <field name="state" widget="radio"/>
+                    <field name="reason"/>
+                </group>
+                <footer>
+                    <button name="change_status" string="Change Status" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="act_open_voucher_order_line_change_status_form" model="ir.actions.act_window">
+        <field name="name">Change Voucher Status</field>
+        <field name="res_model">weha.wizard.voucher.order.line.change.status</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    
+</odoo>

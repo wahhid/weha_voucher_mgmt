@@ -775,3 +775,47 @@ class VMSStatusController(http.Controller):
                 ]
             }
             return valid_response(data)
+
+
+    @validate_token
+    @http.route("/api/vms/v1.0/voucherinfo", type="http", auth="none", methods=["POST"], csrf=False, cors="*")
+    def voucherinfo(self, **post):
+        voucher_ean = post['voucher_ean'] or False if 'voucher_ean' in post else False
+        
+        _fields_includes_in_body = all([voucher_ean])
+
+
+        if not _fields_includes_in_body:
+            data =  {
+                "err": True,
+                "message": "Missing fields",
+                "data": []
+            }
+            return valid_response(data)
+
+        domain = [
+            ('voucher_ean','=', voucher_ean)
+        ]
+        voucher_order_line_id = http.request.env['weha.voucher.order.line'].sudo().search(domain, limit=1)
+        if not voucher_order_line_id:
+            data =  {
+                "err": True,
+                "message": "Voucher not found",
+                "data": []
+            }
+            return valid_response(data)
+        
+        data = {
+            "err": False,
+            "message": "",
+            "data": [
+                {
+                    'voucher_ean': voucher_order_line_id.voucher_ean,
+                    'expired_date': voucher_order_line_id.expired_date,
+                    'used_on': voucher_order_line_id.used_operating_unit_id and voucher_order_line_id.used_operating_unit_id.name or "",
+                    'status': voucher_order_line_id.state or False
+                }   
+            ]
+        }
+
+        return valid_response(data)

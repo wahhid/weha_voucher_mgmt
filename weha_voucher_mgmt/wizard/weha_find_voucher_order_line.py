@@ -15,7 +15,7 @@ class WehaWizardFindVoucherOrderLine(models.TransientModel):
     def find_voucher(self):
         wizard_form = self.env.ref('weha_voucher_mgmt.wizard_weha_voucher_order_line_form', False)
         view_id = self.env['wizard.voucher.order.line']
-        voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search([('voucher_ean', '=', self.code_ean)], limit=1)
+        voucher_order_line_id = self.env['weha.voucher.order.line'].sudo().search(['|',('voucher_12_digit','=', self.code_ean ),('voucher_ean', '=', self.code_ean)], limit=1)
         vals = {
             'name'   : voucher_order_line_id.name,
             'batch_id': voucher_order_line_id.batch_id,
