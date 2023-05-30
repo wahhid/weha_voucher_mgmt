@@ -25,29 +25,29 @@ class WehaWizardVoucherOrderLineChangeStatus(models.TransientModel):
             raise ValidationError('Voucher not found')
 
         if self.state == 'used':
-            if voucher_order_line_id.state in ['open','reserved','activated']:
-                voucher_order_line_id.state = self.state
-                voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'US', self.reason)
+            voucher_order_line_id.state = self.state
+            voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'US', self.reason)
             
         if self.state == 'activated':
-            if voucher_order_line_id.state in ['open','reserved','used']:
-                voucher_order_line_id.state = self.state
-                voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'AC', self.reason)
+            voucher_order_line_id.state = self.state
+            voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'AC', self.reason)
 
         if self.state == 'open':
-            if voucher_order_line_id.state in ['reserved','activated', 'used']:
-                voucher_order_line_id.state = self.state
-                voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'OP', self.reason)
+            voucher_order_line_id.state = self.state
+            voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'OP', self.reason)
 
 
         if self.state == 'reserved':
-            if voucher_order_line_id.state in ['open','activated', 'used']:
-                voucher_order_line_id.state = self.state
-                voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'RS', self.reason)
+            voucher_order_line_id.state = self.state
+            voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'RS', self.reason)
+
+        if self.state == 'intransit':
+            voucher_order_line_id.state = self.state
+            voucher_order_line_id.create_order_line_trans(voucher_order_line_id.name, 'DV', self.reason)
 
     state = fields.Selection(
         string='Voucher Status',
-        selection=[('open','Open'),('activated', 'Activated'), ('used', 'Used'),('reserved','Reserved')],
+        selection=[('open','Open'),('activated', 'Activated'), ('used', 'Used'),('reserved','Reserved'),('intransit','In-Transit')],
         required=True
     )
     

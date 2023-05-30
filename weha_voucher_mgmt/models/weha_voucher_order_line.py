@@ -581,6 +581,7 @@ class VoucherOrderLine(models.Model):
     is_voucher_promo = fields.Boolean('Is Promo Voucher', default=False, readonly=True)
     tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type')
     min_card_payment = fields.Float('Min Payment', default=0.0)
+    min_sales = fields.Float('Min Sales', default=0.0)
     voucher_count_limit = fields.Integer('Max Voucher Count', default=0)
     #tender_type_id = fields.Many2one('weha.voucher.tender.type', 'Tender Type', related='voucher_promo_id.tender_type_id', store=True)
     tender_type = fields.Char('Tender Type', size=20)

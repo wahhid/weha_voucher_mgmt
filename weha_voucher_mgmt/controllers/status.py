@@ -285,6 +285,7 @@ class VMSStatusController(http.Controller):
                                 'tender_type': add_data['tender_type'],
                                 'bank_category': add_data['bank_category'],
                                 'min_card_payment': add_data['min_card_payment'],
+                                'min_sales': add_data['min_sales'],
                                 'max_vchr_count': add_data['voucher_count_limit'],
                             }
                         ]
@@ -679,6 +680,7 @@ class VMSStatusController(http.Controller):
                                 'tender_type': add_data['tender_type'],
                                 'bank_category': add_data['bank_category'],
                                 'min_card_payment': add_data['min_card_payment'],
+                                'min_sales': add_data['min_sales'],
                                 'max_vchr_count': add_data['voucher_count_limit'],
                             }
                         ]

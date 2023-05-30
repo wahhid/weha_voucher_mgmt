@@ -19,6 +19,7 @@
                     <field name="start_date"/>
                     <field name="end_date"/>
                     <field name="min_card_payment"/>
+                    <field name="min_sales"/>
                     <field name="amount"/>
                     <field name="current_amount"/>
                 </tree>
@@ -52,6 +53,7 @@
                                 <field name="start_date"/>
                                 <field name="end_date"/>
                                 <field name="min_card_payment"/>
+                                <field name="min_sales"/>
                                 <field name="voucher_count_limit"/>
                                 <field name="amount"/>
                                 <field name="current_amount"/>

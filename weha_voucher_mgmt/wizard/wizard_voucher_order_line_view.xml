@@ -59,7 +59,7 @@
                             <field name="state"/>
                             <field name="is_legacy"/>
                             <field name="is_send_to_crm" invisible="1"/>
-                            <field name="create_date"/>
+                            <field name="voucher_create_date"/>
                             <field name="issued_on"/>
                             <field name="source_doc"/>
                             <field name="cc_number"/>

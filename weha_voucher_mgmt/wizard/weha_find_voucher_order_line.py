@@ -61,6 +61,7 @@ class WehaWizardFindVoucherOrderLine(models.TransientModel):
             'used_on': voucher_order_line_id.used_on,
             'used_operating_unit_id': voucher_order_line_id.used_operating_unit_id.id,
             'scrap_on': voucher_order_line_id.scrap_on,
+            'voucher_create_date': voucher_order_line_id.create_date,
             'state': voucher_order_line_id.state
         }
         new = view_id.create(vals)

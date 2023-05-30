@@ -204,6 +204,7 @@ class VoucherTransPurchase(models.Model):
                     vals.update({'bank_category': voucher_trans_purchase_sku_id.voucher_promo_id.bank_category_id  and voucher_trans_purchase_sku_id.voucher_promo_id.bank_category_id.bin_number or False})
                     vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
                     vals.update({'min_card_payment': voucher_trans_purchase_sku_id.voucher_promo_id.min_card_payment})
+                    vals.update({'min_sales': voucher_trans_purchase_sku_id.voucher_promo_id.min_sales})
                     vals.update({'voucher_count_limit': voucher_trans_purchase_sku_id.voucher_promo_id.voucher_count_limit})
                 else:
                     vals.update({'tender_type': self.tender_type})
@@ -264,6 +265,7 @@ class VoucherTransPurchase(models.Model):
                     vals.update({'bank_category': voucher_trans_purchase_sku_id.voucher_promo_id.bank_category_id  and voucher_trans_purchase_sku_id.voucher_promo_id.bank_category_id.bin_number or False})
                     vals.update({'voucher_promo_id': voucher_trans_purchase_sku_id.voucher_promo_id.id})
                     vals.update({'min_card_payment': voucher_trans_purchase_sku_id.voucher_promo_id.min_card_payment})
+                    vals.update({'min_sales': voucher_trans_purchase_sku_id.voucher_promo_id.min_sales})
                     vals.update({'voucher_count_limit': voucher_trans_purchase_sku_id.voucher_promo_id.voucher_count_limit})
                 else:
                     vals.update({'tender_type': self.tender_type})
@@ -1298,11 +1300,13 @@ class VoucherTransStatus(models.Model):
                 data.update({'tender_type': ''})
                 data.update({'bank_category': ''})
                 data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
+                data.update({'min_sales': voucher_order_line_id.min_sales})
                 data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
                 if voucher_order_line_id.voucher_promo_id:
                     data.update({'tender_type': voucher_order_line_id.tender_type})
                     data.update({'bank_category': voucher_order_line_id.bank_category})
                     data.update({'min_card_payment': voucher_order_line_id.min_card_payment})
+                    data.update({'min_sales': voucher_order_line_id.min_sales})
                     data.update({'voucher_count_limit': voucher_order_line_id.voucher_count_limit})
             else:
                 data.update({'err': True})

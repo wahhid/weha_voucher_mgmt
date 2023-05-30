@@ -41,7 +41,7 @@
                         <button name="trans_request" string="Request"  type="object" class="btn btn-warning"/>
                         -->
                         <!-- <button name="trans_send_to_trust" string="Send to Trust"  type="object" class="btn btn-warning" attrs="{'invisible':['|',('is_send_to_crm','=', True),('voucher_type','=','physical')]}"/> -->
-                        <button string="Change Status" name="%(act_open_voucher_order_line_change_status_form)d" type="action"  class="oe_highlight"/>
+                        <button string="Change Status" name="%(act_open_voucher_order_line_change_status_form)d" type="action"  class="oe_highlight" groups="weha_voucher_mgmt.group_voucher_admin_user"/>
                     </header>
                     <sheet>
                         <widget name="web_ribbon" text="Promo" bg_color="bg-warning" attrs="{'invisible':[('is_voucher_promo','=', False)]}"/>

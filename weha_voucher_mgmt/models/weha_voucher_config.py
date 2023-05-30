@@ -123,6 +123,7 @@ class VoucherPromo(models.Model):
     term = fields.Text('Term and Condition')
     image = fields.Image('Image')
     min_card_payment = fields.Float('Min Payment', default=0.0)
+    min_sales = fields.Float('Min Sales', default=0.0)
     voucher_count_limit = fields.Integer('Voucher Count Limit', default=0)
 
 class VoucherPromoLine(models.Model):

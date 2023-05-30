@@ -99,6 +99,7 @@ class WizardVoucherOrderLine(models.TransientModel):
     issued_on = fields.Datetime('Issued On', readonly=True)
     used_on = fields.Datetime('Used On', readonly=True)
     used_operating_unit_id = fields.Many2one('operating.unit', 'Used at')
+    voucher_create_date = fields.Datetime('Create Date')
     scrap_on = fields.Datetime('Scrap On', readonly=True)
 
     #State Voucher
